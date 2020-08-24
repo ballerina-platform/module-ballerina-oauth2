@@ -15,10 +15,6 @@
  *
  */
 
-plugins {
-    id 'java'
-}
-
 import org.apache.tools.ant.taskdefs.condition.Os
 
 description = 'Ballerina - OAuth2 Ballerina'
