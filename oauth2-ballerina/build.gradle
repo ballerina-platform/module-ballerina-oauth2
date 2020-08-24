@@ -25,16 +25,11 @@ description = 'Ballerina - OAuth2 Ballerina'
 
 configurations {
     jbalTools
-    oauth2BallerinaBirDir
-    oauth2BallerinaJar
     externalJars
 }
 
 dependencies {
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
-        transitive = false
-    }
-    externalJars (group: 'org.apache.directory.server', name: 'apacheds-all', version: '2.0.0-M24') {
         transitive = false
     }
 }
