@@ -1,15 +1,11 @@
 # Compiled class file
 *.class
-
 # Log file
 *.log
-
 # BlueJ files
 *.ctxt
-
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
-
 # Package Files #
 *.jar
 *.war
@@ -21,3 +17,19 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+build
+.gradle/
+target
+# IDEA Files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# MacOS
+*.DS_Store
+
+# Ballerina
+velocity.log*
+*Ballerina.lock
