@@ -21,7 +21,6 @@ description = 'Ballerina - OAuth2 Ballerina'
 
 configurations {
     jbalTools
-    externalJars
 }
 
 dependencies {
@@ -47,11 +46,6 @@ task unpackJballerinaTools(type: Copy) {
         from zipTree(artifact.getFile())
         into new File("${buildDir}/target/extracted-distributions", "jballerina-tools-zip")
     }
-}
-
-task copyToLib(type: Copy) {
-    into "$project.projectDir/lib"
-    from configurations.externalJars
 }
 
 def moduleName = "oauth2"
@@ -184,6 +178,5 @@ publishing {
     }
 }
 
-unpackJballerinaTools.dependsOn copyToLib
 ballerinaBuild.dependsOn unpackJballerinaTools
 build.dependsOn ballerinaBuild
