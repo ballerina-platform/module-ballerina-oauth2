@@ -62,7 +62,7 @@ type GrantTypeConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectToke
 #     }
 # });
 # ```
-public type OutboundOAuth2Provider object {
+public class OutboundOAuth2Provider {
 
     *auth:OutboundAuthProvider;
 
@@ -81,12 +81,12 @@ public type OutboundOAuth2Provider object {
         };
     }
 
-# Generate a token for the OAuth2 authentication.
-# ```ballerina
-# string:auth:Error token = outboundOAuth2Provider.generateToken();
-# ```
-#
-# + return - Generated `string` token or else an `auth:Error` if an error occurred
+    # Generate a token for the OAuth2 authentication.
+    # ```ballerina
+    # string:auth:Error token = outboundOAuth2Provider.generateToken();
+    # ```
+    #
+    # + return - Generated `string` token or else an `auth:Error` if an error occurred
     public function generateToken() returns @tainted (string|auth:Error) {
         GrantTypeConfig? oauth2ProviderConfig = self.oauth2ProviderConfig;
         if (oauth2ProviderConfig is ()) {
@@ -105,14 +105,14 @@ public type OutboundOAuth2Provider object {
         }
     }
 
-# Inspects the incoming data and generates the token for the OAuth2 authentication.
-# ```ballerina
-# string:auth:Error? token = outboundOAuth2Provider.inspect(data);
-# ```
-#
-# + data - Map of data, which is extracted from the HTTP response
-# + return - Generated `string` token, an `auth:Error` occurred while generating the token, or else 
-#            `()` if nothing is to be returned
+    # Inspects the incoming data and generates the token for the OAuth2 authentication.
+    # ```ballerina
+    # string:auth:Error? token = outboundOAuth2Provider.inspect(data);
+    # ```
+    #
+    # + data - Map of data, which is extracted from the HTTP response
+    # + return - Generated `string` token, an `auth:Error` occurred while generating the token, or else
+    #            `()` if nothing is to be returned
     public function inspect(map<anydata> data) returns @tainted (string|auth:Error?) {
         GrantTypeConfig? oauth2ProviderConfig = self.oauth2ProviderConfig;
         if (oauth2ProviderConfig is ()) {
@@ -129,7 +129,7 @@ public type OutboundOAuth2Provider object {
             return ();
         }
     }
-};
+}
 
 # The data structure, which is used to configure the OAuth2 client credentials grant type.
 #
