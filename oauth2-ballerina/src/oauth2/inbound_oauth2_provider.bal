@@ -33,7 +33,7 @@ type JsonMap map<json>;
 # };
 # oauth2:InboundOAuth2Provider inboundOAuth2Provider = new(introspectionServerConfig);
 # ```
-public type InboundOAuth2Provider object {
+public class InboundOAuth2Provider {
 
     *auth:InboundAuthProvider;
 
@@ -46,13 +46,13 @@ public type InboundOAuth2Provider object {
         self.introspectionServerConfig = introspectionServerConfig;
     }
 
-# Authenticates the provider OAuth2 tokens with an introspection endpoint.
-# ```ballerina
-# boolean|auth:Error result = inboundOAuth2Provider.authenticate("<credential>");
-# ```
-#
-# + credential - OAuth2 token to be authenticated
-# + return - `true` if authentication is successful, `false` otherwise, or else an `auth:Error` if an error occurred
+    # Authenticates the provider OAuth2 tokens with an introspection endpoint.
+    # ```ballerina
+    # boolean|auth:Error result = inboundOAuth2Provider.authenticate("<credential>");
+    # ```
+    #
+    # + credential - OAuth2 token to be authenticated
+    # + return - `true` if authentication is successful, `false` otherwise, or else an `auth:Error` if an error occurred
     public function authenticate(string credential) returns @tainted (boolean|auth:Error) {
         if (credential == "") {
             return false;
@@ -73,7 +73,7 @@ public type InboundOAuth2Provider object {
             return prepareAuthError("OAuth2 validation failed.", validationResult);
         }
     }
-};
+}
 
 # Validates the given OAuth2 token by calling the OAuth2 introspection endpoint.
 # ```ballerina
