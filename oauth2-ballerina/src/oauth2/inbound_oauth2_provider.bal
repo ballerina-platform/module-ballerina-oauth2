@@ -42,7 +42,7 @@ public class InboundOAuth2Provider {
     # Provides authentication based on the provided introspection configurations.
     #
     # + introspectionServerConfig - OAuth2 introspection server configurations
-    public function init(IntrospectionServerConfig introspectionServerConfig) {
+    public isolated function init(IntrospectionServerConfig introspectionServerConfig) {
         self.introspectionServerConfig = introspectionServerConfig;
     }
 
@@ -53,7 +53,7 @@ public class InboundOAuth2Provider {
     #
     # + credential - OAuth2 token to be authenticated
     # + return - `true` if authentication is successful, `false` otherwise, or else an `auth:Error` if an error occurred
-    public function authenticate(string credential) returns @tainted (boolean|auth:Error) {
+    public isolated function authenticate(string credential) returns @tainted (boolean|auth:Error) {
         if (credential == "") {
             return false;
         }
@@ -83,8 +83,8 @@ public class InboundOAuth2Provider {
 # + token - OAuth2 token, which needs to be validated
 # + config -  OAuth2 introspection server configurations
 # + return - OAuth2 introspection server response or else an `oauth2:Error` if token validation fails
-public function validateOAuth2Token(string token, IntrospectionServerConfig config)
-                                    returns @tainted (IntrospectionResponse|Error) {
+public isolated function validateOAuth2Token(string token, IntrospectionServerConfig config)
+                                             returns @tainted (IntrospectionResponse|Error) {
     cache:Cache? oauth2Cache = config?.oauth2Cache;
     if (oauth2Cache is cache:Cache && oauth2Cache.hasKey(token)) {
         IntrospectionResponse? response = validateFromCache(oauth2Cache, token);
@@ -122,7 +122,7 @@ public function validateOAuth2Token(string token, IntrospectionServerConfig conf
     }
 }
 
-function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
+isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
     boolean active = <boolean>payload.active;
     IntrospectionResponse introspectionResponse = {
         active: active
@@ -165,8 +165,8 @@ function prepareIntrospectionResponse(json payload) returns IntrospectionRespons
     return introspectionResponse;
 }
 
-function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
-                    int defaultTokenExpTimeInSeconds) {
+isolated function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
+                            int defaultTokenExpTimeInSeconds) {
     cache:Error? result;
     if (response?.exp is int) {
         result = oauth2Cache.put(token, response);
@@ -186,7 +186,7 @@ function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse
     });
 }
 
-function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
+isolated function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
     any|cache:Error cachedValue = oauth2Cache.get(token);
     if (cachedValue is ()) {
         // If the cached value is expired (defaultTokenExpTimeInSeconds is passed), it will return `()`.
@@ -225,7 +225,7 @@ function validateFromCache(cache:Cache oauth2Cache, string token) returns Intros
 #
 # + scopes - Set of scopes seperated with a space
 # + return - Array of groups for the user who is denoted by the username
-function getScopes(string? scopes) returns string[] {
+isolated function getScopes(string? scopes) returns string[] {
     if (scopes is ()) {
         return [];
     } else {
