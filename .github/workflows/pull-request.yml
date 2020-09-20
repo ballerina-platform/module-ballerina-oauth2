@@ -1,4 +1,4 @@
-name: Ballerina OAuth2 module build
+name: PR build
 
 on: [push, pull_request]
 
