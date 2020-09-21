@@ -162,7 +162,7 @@ task ballerinaTest {
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             // code coverage is not added due to issue https://github.com/ballerina-platform/ballerina-lang/issues/25399
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test --all ${debugParams}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test --all ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
                 commandLine 'sh', '-c', "$distributionBinPath/ballerina test --all ${debugParams}"
             }
@@ -186,7 +186,7 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build --skip-tests -c ${moduleName}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build --skip-tests -c ${moduleName} && exit %%ERRORLEVEL%%"
             } else {
                 commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c ${moduleName}"
             }
@@ -233,7 +233,7 @@ task ballerinaBuild {
                 workingDir project.projectDir
                 environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${moduleName}"
+                    commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat push ${moduleName} && exit %%ERRORLEVEL%%"
                 } else {
                     commandLine 'sh', '-c', "$distributionBinPath/ballerina push ${moduleName}"
                 }
@@ -245,7 +245,7 @@ task ballerinaBuild {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc ${moduleName}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat doc ${moduleName} && exit %%ERRORLEVEL%%"
             } else {
                 commandLine 'sh', '-c', "$distributionBinPath/ballerina doc ${moduleName}"
             }
@@ -277,8 +277,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-oauth2")
             credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+                username = System.getenv("packageUser")
+                password = System.getenv("packagePAT")
             }
         }
     }
