@@ -122,7 +122,7 @@ public function validateOAuth2Token(string token, IntrospectionServerConfig conf
     }
 }
 
-function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
+isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
     boolean active = <boolean>payload.active;
     IntrospectionResponse introspectionResponse = {
         active: active
@@ -165,8 +165,8 @@ function prepareIntrospectionResponse(json payload) returns IntrospectionRespons
     return introspectionResponse;
 }
 
-function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
-                    int defaultTokenExpTimeInSeconds) {
+isolated function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
+                             int defaultTokenExpTimeInSeconds) {
     cache:Error? result;
     if (response?.exp is int) {
         result = oauth2Cache.put(token, response);
@@ -186,7 +186,7 @@ function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse
     });
 }
 
-function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
+isolated function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
     any|cache:Error cachedValue = oauth2Cache.get(token);
     if (cachedValue is ()) {
         // If the cached value is expired (defaultTokenExpTimeInSeconds is passed), it will return `()`.
@@ -225,7 +225,7 @@ function validateFromCache(cache:Cache oauth2Cache, string token) returns Intros
 #
 # + scopes - Set of scopes seperated with a space
 # + return - Array of groups for the user who is denoted by the username
-function getScopes(string? scopes) returns string[] {
+isolated function getScopes(string? scopes) returns string[] {
     if (scopes is ()) {
         return [];
     } else {

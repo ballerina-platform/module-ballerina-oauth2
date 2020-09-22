@@ -441,7 +441,7 @@ function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
 #
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - `true` if the access token is valid or else `false`
-function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEntry) returns boolean {
+isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEntry) returns boolean {
     int expTime = oauth2CacheEntry.expTime;
     if (expTime == 0) {
         log:printDebug(function () returns string {
@@ -614,7 +614,7 @@ function doRequest(string url, http:Request request, http:ClientConfiguration cl
 #
 # + config - The `oauth2:RequestConfig` record
 # + return - Prepared HTTP request object or else an `oauth2:Error` occurred while preparing the request
-function prepareRequest(RequestConfig config) returns http:Request|Error {
+isolated function prepareRequest(RequestConfig config) returns http:Request|Error {
     http:Request req = new;
     string textPayload = config.payload;
     string scopeString = "";
@@ -664,8 +664,9 @@ function prepareRequest(RequestConfig config) returns http:Request|Error {
 # + oauth2CacheEntry - OAuth2 cache entry
 # + clockSkewInSeconds - Clock skew in seconds
 # + return - Extracted access token or else an `oauth2:Error` occurred during the HTTP client invocation
-function extractAccessTokenFromResponse(http:Response response, @tainted OutboundOAuth2CacheEntry oauth2CacheEntry,
-                                        int clockSkewInSeconds) returns @tainted (string|Error) {
+isolated function extractAccessTokenFromResponse(http:Response response,
+                                                 @tainted OutboundOAuth2CacheEntry oauth2CacheEntry,
+                                                 int clockSkewInSeconds) returns @tainted (string|Error) {
     if (response.statusCode == http:STATUS_OK) {
         json|http:ClientError payload = response.getJsonPayload();
         if (payload is json) {
@@ -692,8 +693,8 @@ function extractAccessTokenFromResponse(http:Response response, @tainted Outboun
 # + responsePayload - Payload of the response
 # + oauth2CacheEntry - OAuth2 cache entry
 # + clockSkewInSeconds - Clock skew in seconds
-function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2CacheEntry oauth2CacheEntry,
-                                int clockSkewInSeconds) {
+isolated function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2CacheEntry oauth2CacheEntry,
+                                         int clockSkewInSeconds) {
     int issueTime = time:currentTime().time;
     string accessToken = responsePayload.access_token.toString();
     oauth2CacheEntry.accessToken = accessToken;
