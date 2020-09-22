@@ -28,7 +28,7 @@ public type Error OAuth2Error;
 # + message - Error message
 # + err - `error` instance
 # + return - Prepared `Error` instance
-function prepareError(string message, error? err = ()) returns Error {
+isolated function prepareError(string message, error? err = ()) returns Error {
     log:printError(message, err);
     Error oauth2Error;
     if (err is error) {
@@ -44,7 +44,7 @@ function prepareError(string message, error? err = ()) returns Error {
 # + message - Error message
 # + err - `error` instance
 # + return - Prepared `auth:Error` instance
-function prepareAuthError(string message, error? err = ()) returns auth:Error {
+isolated function prepareAuthError(string message, error? err = ()) returns auth:Error {
     log:printError(message, err);
     auth:Error authError;
     if (err is error) {
