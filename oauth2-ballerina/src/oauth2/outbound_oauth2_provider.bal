@@ -599,14 +599,14 @@ function doRequest(string url, http:Request request, http:ClientConfiguration cl
                    @tainted OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds)
                    returns @tainted (string|Error) {
     http:Client clientEP = new(url, clientConfig);
-    http:Response|http:ClientError response = clientEP->post("", request);
+    var response = clientEP->post("", request);
     if (response is http:Response) {
         log:printDebug(function () returns string {
             return "Request sent successfully to URL: " + url;
         });
         return extractAccessTokenFromResponse(response, oauth2CacheEntry, clockSkewInSeconds);
     } else {
-        return prepareError("Failed to send request to URL: " + url, response);
+        return prepareError("Failed to send request to URL: " + url, <http:ClientError>response);
     }
 }
 

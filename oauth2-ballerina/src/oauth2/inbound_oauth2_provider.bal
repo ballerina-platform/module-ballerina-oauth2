@@ -104,7 +104,7 @@ public function validateOAuth2Token(string token, IntrospectionServerConfig conf
     }
     req.setTextPayload(textPayload, mime:APPLICATION_FORM_URLENCODED);
     http:Client introspectionClient = new(config.url, config.clientConfig);
-    http:Response|http:ClientError response = introspectionClient->post("", req);
+    var response = introspectionClient->post("", req);
     if (response is http:Response) {
         json|error result = response.getJsonPayload();
         if (result is error) {
@@ -118,7 +118,7 @@ public function validateOAuth2Token(string token, IntrospectionServerConfig conf
         }
         return introspectionResponse;
     } else {
-        return prepareError("Failed to call the introspection endpoint.", response);
+        return prepareError("Failed to call the introspection endpoint.", <http:ClientError>response);
     }
 }
 
