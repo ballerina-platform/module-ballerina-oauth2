@@ -316,13 +316,13 @@ function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-        log:printDebug(function () returns string {
+        log:printDebug(isolated function () returns string {
             return "OAuth2 password grant type; Access token received from authorization request. Cache is empty.";
         });
         return accessToken;
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(function () returns string {
+            log:printDebug(isolated function () returns string {
                 return "OAuth2 password grant type; Access token received from cache.";
             });
             return cachedAccessToken;
@@ -330,13 +330,13 @@ function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(function () returns string {
+                    log:printDebug(isolated function () returns string {
                         return "OAuth2 password grant type; Access token received from cache.";
                     });
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(function () returns string {
+                    log:printDebug(isolated function () returns string {
                         return "OAuth2 password grant type; Access token received from refresh request.";
                     });
                     return accessToken;
@@ -357,13 +357,13 @@ function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig gr
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-        log:printDebug(function () returns string {
+        log:printDebug(isolated function () returns string {
             return "OAuth2 client credentials grant type; Access token received from authorization request. Cache is empty.";
         });
         return accessToken;
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(function () returns string {
+            log:printDebug(isolated function () returns string {
                 return "OAuth2 client credentials grant type; Access token received from cache.";
             });
             return cachedAccessToken;
@@ -371,13 +371,13 @@ function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig gr
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(function () returns string {
+                    log:printDebug(isolated function () returns string {
                         return "OAuth2 client credentials grant type; Access token received from cache.";
                     });
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(function () returns string {
+                    log:printDebug(isolated function () returns string {
                         return "OAuth2 client credentials grant type; Access token received from authorization request.";
                     });
                     return accessToken;
@@ -399,20 +399,20 @@ function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
     if (cachedAccessToken == "") {
         string? directAccessToken = grantTypeConfig?.accessToken;
         if (directAccessToken is string && directAccessToken != "") {
-            log:printDebug(function () returns string {
+            log:printDebug(isolated function () returns string {
                 return "OAuth2 direct token mode; Access token received from user given request. Cache is empty.";
             });
             return directAccessToken;
         } else {
             string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-            log:printDebug(function () returns string {
+            log:printDebug(isolated function () returns string {
                 return "OAuth2 direct token mode; Access token received from refresh request. Cache is empty.";
             });
             return accessToken;
         }
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(function () returns string {
+            log:printDebug(isolated function () returns string {
                 return "OAuth2 client credentials grant type; Access token received from cache.";
             });
             return cachedAccessToken;
@@ -420,13 +420,13 @@ function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(function () returns string {
+                    log:printDebug(isolated function () returns string {
                         return "OAuth2 client credentials grant type; Access token received from cache.";
                     });
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(function () returns string {
+                    log:printDebug(isolated function () returns string {
                         return "OAuth2 direct token mode; Access token received from refresh request.";
                     });
                     return accessToken;
@@ -444,19 +444,19 @@ function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
 isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEntry) returns boolean {
     int expTime = oauth2CacheEntry.expTime;
     if (expTime == 0) {
-        log:printDebug(function () returns string {
+        log:printDebug(isolated function () returns string {
             return "Expiry time is 0, which means cached access token is always valid.";
         });
         return true;
     }
     int currentSystemTime = time:currentTime().time;
     if (currentSystemTime < expTime) {
-        log:printDebug(function () returns string {
+        log:printDebug(isolated function () returns string {
             return "Current time < expiry time, which means cached access token is valid.";
         });
         return true;
     }
-    log:printDebug(function () returns string {
+    log:printDebug(isolated function () returns string {
         return "Cached access token is invalid.";
     });
     return false;
@@ -601,8 +601,9 @@ function doRequest(string url, http:Request request, http:ClientConfiguration cl
     http:Client clientEP = new(url, clientConfig);
     var response = clientEP->post("", request);
     if (response is http:Response) {
-        log:printDebug(function () returns string {
-            return "Request sent successfully to URL: " + url;
+        final string authzEndpoint = url;
+        log:printDebug(isolated function () returns string {
+            return "Request sent successfully to URL: " + authzEndpoint;
         });
         return extractAccessTokenFromResponse(response, oauth2CacheEntry, clockSkewInSeconds);
     } else {
@@ -670,7 +671,7 @@ isolated function extractAccessTokenFromResponse(http:Response response,
     if (response.statusCode == http:STATUS_OK) {
         json|http:ClientError payload = response.getJsonPayload();
         if (payload is json) {
-            log:printDebug(function () returns string {
+            log:printDebug(isolated function () returns string {
                 return "Received an valid response. Extracting access token from the payload.";
             });
             updateOAuth2CacheEntry(payload, oauth2CacheEntry, clockSkewInSeconds);
@@ -706,7 +707,7 @@ isolated function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2Cac
         string refreshToken = responsePayload.refresh_token.toString();
         oauth2CacheEntry.refreshToken = refreshToken;
     }
-    log:printDebug(function () returns string {
+    log:printDebug(isolated function () returns string {
         return "Updated token cache with the new parameters of the response.";
     });
     return ();

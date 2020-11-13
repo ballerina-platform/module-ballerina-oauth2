@@ -175,47 +175,50 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
         // the `defaultTokenExpTimeInSeconds`. Then, the cached value will be removed when retrieving.
         result = oauth2Cache.put(token, response, defaultTokenExpTimeInSeconds);
     }
+    final string introspectionResponse = response.toString();
     if (result is cache:Error) {
-        log:printDebug(function() returns string {
-            return "Failed to add OAuth2 token to the cache. Introspection response: " + response.toString();
+        log:printDebug(isolated function() returns string {
+            return "Failed to add OAuth2 token to the cache. Introspection response: " + introspectionResponse;
         });
         return;
     }
-    log:printDebug(function() returns string {
-        return "OAuth2 token added to the cache. Introspection response: " + response.toString();
+    log:printDebug(isolated function() returns string {
+        return "OAuth2 token added to the cache. Introspection response: " + introspectionResponse;
     });
 }
 
 isolated function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
-    any|cache:Error cachedValue = oauth2Cache.get(token);
-    if (cachedValue is ()) {
+    any|cache:Error cachedEntry = oauth2Cache.get(token);
+    if (cachedEntry is ()) {
         // If the cached value is expired (defaultTokenExpTimeInSeconds is passed), it will return `()`.
-        log:printDebug(function() returns string {
+        log:printDebug(isolated function() returns string {
             return "Failed to validate the token from the cache since the token is expired.";
         });
         return;
     }
-    if (cachedValue is cache:Error) {
-        log:printDebug(function() returns string {
-            return "Failed to validate the token from the cache. Cache error: " + cachedValue.toString();
+    if (cachedEntry is cache:Error) {
+        final string cachedValue = cachedEntry.toString();
+        log:printDebug(isolated function() returns string {
+            return "Failed to validate the token from the cache. Cache error: " + cachedValue;
         });
         return;
     }
-    IntrospectionResponse response = <IntrospectionResponse>cachedValue;
+    IntrospectionResponse response = <IntrospectionResponse>cachedEntry;
     int? expTime = response?.exp;
     // The `expTime` can be `()`. This means that the `defaultTokenExpTimeInSeconds` is not exceeded yet.
     // Hence, the token is still valid. If the `expTime` is given in int, convert this to the current time and
     // check if the expiry time is exceeded.
+    final string introspectionResponse = response.toString();
     if (expTime is () || expTime > (time:currentTime().time / 1000)) {
-        log:printDebug(function() returns string {
-            return "OAuth2 token validated from the cache. Introspection response: " + response.toString();
+        log:printDebug(isolated function() returns string {
+            return "OAuth2 token validated from the cache. Introspection response: " + introspectionResponse;
         });
         return response;
     } else {
         cache:Error? result = oauth2Cache.invalidate(token);
         if (result is cache:Error) {
-            log:printDebug(function() returns string {
-                return "Failed to invalidate OAuth2 token from the cache. Introspection response: " + response.toString();
+            log:printDebug(isolated function() returns string {
+                return "Failed to invalidate OAuth2 token from the cache. Introspection response: " + introspectionResponse;
             });
         }
     }
