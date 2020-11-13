@@ -27,6 +27,7 @@ dependencies {
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
+    compile project(':oauth2-native')
 }
 
 clean {
@@ -147,6 +148,7 @@ task revertTomlFile {
 
 task ballerinaTest {
     dependsOn(copyStdlibs)
+    dependsOn(":oauth2-native:build")
     dependsOn(updateTomlVersions)
     finalizedBy(revertTomlFile)
 
@@ -284,6 +286,7 @@ publishing {
     }
 }
 
+ballerinaBuild.dependsOn ":oauth2-native:build"
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlVersions.dependsOn copyStdlibs

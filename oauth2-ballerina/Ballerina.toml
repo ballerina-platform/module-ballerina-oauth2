@@ -18,3 +18,13 @@ version = "@toml.version@"
 "ballerina/file" = "@stdlib.file.version@"
 "ballerina/mime" = "@stdlib.mime.version@"
 "ballerina/runtime" = "@stdlib.runtime.version@"
+
+[platform]
+target = "java11"
+
+    [[platform.libraries]]
+    artifactId = "oauth2"
+    version = "@project.version@"
+    path = "../oauth2-native/build/libs/oauth2-native-@project.version@.jar"
+    groupId = "ballerina"
+    modules = ["oauth2"]
