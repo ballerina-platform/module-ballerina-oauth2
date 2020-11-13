@@ -46,23 +46,21 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * Extern function to call introspection endpoint and get the response.
+ * Extern function to call identity provider endpoints like authorization endpoint, introspection endpoint,
+ * using the JDK11 HttpClient and return the payload of the HTTP response.
  */
 public class OAuth2Client {
 
     public static Object doHttpRequest(BString url, BMap<BString, Object> clientConfig, BMap<BString, BString> headers,
                                        BString payload) {
-        String customPayload = clientConfig.containsKey(StringUtils.fromString(Constants.CUSTOM_PAYLOAD)) ?
-                clientConfig.getStringValue(StringUtils.fromString(Constants.CUSTOM_PAYLOAD)).getValue() : null;
+        String customPayload = getStringIfPresent(clientConfig, Constants.CUSTOM_PAYLOAD);
         String textPayload = payload.getValue();
         if (customPayload != null) {
             textPayload += "&" + customPayload;
         }
 
-        BMap<BString, BString> customHeaders = clientConfig.containsKey(
-                StringUtils.fromString(Constants.CUSTOM_HEADERS)) ?
-                (BMap<BString, BString>) clientConfig.getMapValue(StringUtils.fromString(Constants.CUSTOM_HEADERS)) :
-                null;
+        BMap<BString, BString> customHeaders =
+                (BMap<BString, BString>) getMapValueIfPresent(clientConfig, Constants.CUSTOM_HEADERS);
         HttpRequest request;
         if (customHeaders != null) {
             ArrayList<String> headersList = new ArrayList<>();
@@ -80,10 +78,9 @@ public class OAuth2Client {
             request = buildHttpRequest(url.getValue(), textPayload);
         }
 
-        String httpVersion = clientConfig.getStringValue(StringUtils.fromString(Constants.HTTP_VERSION)).getValue();
-        BMap<BString, Object> secureSocket = clientConfig.containsKey(StringUtils.fromString(Constants.SECURE_SOCKET)) ?
-                (BMap<BString, Object>) clientConfig.getMapValue(StringUtils.fromString(Constants.SECURE_SOCKET)) :
-                null;
+        String httpVersion = getStringIfPresent(clientConfig, Constants.HTTP_VERSION);
+        BMap<BString, Object> secureSocket =
+                (BMap<BString, Object>) getMapValueIfPresent(clientConfig, Constants.SECURE_SOCKET);
         if (secureSocket != null) {
             boolean disable = secureSocket.getBooleanValue(StringUtils.fromString(Constants.DISABLE));
             if (disable) {
@@ -95,9 +92,8 @@ public class OAuth2Client {
                     return createError("Failed to init SSL context. " + e.getMessage());
                 }
             }
-            BMap<BString, Object> trustStore = secureSocket.containsKey(StringUtils.fromString(Constants.TRUSTSTORE)) ?
-                    (BMap<BString, Object>) secureSocket.getMapValue(StringUtils.fromString(Constants.TRUSTSTORE)) :
-                    null;
+            BMap<BString, BString> trustStore =
+                    (BMap<BString, BString>) getMapValueIfPresent(secureSocket, Constants.TRUSTSTORE);
             if (trustStore != null) {
                 try {
                     SSLContext sslContext = initSslContext(trustStore);
@@ -138,7 +134,7 @@ public class OAuth2Client {
         return sslContext;
     }
 
-    private static SSLContext initSslContext(BMap<BString, Object> trustStore) throws Exception {
+    private static SSLContext initSslContext(BMap<BString, BString> trustStore) throws Exception {
         String path = trustStore.getStringValue(StringUtils.fromString(Constants.PATH)).getValue();
         String password = trustStore.getStringValue(StringUtils.fromString(Constants.PASSWORD)).getValue();
         InputStream is = new FileInputStream(new File(path));
@@ -190,6 +186,16 @@ public class OAuth2Client {
         } catch (IOException | InterruptedException e) {
             return createError("Failed to send the request to introspection endpoint. " + e.getMessage());
         }
+    }
+
+    private static BMap<?, ?> getMapValueIfPresent(BMap<BString, Object> config, String key) {
+        return config.containsKey(StringUtils.fromString(key)) ?
+                config.getMapValue(StringUtils.fromString(Constants.SECURE_SOCKET)) : null;
+    }
+
+    private static String getStringIfPresent(BMap<BString, Object> config, String key) {
+        return config.containsKey(StringUtils.fromString(key)) ?
+                config.getStringValue(StringUtils.fromString(Constants.SECURE_SOCKET)).getValue() : null;
     }
 
     private static BError createError(String errMsg) {
