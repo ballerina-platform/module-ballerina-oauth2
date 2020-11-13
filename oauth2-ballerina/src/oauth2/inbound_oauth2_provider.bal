@@ -16,9 +16,7 @@
 
 import ballerina/auth;
 import ballerina/cache;
-import ballerina/http;
 import ballerina/log;
-import ballerina/mime;
 import ballerina/stringutils;
 import ballerina/time;
 
@@ -62,7 +60,7 @@ public class InboundOAuth2Provider {
         if (validationResult is IntrospectionResponse) {
             if (validationResult.active) {
                 auth:setInvocationContext("oauth2", credential, validationResult?.username,
-                                        getScopes(validationResult?.scopes));
+                                          getScopes(validationResult?.scopes));
                 map<json>|error introspectionResponseMap = validationResult.cloneWithType(JsonMap);
                 if (introspectionResponseMap is map<json>) {
                     auth:setInvocationContext(claims = introspectionResponseMap);
@@ -96,30 +94,26 @@ public function validateOAuth2Token(string token, IntrospectionServerConfig conf
     // Builds the request to be sent to the introspection endpoint.
     // For more information, see the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
-    http:Request req = new;
     string textPayload = "token=" + token;
     string? tokenTypeHint = config?.tokenTypeHint;
     if (tokenTypeHint is string) {
         textPayload += "&token_type_hint=" + tokenTypeHint;
     }
-    req.setTextPayload(textPayload, mime:APPLICATION_FORM_URLENCODED);
-    http:Client introspectionClient = new(config.url, config.clientConfig);
-    var response = introspectionClient->post("", req);
-    if (response is http:Response) {
-        json|error result = response.getJsonPayload();
-        if (result is error) {
-            return <@untainted> prepareError(result.message(), result);
-        }
-        IntrospectionResponse introspectionResponse = prepareIntrospectionResponse(<json>result);
-        if (introspectionResponse.active) {
-            if (oauth2Cache is cache:Cache) {
-                addToCache(oauth2Cache, token, introspectionResponse, config.defaultTokenExpTimeInSeconds);
-            }
-        }
-        return introspectionResponse;
-    } else {
-        return prepareError("Failed to call the introspection endpoint.", <http:ClientError>response);
+    string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);
+    if (stringResponse is Error) {
+        return prepareError("Failed to call introspection endpoint.", stringResponse);
     }
+    json|error jsonResponse = (<string>stringResponse).fromJsonString();
+    if (jsonResponse is error) {
+        return prepareError(jsonResponse.message(), jsonResponse);
+    }
+    IntrospectionResponse introspectionResponse = prepareIntrospectionResponse(<json>jsonResponse);
+    if (introspectionResponse.active) {
+        if (oauth2Cache is cache:Cache) {
+            addToCache(oauth2Cache, token, introspectionResponse, config.defaultTokenExpTimeInSeconds);
+        }
+    }
+    return introspectionResponse;
 }
 
 isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
@@ -252,7 +246,7 @@ public type IntrospectionServerConfig record {|
     string tokenTypeHint?;
     cache:Cache oauth2Cache?;
     int defaultTokenExpTimeInSeconds = 3600;
-    http:ClientConfiguration clientConfig = {};
+    ClientConfiguration clientConfig = {};
 |};
 
 # Represents the introspection server response.
