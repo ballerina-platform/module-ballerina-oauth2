@@ -85,7 +85,7 @@ public class OutboundOAuth2Provider {
     # ```
     #
     # + return - Generated `string` token or else an `auth:Error` if an error occurred
-    public function generateToken() returns @tainted (string|auth:Error) {
+    public function generateToken() returns string|auth:Error {
         GrantTypeConfig? oauth2ProviderConfig = self.oauth2ProviderConfig;
         if (oauth2ProviderConfig is ()) {
             string? authToken = auth:getInvocationContext()?.token;
@@ -111,7 +111,7 @@ public class OutboundOAuth2Provider {
     # + data - Map of data, which is extracted from the HTTP response
     # + return - Generated `string` token, an `auth:Error` occurred while generating the token, or else
     #            `()` if nothing is to be returned
-    public function inspect(map<anydata> data) returns @tainted (string|auth:Error?) {
+    public function inspect(map<anydata> data) returns string|auth:Error? {
         GrantTypeConfig? oauth2ProviderConfig = self.oauth2ProviderConfig;
         if (oauth2ProviderConfig is ()) {
             return ();
@@ -268,8 +268,8 @@ type RequestConfig record {|
 # + authConfig - OAuth2 configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` if the validation failed
-function generateOAuth2Token(GrantTypeConfig authConfig, @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                             returns @tainted (string|Error) {
+isolated function generateOAuth2Token(GrantTypeConfig authConfig, OutboundOAuth2CacheEntry oauth2CacheEntry)
+                                      returns string|Error {
     if (authConfig is PasswordGrantConfig) {
         return getOAuth2TokenForPasswordGrant(authConfig, oauth2CacheEntry);
     } else if (authConfig is ClientCredentialsGrantConfig) {
@@ -284,8 +284,8 @@ function generateOAuth2Token(GrantTypeConfig authConfig, @tainted OutboundOAuth2
 # + authConfig - OAuth2 configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` if the validation failed
-function inspectAuthTokenForOAuth2(GrantTypeConfig authConfig, @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                   returns @tainted (string|Error) {
+isolated function inspectAuthTokenForOAuth2(GrantTypeConfig authConfig, OutboundOAuth2CacheEntry oauth2CacheEntry)
+                                            returns string|Error {
     if (authConfig is PasswordGrantConfig) {
         if (authConfig.retryRequest) {
             return getOAuth2TokenForPasswordGrant(authConfig, oauth2CacheEntry);
@@ -308,9 +308,8 @@ function inspectAuthTokenForOAuth2(GrantTypeConfig authConfig, @tainted Outbound
 # + grantTypeConfig - Password grant type configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` occurred during the HTTP client invocation or validation
-function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
-                                        @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                        returns @tainted (string|Error) {
+isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
+                                                 OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
@@ -349,9 +348,9 @@ function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
 # + grantTypeConfig - Client credentials grant type configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` occurred during the HTTP client invocation or validation
-function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantTypeConfig,
-                                                 @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                                 returns @tainted (string|Error) {
+isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantTypeConfig,
+                                                          OutboundOAuth2CacheEntry oauth2CacheEntry)
+                                                          returns string|Error {
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
@@ -390,9 +389,8 @@ function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig gr
 # + grantTypeConfig - Direct token mode configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return -OAuth2 token or else an `oauth2:Error` occurred during the HTTP client invocation or validation
-function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
-                                          @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                          returns @tainted (string|Error) {
+isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
+                                                   OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string? directAccessToken = grantTypeConfig?.accessToken;
@@ -465,9 +463,8 @@ isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEn
 # + config - OAuth2 grant type configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - Received OAuth2 access token or else an `oauth2:Error` occurred during the HTTP client invocation
-function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|PasswordGrantConfig config,
-                                                @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                                returns @tainted (string|Error) {
+isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|PasswordGrantConfig config,
+                                                         OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     RequestConfig requestConfig;
     int clockSkewInSeconds;
     string tokenUrl;
@@ -523,9 +520,8 @@ function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|Pas
 # + config - Password grant type configuration or direct token configuration
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - Received access token or else an `oauth2:Error` occurred during the HTTP client invocation
-function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
-                                          @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                          returns @tainted (string|Error) {
+isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
+                                                   OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     RequestConfig requestConfig;
     int clockSkewInSeconds;
     string refreshUrl;
@@ -540,7 +536,7 @@ function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig 
                 if (clientId == "" || clientSecret == "") {
                     return prepareError("Client id or client secret cannot be empty.");
                 }
-                refreshUrl = <@untainted> refreshConfig.refreshUrl;
+                refreshUrl = refreshConfig.refreshUrl;
                 requestConfig = {
                     payload: "grant_type=refresh_token&refresh_token=" + oauth2CacheEntry.refreshToken,
                     clientId: clientId,
@@ -582,8 +578,7 @@ function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig 
 }
 
 isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig,
-                              @tainted OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds)
-                              returns @tainted (string|Error) {
+                              OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds) returns string|Error {
     map<string> headers = check prepareHeaders(requestConfig);
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
@@ -643,8 +638,8 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
     return textPayload;
 }
 
-isolated function extractAccessToken(string response, @tainted OutboundOAuth2CacheEntry oauth2CacheEntry,
-                                     int clockSkewInSeconds) returns @tainted (string|Error) {
+isolated function extractAccessToken(string response, OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds)
+                                     returns string|Error {
     json|error jsonResponse = response.fromJsonString();
     if (jsonResponse is error) {
         return prepareError("Failed to retrieve access token since the response payload is not a JSON.", jsonResponse);

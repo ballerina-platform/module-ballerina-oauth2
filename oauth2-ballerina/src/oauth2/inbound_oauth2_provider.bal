@@ -51,7 +51,7 @@ public class InboundOAuth2Provider {
     #
     # + credential - OAuth2 token to be authenticated
     # + return - `true` if authentication is successful, `false` otherwise, or else an `auth:Error` if an error occurred
-    public function authenticate(string credential) returns @tainted (boolean|auth:Error) {
+    public function authenticate(string credential) returns boolean|auth:Error {
         if (credential == "") {
             return false;
         }
@@ -81,8 +81,8 @@ public class InboundOAuth2Provider {
 # + token - OAuth2 token, which needs to be validated
 # + config -  OAuth2 introspection server configurations
 # + return - OAuth2 introspection server response or else an `oauth2:Error` if token validation fails
-public function validateOAuth2Token(string token, IntrospectionServerConfig config)
-                                    returns @tainted (IntrospectionResponse|Error) {
+public isolated function validateOAuth2Token(string token, IntrospectionServerConfig config)
+                                             returns IntrospectionResponse|Error {
     cache:Cache? oauth2Cache = config?.oauth2Cache;
     if (oauth2Cache is cache:Cache && oauth2Cache.hasKey(token)) {
         IntrospectionResponse? response = validateFromCache(oauth2Cache, token);
@@ -123,37 +123,37 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
     };
     if (active) {
         if (payload.scope is string) {
-            introspectionResponse.scopes = <@untainted> <string>payload.scope;
+            introspectionResponse.scopes = <string>payload.scope;
         }
         if (payload.client_id is string) {
-            introspectionResponse.clientId = <@untainted> <string>payload.client_id;
+            introspectionResponse.clientId = <string>payload.client_id;
         }
         if (payload.username is string) {
-            introspectionResponse.username = <@untainted> <string>payload.username;
+            introspectionResponse.username = <string>payload.username;
         }
         if (payload.token_type is string) {
-            introspectionResponse.tokenType = <@untainted> <string>payload.token_type;
+            introspectionResponse.tokenType = <string>payload.token_type;
         }
         if (payload.exp is int) {
-            introspectionResponse.exp = <@untainted> <int>payload.exp;
+            introspectionResponse.exp = <int>payload.exp;
         }
         if (payload.iat is int) {
-            introspectionResponse.iat = <@untainted> <int>payload.iat;
+            introspectionResponse.iat = <int>payload.iat;
         }
         if (payload.nbf is int) {
-            introspectionResponse.nbf = <@untainted> <int>payload.nbf;
+            introspectionResponse.nbf = <int>payload.nbf;
         }
         if (payload.sub is string) {
-            introspectionResponse.sub = <@untainted> <string>payload.sub;
+            introspectionResponse.sub = <string>payload.sub;
         }
         if (payload.aud is string) {
-            introspectionResponse.aud = <@untainted> <string>payload.aud;
+            introspectionResponse.aud = <string>payload.aud;
         }
         if (payload.iss is string) {
-            introspectionResponse.iss = <@untainted> <string>payload.iss;
+            introspectionResponse.iss = <string>payload.iss;
         }
         if (payload.jti is string) {
-            introspectionResponse.jti = <@untainted> <string>payload.jti;
+            introspectionResponse.jti = <string>payload.jti;
         }
     }
     return introspectionResponse;
