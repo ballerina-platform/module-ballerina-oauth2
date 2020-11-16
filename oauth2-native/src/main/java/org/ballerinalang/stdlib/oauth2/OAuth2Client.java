@@ -53,32 +53,36 @@ public class OAuth2Client {
 
     public static Object doHttpRequest(BString url, BMap<BString, Object> clientConfig, BMap<BString, BString> headers,
                                        BString payload) {
-        String customPayload = getStringIfPresent(clientConfig, Constants.CUSTOM_PAYLOAD);
+        String customPayload = getStringValueIfPresent(clientConfig, Constants.CUSTOM_PAYLOAD);
         String textPayload = payload.getValue();
         if (customPayload != null) {
             textPayload += "&" + customPayload;
         }
 
+        ArrayList<String> headersList = new ArrayList<>();
+        for (Map.Entry<BString, BString> entry : headers.entrySet()) {
+            headersList.add(entry.getKey().getValue());
+            headersList.add(entry.getValue().getValue());
+        }
+
         BMap<BString, BString> customHeaders =
                 (BMap<BString, BString>) getMapValueIfPresent(clientConfig, Constants.CUSTOM_HEADERS);
-        HttpRequest request;
         if (customHeaders != null) {
-            ArrayList<String> headersList = new ArrayList<>();
-            for (Map.Entry<BString, BString> entry : headers.entrySet()) {
-                headersList.add(entry.getKey().getValue());
-                headersList.add(entry.getValue().getValue());
-            }
             for (Map.Entry<BString, BString> entry : customHeaders.entrySet()) {
                 headersList.add(entry.getKey().getValue());
                 headersList.add(entry.getValue().getValue());
             }
-            String[] flatHeaders = headersList.toArray(String[]::new);
-            request = buildHttpRequest(url.getValue(), flatHeaders, textPayload);
-        } else {
-            request = buildHttpRequest(url.getValue(), textPayload);
         }
 
-        String httpVersion = getStringIfPresent(clientConfig, Constants.HTTP_VERSION);
+        HttpRequest request;
+        if (headersList.isEmpty()) {
+            request = buildHttpRequest(url.getValue(), textPayload);
+        } else {
+            String[] flatHeaders = headersList.toArray(String[]::new);
+            request = buildHttpRequest(url.getValue(), flatHeaders, textPayload);
+        }
+
+        String httpVersion = getStringValueIfPresent(clientConfig, Constants.HTTP_VERSION);
         BMap<BString, Object> secureSocket =
                 (BMap<BString, Object>) getMapValueIfPresent(clientConfig, Constants.SECURE_SOCKET);
         if (secureSocket != null) {
@@ -182,7 +186,7 @@ public class OAuth2Client {
                 return StringUtils.fromString(response.body());
             }
             return createError("Failed to get a success response from introspection endpoint. Response Code: " +
-                                       response.statusCode());
+                                       response.statusCode() + ". Response Body: " + response.body());
         } catch (IOException | InterruptedException e) {
             return createError("Failed to send the request to introspection endpoint. " + e.getMessage());
         }
@@ -190,12 +194,12 @@ public class OAuth2Client {
 
     private static BMap<?, ?> getMapValueIfPresent(BMap<BString, Object> config, String key) {
         return config.containsKey(StringUtils.fromString(key)) ?
-                config.getMapValue(StringUtils.fromString(Constants.SECURE_SOCKET)) : null;
+                config.getMapValue(StringUtils.fromString(key)) : null;
     }
 
-    private static String getStringIfPresent(BMap<BString, Object> config, String key) {
+    private static String getStringValueIfPresent(BMap<BString, Object> config, String key) {
         return config.containsKey(StringUtils.fromString(key)) ?
-                config.getStringValue(StringUtils.fromString(Constants.SECURE_SOCKET)).getValue() : null;
+                config.getStringValue(StringUtils.fromString(key)).getValue() : null;
     }
 
     private static BError createError(String errMsg) {
