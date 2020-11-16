@@ -145,12 +145,10 @@ public class OAuth2Client {
         char[] passphrase = password.toCharArray();
         KeyStore ks = KeyStore.getInstance(Constants.PKCS12);
         ks.load(is, passphrase);
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(ks, passphrase);
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         tmf.init(ks);
         SSLContext sslContext = SSLContext.getInstance(Constants.TLS);
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+        sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
         return sslContext;
     }
 
