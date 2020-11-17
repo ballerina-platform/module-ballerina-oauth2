@@ -313,29 +313,21 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeCo
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-        log:printDebug(isolated function () returns string {
-            return "OAuth2 password grant type; Access token received from authorization request. Cache is empty.";
-        });
+        log:printDebug("OAuth2 password grant type; Access token received from authorization request. Cache is empty.");
         return accessToken;
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(isolated function () returns string {
-                return "OAuth2 password grant type; Access token received from cache.";
-            });
+            log:printDebug("OAuth2 password grant type; Access token received from cache.");
             return cachedAccessToken;
         } else {
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(isolated function () returns string {
-                        return "OAuth2 password grant type; Access token received from cache.";
-                    });
+                    log:printDebug("OAuth2 password grant type; Access token received from cache.");
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(isolated function () returns string {
-                        return "OAuth2 password grant type; Access token received from refresh request.";
-                    });
+                    log:printDebug("OAuth2 password grant type; Access token received from refresh request.");
                     return accessToken;
                 }
             }
@@ -354,29 +346,21 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-        log:printDebug(isolated function () returns string {
-            return "OAuth2 client credentials grant type; Access token received from authorization request. Cache is empty.";
-        });
+        log:printDebug("OAuth2 client credentials grant type; Access token received from authorization request. Cache is empty.");
         return accessToken;
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(isolated function () returns string {
-                return "OAuth2 client credentials grant type; Access token received from cache.";
-            });
+            log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
             return cachedAccessToken;
         } else {
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(isolated function () returns string {
-                        return "OAuth2 client credentials grant type; Access token received from cache.";
-                    });
+                    log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(isolated function () returns string {
-                        return "OAuth2 client credentials grant type; Access token received from authorization request.";
-                    });
+                    log:printDebug("OAuth2 client credentials grant type; Access token received from authorization request.");
                     return accessToken;
                 }
             }
@@ -395,36 +379,26 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeCo
     if (cachedAccessToken == "") {
         string? directAccessToken = grantTypeConfig?.accessToken;
         if (directAccessToken is string && directAccessToken != "") {
-            log:printDebug(isolated function () returns string {
-                return "OAuth2 direct token mode; Access token received from user given request. Cache is empty.";
-            });
+            log:printDebug("OAuth2 direct token mode; Access token received from user given request. Cache is empty.");
             return directAccessToken;
         } else {
             string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-            log:printDebug(isolated function () returns string {
-                return "OAuth2 direct token mode; Access token received from refresh request. Cache is empty.";
-            });
+            log:printDebug("OAuth2 direct token mode; Access token received from refresh request. Cache is empty.");
             return accessToken;
         }
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(isolated function () returns string {
-                return "OAuth2 client credentials grant type; Access token received from cache.";
-            });
+            log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
             return cachedAccessToken;
         } else {
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(isolated function () returns string {
-                        return "OAuth2 client credentials grant type; Access token received from cache.";
-                    });
+                    log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(isolated function () returns string {
-                        return "OAuth2 direct token mode; Access token received from refresh request.";
-                    });
+                    log:printDebug("OAuth2 direct token mode; Access token received from refresh request.");
                     return accessToken;
                 }
             }
@@ -440,21 +414,15 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeCo
 isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEntry) returns boolean {
     int expTime = oauth2CacheEntry.expTime;
     if (expTime == 0) {
-        log:printDebug(isolated function () returns string {
-            return "Expiry time is 0, which means cached access token is always valid.";
-        });
+        log:printDebug("Expiry time is 0, which means cached access token is always valid.");
         return true;
     }
     int currentSystemTime = time:currentTime().time;
     if (currentSystemTime < expTime) {
-        log:printDebug(isolated function () returns string {
-            return "Current time < expiry time, which means cached access token is valid.";
-        });
+        log:printDebug("Current time < expiry time, which means cached access token is valid.");
         return true;
     }
-    log:printDebug(isolated function () returns string {
-        return "Cached access token is invalid.";
-    });
+    log:printDebug("Cached access token is invalid.");
     return false;
 }
 
@@ -644,9 +612,7 @@ isolated function extractAccessToken(string response, OutboundOAuth2CacheEntry o
     if (jsonResponse is error) {
         return prepareError("Failed to retrieve access token since the response payload is not a JSON.", jsonResponse);
     } else {
-        log:printDebug(isolated function () returns string {
-            return "Received an valid response. Extracting access token from the payload.";
-        });
+        log:printDebug("Received an valid response. Extracting access token from the payload.");
         updateOAuth2CacheEntry(jsonResponse, oauth2CacheEntry, clockSkewInSeconds);
         return jsonResponse.access_token.toString();
     }
@@ -670,8 +636,6 @@ isolated function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2Cac
         string refreshToken = responsePayload.refresh_token.toString();
         oauth2CacheEntry.refreshToken = refreshToken;
     }
-    log:printDebug(isolated function () returns string {
-        return "Updated token cache with the new parameters of the response.";
-    });
+    log:printDebug("Updated token cache with the new parameters of the response.");
     return ();
 }
