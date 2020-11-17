@@ -13,7 +13,7 @@ plugins {
 
 rootProject.name = 'oauth2'
 include(':build-config:checkstyle')
-include ':oauth2-ballerina'
+include ':oauth2-native', ':oauth2-ballerina'
 
 gradleEnterprise {
     buildScan {

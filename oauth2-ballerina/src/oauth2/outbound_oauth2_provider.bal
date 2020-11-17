@@ -15,9 +15,7 @@
 // under the License.
 
 import ballerina/auth;
-import ballerina/http;
 import ballerina/log;
-import ballerina/mime;
 import ballerina/time;
 
 # Represents the grant type configs supported for OAuth2.
@@ -87,7 +85,7 @@ public class OutboundOAuth2Provider {
     # ```
     #
     # + return - Generated `string` token or else an `auth:Error` if an error occurred
-    public function generateToken() returns @tainted (string|auth:Error) {
+    public function generateToken() returns string|auth:Error {
         GrantTypeConfig? oauth2ProviderConfig = self.oauth2ProviderConfig;
         if (oauth2ProviderConfig is ()) {
             string? authToken = auth:getInvocationContext()?.token;
@@ -113,12 +111,12 @@ public class OutboundOAuth2Provider {
     # + data - Map of data, which is extracted from the HTTP response
     # + return - Generated `string` token, an `auth:Error` occurred while generating the token, or else
     #            `()` if nothing is to be returned
-    public function inspect(map<anydata> data) returns @tainted (string|auth:Error?) {
+    public function inspect(map<anydata> data) returns string|auth:Error? {
         GrantTypeConfig? oauth2ProviderConfig = self.oauth2ProviderConfig;
         if (oauth2ProviderConfig is ()) {
             return ();
         } else {
-            if (data[http:STATUS_CODE] == http:STATUS_UNAUTHORIZED) {
+            if (data["STATUS_CODE"] == 401) {
                 string|Error authToken = inspectAuthTokenForOAuth2(oauth2ProviderConfig, self.oauth2CacheEntry);
                 if (authToken is string) {
                     return authToken;
@@ -150,8 +148,8 @@ public type ClientCredentialsGrantConfig record {|
     int clockSkewInSeconds = 0;
     boolean retryRequest = true;
     map<string> parameters?;
-    http:CredentialBearer credentialBearer = http:AUTH_HEADER_BEARER;
-    http:ClientConfiguration clientConfig = {};
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+    ClientConfiguration clientConfig = {};
 |};
 
 # The data structure, which is used to configure the OAuth2 password grant type.
@@ -179,8 +177,8 @@ public type PasswordGrantConfig record {|
     int clockSkewInSeconds = 0;
     boolean retryRequest = true;
     map<string> parameters?;
-    http:CredentialBearer credentialBearer = http:AUTH_HEADER_BEARER;
-    http:ClientConfiguration clientConfig = {};
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+    ClientConfiguration clientConfig = {};
 |};
 
 # The data structure, which is used to configure the OAuth2 access token directly.
@@ -195,7 +193,7 @@ public type DirectTokenConfig record {|
     DirectTokenRefreshConfig refreshConfig?;
     int clockSkewInSeconds = 0;
     boolean retryRequest = true;
-    http:CredentialBearer credentialBearer = http:AUTH_HEADER_BEARER;
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
 |};
 
 # The data structure, which can be used to pass the configurations for refreshing the access token of
@@ -210,8 +208,8 @@ public type RefreshConfig record {|
     string refreshUrl;
     string[] scopes?;
     map<string> parameters?;
-    http:CredentialBearer credentialBearer = http:AUTH_HEADER_BEARER;
-    http:ClientConfiguration clientConfig = {};
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+    ClientConfiguration clientConfig = {};
 |};
 
 # The data structure, which can be used to pass the configurations for refreshing the access token directly.
@@ -231,8 +229,8 @@ public type DirectTokenRefreshConfig record {|
     string clientSecret;
     string[] scopes?;
     map<string> parameters?;
-    http:CredentialBearer credentialBearer = http:AUTH_HEADER_BEARER;
-    http:ClientConfiguration clientConfig = {};
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+    ClientConfiguration clientConfig = {};
 |};
 
 # The data structure, which stores the values received from the authorization/token server to use them
@@ -262,7 +260,7 @@ type RequestConfig record {|
     string clientSecret?;
     string[]? scopes;
     map<string>? parameters;
-    http:CredentialBearer credentialBearer;
+    CredentialBearer credentialBearer;
 |};
 
 # Generates the OAuth2 token.
@@ -270,8 +268,8 @@ type RequestConfig record {|
 # + authConfig - OAuth2 configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` if the validation failed
-function generateOAuth2Token(GrantTypeConfig authConfig, @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                             returns @tainted (string|Error) {
+isolated function generateOAuth2Token(GrantTypeConfig authConfig, OutboundOAuth2CacheEntry oauth2CacheEntry)
+                                      returns string|Error {
     if (authConfig is PasswordGrantConfig) {
         return getOAuth2TokenForPasswordGrant(authConfig, oauth2CacheEntry);
     } else if (authConfig is ClientCredentialsGrantConfig) {
@@ -286,8 +284,8 @@ function generateOAuth2Token(GrantTypeConfig authConfig, @tainted OutboundOAuth2
 # + authConfig - OAuth2 configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` if the validation failed
-function inspectAuthTokenForOAuth2(GrantTypeConfig authConfig, @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                   returns @tainted (string|Error) {
+isolated function inspectAuthTokenForOAuth2(GrantTypeConfig authConfig, OutboundOAuth2CacheEntry oauth2CacheEntry)
+                                            returns string|Error {
     if (authConfig is PasswordGrantConfig) {
         if (authConfig.retryRequest) {
             return getOAuth2TokenForPasswordGrant(authConfig, oauth2CacheEntry);
@@ -310,35 +308,26 @@ function inspectAuthTokenForOAuth2(GrantTypeConfig authConfig, @tainted Outbound
 # + grantTypeConfig - Password grant type configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` occurred during the HTTP client invocation or validation
-function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
-                                        @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                        returns @tainted (string|Error) {
+isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
+                                                 OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-        log:printDebug(function () returns string {
-            return "OAuth2 password grant type; Access token received from authorization request. Cache is empty.";
-        });
+        log:printDebug("OAuth2 password grant type; Access token received from authorization request. Cache is empty.");
         return accessToken;
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(function () returns string {
-                return "OAuth2 password grant type; Access token received from cache.";
-            });
+            log:printDebug("OAuth2 password grant type; Access token received from cache.");
             return cachedAccessToken;
         } else {
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(function () returns string {
-                        return "OAuth2 password grant type; Access token received from cache.";
-                    });
+                    log:printDebug("OAuth2 password grant type; Access token received from cache.");
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(function () returns string {
-                        return "OAuth2 password grant type; Access token received from refresh request.";
-                    });
+                    log:printDebug("OAuth2 password grant type; Access token received from refresh request.");
                     return accessToken;
                 }
             }
@@ -351,35 +340,27 @@ function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantTypeConfig,
 # + grantTypeConfig - Client credentials grant type configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - OAuth2 token or else an `oauth2:Error` occurred during the HTTP client invocation or validation
-function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantTypeConfig,
-                                                 @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                                 returns @tainted (string|Error) {
+isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantTypeConfig,
+                                                          OutboundOAuth2CacheEntry oauth2CacheEntry)
+                                                          returns string|Error {
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-        log:printDebug(function () returns string {
-            return "OAuth2 client credentials grant type; Access token received from authorization request. Cache is empty.";
-        });
+        log:printDebug("OAuth2 client credentials grant type; Access token received from authorization request. Cache is empty.");
         return accessToken;
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(function () returns string {
-                return "OAuth2 client credentials grant type; Access token received from cache.";
-            });
+            log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
             return cachedAccessToken;
         } else {
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(function () returns string {
-                        return "OAuth2 client credentials grant type; Access token received from cache.";
-                    });
+                    log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromAuthorizationRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(function () returns string {
-                        return "OAuth2 client credentials grant type; Access token received from authorization request.";
-                    });
+                    log:printDebug("OAuth2 client credentials grant type; Access token received from authorization request.");
                     return accessToken;
                 }
             }
@@ -392,43 +373,32 @@ function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig gr
 # + grantTypeConfig - Direct token mode configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return -OAuth2 token or else an `oauth2:Error` occurred during the HTTP client invocation or validation
-function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
-                                          @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                          returns @tainted (string|Error) {
+isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
+                                                   OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     string cachedAccessToken = oauth2CacheEntry.accessToken;
     if (cachedAccessToken == "") {
         string? directAccessToken = grantTypeConfig?.accessToken;
         if (directAccessToken is string && directAccessToken != "") {
-            log:printDebug(function () returns string {
-                return "OAuth2 direct token mode; Access token received from user given request. Cache is empty.";
-            });
+            log:printDebug("OAuth2 direct token mode; Access token received from user given request. Cache is empty.");
             return directAccessToken;
         } else {
             string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-            log:printDebug(function () returns string {
-                return "OAuth2 direct token mode; Access token received from refresh request. Cache is empty.";
-            });
+            log:printDebug("OAuth2 direct token mode; Access token received from refresh request. Cache is empty.");
             return accessToken;
         }
     } else {
         if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-            log:printDebug(function () returns string {
-                return "OAuth2 client credentials grant type; Access token received from cache.";
-            });
+            log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
             return cachedAccessToken;
         } else {
             lock {
                 if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
                     cachedAccessToken = oauth2CacheEntry.accessToken;
-                    log:printDebug(function () returns string {
-                        return "OAuth2 client credentials grant type; Access token received from cache.";
-                    });
+                    log:printDebug("OAuth2 client credentials grant type; Access token received from cache.");
                     return cachedAccessToken;
                 } else {
                     string accessToken = check getAccessTokenFromRefreshRequest(grantTypeConfig, oauth2CacheEntry);
-                    log:printDebug(function () returns string {
-                        return "OAuth2 direct token mode; Access token received from refresh request.";
-                    });
+                    log:printDebug("OAuth2 direct token mode; Access token received from refresh request.");
                     return accessToken;
                 }
             }
@@ -444,21 +414,15 @@ function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantTypeConfig,
 isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEntry) returns boolean {
     int expTime = oauth2CacheEntry.expTime;
     if (expTime == 0) {
-        log:printDebug(function () returns string {
-            return "Expiry time is 0, which means cached access token is always valid.";
-        });
+        log:printDebug("Expiry time is 0, which means cached access token is always valid.");
         return true;
     }
     int currentSystemTime = time:currentTime().time;
     if (currentSystemTime < expTime) {
-        log:printDebug(function () returns string {
-            return "Current time < expiry time, which means cached access token is valid.";
-        });
+        log:printDebug("Current time < expiry time, which means cached access token is valid.");
         return true;
     }
-    log:printDebug(function () returns string {
-        return "Cached access token is invalid.";
-    });
+    log:printDebug("Cached access token is invalid.");
     return false;
 }
 
@@ -467,13 +431,12 @@ isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEn
 # + config - OAuth2 grant type configurations
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - Received OAuth2 access token or else an `oauth2:Error` occurred during the HTTP client invocation
-function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|PasswordGrantConfig config,
-                                                @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                                returns @tainted (string|Error) {
+isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|PasswordGrantConfig config,
+                                                         OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     RequestConfig requestConfig;
     int clockSkewInSeconds;
     string tokenUrl;
-    http:ClientConfiguration clientConfig;
+    ClientConfiguration clientConfig;
 
     if (config is ClientCredentialsGrantConfig) {
         if (config.clientId == "" || config.clientSecret == "") {
@@ -517,9 +480,7 @@ function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|Pas
         clockSkewInSeconds = config.clockSkewInSeconds;
         clientConfig = config.clientConfig;
     }
-
-    http:Request authorizationRequest = check prepareRequest(requestConfig);
-    return doRequest(tokenUrl, authorizationRequest, clientConfig, oauth2CacheEntry, clockSkewInSeconds);
+    return sendRequest(requestConfig, tokenUrl, clientConfig, oauth2CacheEntry, clockSkewInSeconds);
 }
 
 # Requests an access token from the authorization endpoint using the provided refresh configurations.
@@ -527,13 +488,12 @@ function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|Pas
 # + config - Password grant type configuration or direct token configuration
 # + oauth2CacheEntry - OAuth2 cache entry
 # + return - Received access token or else an `oauth2:Error` occurred during the HTTP client invocation
-function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
-                                          @tainted OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                          returns @tainted (string|Error) {
+isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
+                                                   OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
     RequestConfig requestConfig;
     int clockSkewInSeconds;
     string refreshUrl;
-    http:ClientConfiguration clientConfig;
+    ClientConfiguration clientConfig;
 
     if (config is PasswordGrantConfig) {
         RefreshConfig? refreshConfig = config?.refreshConfig;
@@ -544,7 +504,7 @@ function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig 
                 if (clientId == "" || clientSecret == "") {
                     return prepareError("Client id or client secret cannot be empty.");
                 }
-                refreshUrl = <@untainted> refreshConfig.refreshUrl;
+                refreshUrl = refreshConfig.refreshUrl;
                 requestConfig = {
                     payload: "grant_type=refresh_token&refresh_token=" + oauth2CacheEntry.refreshToken,
                     clientId: clientId,
@@ -582,40 +542,36 @@ function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig 
         }
         clockSkewInSeconds = config.clockSkewInSeconds;
     }
-
-    http:Request refreshRequest = check prepareRequest(requestConfig);
-    return doRequest(refreshUrl, refreshRequest, clientConfig, oauth2CacheEntry, clockSkewInSeconds);
+    return sendRequest(requestConfig, refreshUrl, clientConfig, oauth2CacheEntry, clockSkewInSeconds);
 }
 
-# Executes the actual request and gets the access token from the authorization endpoint.
-#
-# + url - URL of the authorization endpoint
-# + request - Prepared request to be sent to the authorization endpoint
-# + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
-# + oauth2CacheEntry - OAuth2 cache entry
-# + clockSkewInSeconds - Clock skew in seconds
-# + return - Received OAuth2 access token or else an `oauth2:Error` occurred during the HTTP client invocation
-function doRequest(string url, http:Request request, http:ClientConfiguration clientConfig,
-                   @tainted OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds)
-                   returns @tainted (string|Error) {
-    http:Client clientEP = new(url, clientConfig);
-    var response = clientEP->post("", request);
-    if (response is http:Response) {
-        log:printDebug(function () returns string {
-            return "Request sent successfully to URL: " + url;
-        });
-        return extractAccessTokenFromResponse(response, oauth2CacheEntry, clockSkewInSeconds);
-    } else {
-        return prepareError("Failed to send request to URL: " + url, <http:ClientError>response);
+isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig,
+                              OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds) returns string|Error {
+    map<string> headers = check prepareHeaders(requestConfig);
+    string payload = check preparePayload(requestConfig);
+    string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
+    if (stringResponse is Error) {
+        return prepareError("Failed to call introspection endpoint.", stringResponse);
     }
+    return extractAccessToken(<string>stringResponse, oauth2CacheEntry, clockSkewInSeconds);
 }
 
-# Prepares the request to be sent to the authorization endpoint by adding the relevant headers and payloads.
-#
-# + config - The `oauth2:RequestConfig` record
-# + return - Prepared HTTP request object or else an `oauth2:Error` occurred while preparing the request
-isolated function prepareRequest(RequestConfig config) returns http:Request|Error {
-    http:Request req = new;
+isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
+    map<string> headers = {};
+    if (config.credentialBearer == AUTH_HEADER_BEARER) {
+        string? clientId = config?.clientId;
+        string? clientSecret = config?.clientSecret;
+        if (clientId is string && clientSecret is string) {
+            string clientIdSecret = clientId + ":" + clientSecret;
+            headers["Authorization"] = auth:AUTH_SCHEME_BASIC + clientIdSecret.toBytes().toBase64();
+        } else {
+            return prepareError("Client ID or client secret is not provided for client authentication.");
+        }
+    }
+    return headers;
+}
+
+isolated function preparePayload(RequestConfig config) returns string|Error {
     string textPayload = config.payload;
     string scopeString = "";
     string[]? scopes = config.scopes;
@@ -638,53 +594,27 @@ isolated function prepareRequest(RequestConfig config) returns http:Request|Erro
         }
     }
 
-    string? clientId = config?.clientId;
-    string? clientSecret = config?.clientSecret;
-    if (config.credentialBearer == http:AUTH_HEADER_BEARER) {
-        if (clientId is string && clientSecret is string) {
-            string clientIdSecret = clientId + ":" + clientSecret;
-            req.addHeader(http:AUTH_HEADER, auth:AUTH_SCHEME_BASIC + clientIdSecret.toBytes().toBase64());
-        } else {
-            return prepareError("Client ID or client secret is not provided for client authentication.");
-        }
-    } else if (config.credentialBearer == http:POST_BODY_BEARER) {
+    if (config.credentialBearer == POST_BODY_BEARER) {
+        string? clientId = config?.clientId;
+        string? clientSecret = config?.clientSecret;
         if (clientId is string && clientSecret is string) {
             textPayload = textPayload + "&client_id=" + clientId + "&client_secret=" + clientSecret;
         } else {
             return prepareError("Client ID or client secret is not provided for client authentication.");
         }
     }
-    req.setTextPayload(<@untainted> textPayload, mime:APPLICATION_FORM_URLENCODED);
-    return req;
+    return textPayload;
 }
 
-# Extracts the access token from the JSON payload of a given HTTP response and updates the token cache.
-#
-# + response - HTTP response object
-# + oauth2CacheEntry - OAuth2 cache entry
-# + clockSkewInSeconds - Clock skew in seconds
-# + return - Extracted access token or else an `oauth2:Error` occurred during the HTTP client invocation
-isolated function extractAccessTokenFromResponse(http:Response response,
-                                                 @tainted OutboundOAuth2CacheEntry oauth2CacheEntry,
-                                                 int clockSkewInSeconds) returns @tainted (string|Error) {
-    if (response.statusCode == http:STATUS_OK) {
-        json|http:ClientError payload = response.getJsonPayload();
-        if (payload is json) {
-            log:printDebug(function () returns string {
-                return "Received an valid response. Extracting access token from the payload.";
-            });
-            updateOAuth2CacheEntry(payload, oauth2CacheEntry, clockSkewInSeconds);
-            return payload.access_token.toString();
-        } else {
-            return prepareError("Failed to retrieve access token since the response payload is not a JSON.", payload);
-        }
+isolated function extractAccessToken(string response, OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds)
+                                     returns string|Error {
+    json|error jsonResponse = response.fromJsonString();
+    if (jsonResponse is error) {
+        return prepareError("Failed to retrieve access token since the response payload is not a JSON.", jsonResponse);
     } else {
-        string|http:ClientError payload = response.getTextPayload();
-        if (payload is string) {
-            return prepareError("Received an invalid response with status-code: " + response.statusCode.toString() + "; and payload: " + payload);
-        } else {
-            return prepareError("Received an invalid response with status-code: " + response.statusCode.toString(), payload);
-        }
+        log:printDebug("Received an valid response. Extracting access token from the payload.");
+        updateOAuth2CacheEntry(jsonResponse, oauth2CacheEntry, clockSkewInSeconds);
+        return jsonResponse.access_token.toString();
     }
 }
 
@@ -706,8 +636,6 @@ isolated function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2Cac
         string refreshToken = responsePayload.refresh_token.toString();
         oauth2CacheEntry.refreshToken = refreshToken;
     }
-    log:printDebug(function () returns string {
-        return "Updated token cache with the new parameters of the response.";
-    });
+    log:printDebug("Updated token cache with the new parameters of the response.");
     return ();
 }
