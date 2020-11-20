@@ -3,7 +3,6 @@ org = "ballerina"
 name = "oauth2"
 version = "@toml.version@"
 
-
 [[dependency]]
 org = "ballerina"
 name = "auth"
@@ -16,8 +15,8 @@ version = "@stdlib.cache.version@"
 
 [[dependency]]
 org = "ballerina"
-name = "stringutils"
-version = "@stdlib.stringutils.version@"
+name = "crypto"
+version = "@stdlib.crypto.version@"
 
 [[dependency]]
 org = "ballerina"
@@ -26,38 +25,13 @@ version = "@stdlib.log.version@"
 
 [[dependency]]
 org = "ballerina"
-name = "crypto"
-version = "@stdlib.crypto.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "io"
-version = "@stdlib.io.version@"
+name = "stringutils"
+version = "@stdlib.stringutils.version@"
 
 [[dependency]]
 org = "ballerina"
 name = "time"
 version = "@stdlib.time.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "system"
-version = "@stdlib.system.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "config"
-version = "@stdlib.config.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "task"
-version = "@stdlib.task.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "runtime"
-version = "@stdlib.runtime.version@"
 
 [[platform.java11.dependency]]
 path = "../oauth2-native/build/libs/oauth2-native-@project.version@.jar"
