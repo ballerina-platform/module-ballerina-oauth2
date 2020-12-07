@@ -27,7 +27,7 @@ import static io.ballerina.runtime.api.constants.RuntimeConstants.BALLERINA_BUIL
  */
 public class Constants {
     public static final String PACKAGE_NAME = "oauth2";
-    public static final Module OAUTH2_PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, PACKAGE_NAME, "1.0.3");
+    public static final Module OAUTH2_PACKAGE_ID = new Module(BALLERINA_BUILTIN_PKG_PREFIX, PACKAGE_NAME, "1.0.4");
     public static final String OAUTH2_ERROR_TYPE = "OAuth2Error";
 
     public static final String HTTP_VERSION = "httpVersion";
