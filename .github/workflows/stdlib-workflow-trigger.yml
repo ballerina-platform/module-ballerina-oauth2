@@ -1,10 +1,12 @@
-name: Stdlib dependency update
+name: Stdlib Dependency Update
 
 on:
   push:
+    branches: 
+      - master
     paths:
-    - 'build.gradle'
-    - 'gradle.properties'
+      - 'build.gradle'
+      - 'gradle.properties'
 
 jobs:
   trigger-workflow:
