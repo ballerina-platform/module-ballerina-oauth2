@@ -170,21 +170,19 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
         result = oauth2Cache.put(token, response, defaultTokenExpTimeInSeconds);
     }
     if (result is cache:Error) {
-        log:printDebug("Failed to add OAuth2 token to the cache. Introspection response: " + response.toString());
+        log:printError("Failed to add OAuth2 token to the cache. Introspection response: " + response.toString());
         return;
     }
-    log:printDebug("OAuth2 token added to the cache. Introspection response: " + response.toString());
 }
 
 isolated function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
     any|cache:Error cachedEntry = oauth2Cache.get(token);
     if (cachedEntry is ()) {
         // If the cached value is expired (defaultTokenExpTimeInSeconds is passed), it will return `()`.
-        log:printDebug("Failed to validate the token from the cache since the token is expired.");
         return;
     }
     if (cachedEntry is cache:Error) {
-        log:printDebug("Failed to validate the token from the cache. Cache error: " + cachedEntry.toString());
+        log:printError("Failed to validate the token from the cache. Cache error: " + cachedEntry.toString());
         return;
     }
     IntrospectionResponse response = <IntrospectionResponse>cachedEntry;
@@ -193,12 +191,11 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     // Hence, the token is still valid. If the `expTime` is given in int, convert this to the current time and
     // check if the expiry time is exceeded.
     if (expTime is () || expTime > (time:currentTime().time / 1000)) {
-        log:printDebug("OAuth2 token validated from the cache. Introspection response: " + response.toString());
         return response;
     } else {
         cache:Error? result = oauth2Cache.invalidate(token);
         if (result is cache:Error) {
-            log:printDebug("Failed to invalidate OAuth2 token from the cache. Introspection response: " + response.toString());
+            log:printError("Failed to invalidate OAuth2 token from the cache. Introspection response: " + response.toString());
         }
     }
 }
