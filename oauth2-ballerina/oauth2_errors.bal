@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/auth;
 import ballerina/log;
 
 # Represents the OAuth2 distinct error.
@@ -37,20 +36,4 @@ isolated function prepareError(string message, error? err = ()) returns Error {
         oauth2Error = OAuth2Error(message);
     }
     return oauth2Error;
-}
-
-# Log and prepare `error` as a `auth:Error`.
-#
-# + message - Error message
-# + err - `error` instance
-# + return - Prepared `auth:Error` instance
-isolated function prepareAuthError(string message, error? err = ()) returns auth:Error {
-    log:printError(message, err = err);
-    auth:Error authError;
-    if (err is error) {
-        authError = auth:AuthError(message, err);
-    } else {
-        authError = auth:AuthError(message);
-    }
-    return authError;
 }

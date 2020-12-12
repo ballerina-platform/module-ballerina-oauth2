@@ -14,13 +14,54 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/auth;
 import ballerina/cache;
 import ballerina/log;
 import ballerina/stringutils;
 import ballerina/time;
 
-type JsonMap map<json>;
+# Represents the introspection server configurations.
+#
+# + url - URL of the introspection server
+# + tokenTypeHint - A hint about the type of the token submitted for introspection
+# + oauth2Cache - Cache used to store the OAuth2 token and other related information
+# + defaultTokenExpTimeInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
+# + clientConfig - HTTP client configurations which calls the introspection server
+public type IntrospectionServerConfig record {|
+    string url;
+    string tokenTypeHint?;
+    cache:Cache oauth2Cache?;
+    int defaultTokenExpTimeInSeconds = 3600;
+    ClientConfiguration clientConfig = {};
+|};
+
+# Represents the introspection server response.
+#
+# + active - Boolean indicator of whether or not the presented token is currently active
+# + scopes - A JSON string containing a space-separated list of scopes associated with this token
+# + clientId - Client identifier for the OAuth 2.0 client, which requested this token
+# + username - Resource owner who authorized this token
+# + tokenType - Type of the token
+# + exp - Expiry time (seconds since the Epoch)
+# + iat - Time when the token was issued originally (seconds since the Epoch)
+# + nbf - Token is not to be used before this time (seconds since the Epoch)
+# + sub - Subject of the token
+# + aud - Intended audience of the token
+# + iss - Issuer of the token
+# + jti - String identifier for the token
+public type IntrospectionResponse record {|
+    boolean active;
+    string scopes?;
+    string clientId?;
+    string username?;
+    string tokenType?;
+    int exp?;
+    int iat?;
+    int nbf?;
+    string sub?;
+    string aud?;
+    string iss?;
+    string jti?;
+|};
 
 # Represents the inbound OAuth2 provider, which calls the introspection server, validates the received credentials,
 # and performs authentication and authorization. The `oauth2:InboundOAuth2Provider` is an implementation of the
@@ -33,14 +74,12 @@ type JsonMap map<json>;
 # ```
 public class InboundOAuth2Provider {
 
-    *auth:InboundAuthProvider;
-
     IntrospectionServerConfig introspectionServerConfig;
 
     # Provides authentication based on the provided introspection configurations.
     #
     # + introspectionServerConfig - OAuth2 introspection server configurations
-    public function init(IntrospectionServerConfig introspectionServerConfig) {
+    public isolated function init(IntrospectionServerConfig introspectionServerConfig) {
         self.introspectionServerConfig = introspectionServerConfig;
     }
 
@@ -51,24 +90,16 @@ public class InboundOAuth2Provider {
     #
     # + credential - OAuth2 token to be authenticated
     # + return - `true` if authentication is successful, `false` otherwise, or else an `auth:Error` if an error occurred
-    public function authenticate(string credential) returns boolean|auth:Error {
+    public isolated function authorize(string credential) returns IntrospectionResponse|Error {
         if (credential == "") {
-            return false;
+            return prepareError("Credential cannot be empty.");
         }
 
         IntrospectionResponse|Error validationResult = validateOAuth2Token(credential, self.introspectionServerConfig);
         if (validationResult is IntrospectionResponse) {
-            if (validationResult.active) {
-                auth:setInvocationContext("oauth2", credential, validationResult?.username,
-                                          getScopes(validationResult?.scopes));
-                map<json>|error introspectionResponseMap = validationResult.cloneWithType(JsonMap);
-                if (introspectionResponseMap is map<json>) {
-                    auth:setInvocationContext(claims = introspectionResponseMap);
-                }
-            }
-            return validationResult.active;
+            return validationResult;
         } else {
-            return prepareAuthError("OAuth2 validation failed.", validationResult);
+            return prepareError("OAuth2 validation failed.", validationResult);
         }
     }
 }
@@ -200,10 +231,6 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     }
 }
 
-# Reads the scope(s) of the user with the given username.
-#
-# + scopes - Set of scopes seperated with a space
-# + return - Array of groups for the user who is denoted by the username
 isolated function getScopes(string? scopes) returns string[] {
     if (scopes is ()) {
         return [];
@@ -215,47 +242,3 @@ isolated function getScopes(string? scopes) returns string[] {
         return stringutils:split(scopeVal, " ");
     }
 }
-
-# Represents the introspection server configurations.
-#
-# + url - URL of the introspection server
-# + tokenTypeHint - A hint about the type of the token submitted for introspection
-# + oauth2Cache - Cache used to store the OAuth2 token and other related information
-# + defaultTokenExpTimeInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
-# + clientConfig - HTTP client configurations which calls the introspection server
-public type IntrospectionServerConfig record {|
-    string url;
-    string tokenTypeHint?;
-    cache:Cache oauth2Cache?;
-    int defaultTokenExpTimeInSeconds = 3600;
-    ClientConfiguration clientConfig = {};
-|};
-
-# Represents the introspection server response.
-#
-# + active - Boolean indicator of whether or not the presented token is currently active
-# + scopes - A JSON string containing a space-separated list of scopes associated with this token
-# + clientId - Client identifier for the OAuth 2.0 client, which requested this token
-# + username - Resource owner who authorized this token
-# + tokenType - Type of the token
-# + exp - Expiry time (seconds since the Epoch)
-# + iat - Time when the token was issued originally (seconds since the Epoch)
-# + nbf - Token is not to be used before this time (seconds since the Epoch)
-# + sub - Subject of the token
-# + aud - Intended audience of the token
-# + iss - Issuer of the token
-# + jti - String identifier for the token
-public type IntrospectionResponse record {|
-    boolean active;
-    string scopes?;
-    string clientId?;
-    string username?;
-    string tokenType?;
-    int exp?;
-    int iat?;
-    int nbf?;
-    string sub?;
-    string aud?;
-    string iss?;
-    string jti?;
-|};
