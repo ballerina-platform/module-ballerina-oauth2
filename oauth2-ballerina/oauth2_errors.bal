@@ -26,7 +26,7 @@ public type Error OAuth2Error;
 #
 # + message - Error message
 # + err - `error` instance
-# + return - Prepared `Error` instance
+# + return - Prepared `oauth2:Error` instance
 isolated function prepareError(string message, error? err = ()) returns Error {
     log:printError(message, err = err);
     Error oauth2Error;

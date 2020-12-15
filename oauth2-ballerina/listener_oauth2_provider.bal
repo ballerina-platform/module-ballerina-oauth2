@@ -64,13 +64,12 @@ public type IntrospectionResponse record {|
 |};
 
 # Represents the inbound OAuth2 provider, which calls the introspection server, validates the received credentials,
-# and performs authentication and authorization. The `oauth2:InboundOAuth2Provider` is an implementation of the
-# `auth:InboundAuthProvider` interface.
+# and performs authentication and authorization.
 # ```ballerina
-# oauth2:IntrospectionServerConfig introspectionServerConfig = {
+# oauth2:IntrospectionServerConfig config = {
 #     url: "https://localhost:9196/oauth2/token/introspect"
 # };
-# oauth2:InboundOAuth2Provider inboundOAuth2Provider = new(introspectionServerConfig);
+# oauth2:ListenerOAuth2Provider provider = new(config);
 # ```
 public class ListenerOAuth2Provider {
 
@@ -85,11 +84,11 @@ public class ListenerOAuth2Provider {
 
     # Authenticates the provider OAuth2 tokens with an introspection endpoint.
     # ```ballerina
-    # boolean|auth:Error result = inboundOAuth2Provider.authenticate("<credential>");
+    # boolean|oauth2:Error result = provider.authenticate("<credential>");
     # ```
     #
     # + credential - OAuth2 token to be authenticated
-    # + return - `true` if authentication is successful, `false` otherwise, or else an `auth:Error` if an error occurred
+    # + return - `oauth2:IntrospectionResponse` if authentication is successful, or else an `oauth2:Error` if an error occurred
     public isolated function authorize(string credential) returns IntrospectionResponse|Error {
         if (credential == "") {
             return prepareError("Credential cannot be empty.");
@@ -104,16 +103,15 @@ public class ListenerOAuth2Provider {
     }
 }
 
-# Validates the given OAuth2 token by calling the OAuth2 introspection endpoint.
+# Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
 # ```ballerina
-# oauth2:IntrospectionResponse|oauth2:Error result = oauth2:validateOAuth2Token(token, introspectionServerConfig);
+# oauth2:IntrospectionResponse|oauth2:Error result = oauth2:validate(token, introspectionServerConfig);
 # ```
 #
 # + token - OAuth2 token, which needs to be validated
 # + config -  OAuth2 introspection server configurations
 # + return - OAuth2 introspection server response or else an `oauth2:Error` if token validation fails
-public isolated function validateOAuth2Token(string token, IntrospectionServerConfig config)
-                                             returns IntrospectionResponse|Error {
+public isolated function validate(string token, IntrospectionServerConfig config) returns IntrospectionResponse|Error {
     cache:Cache? oauth2Cache = config?.oauth2Cache;
     if (oauth2Cache is cache:Cache && oauth2Cache.hasKey(token)) {
         IntrospectionResponse? response = validateFromCache(oauth2Cache, token);
@@ -219,7 +217,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     IntrospectionResponse response = <IntrospectionResponse>cachedEntry;
     int? expTime = response?.exp;
     // The `expTime` can be `()`. This means that the `defaultTokenExpTimeInSeconds` is not exceeded yet.
-    // Hence, the token is still valid. If the `expTime` is given in int, convert this to the current time and
+    // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
     // check if the expiry time is exceeded.
     if (expTime is () || expTime > (time:currentTime().time / 1000)) {
         return response;
