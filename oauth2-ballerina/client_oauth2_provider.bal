@@ -209,11 +209,10 @@ public class ClientOAuth2Provider {
     # + return - Generated `string` token or else an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
         string|Error authToken = generateOAuth2Token(self.grantConfig, self.oauth2CacheEntry);
-        if (authToken is string) {
-            return authToken;
-        } else {
+        if (authToken is Error) {
             return prepareError("Failed to generate OAuth2 token.", authToken);
         }
+        return <string>authToken;
     }
 }
 

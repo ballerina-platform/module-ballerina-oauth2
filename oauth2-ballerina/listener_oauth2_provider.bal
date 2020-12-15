@@ -94,7 +94,7 @@ public class ListenerOAuth2Provider {
             return prepareError("Credential cannot be empty.");
         }
 
-        IntrospectionResponse|Error validationResult = validateOAuth2Token(credential, self.introspectionServerConfig);
+        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionServerConfig);
         if (validationResult is IntrospectionResponse) {
             return validationResult;
         } else {
