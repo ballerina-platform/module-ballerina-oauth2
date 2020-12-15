@@ -192,7 +192,7 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectT
 #     }
 # });
 # ```
-public class OutboundOAuth2Provider {
+public class ClientOAuth2Provider {
 
     GrantConfig grantConfig;
     OutboundOAuth2CacheEntry oauth2CacheEntry;

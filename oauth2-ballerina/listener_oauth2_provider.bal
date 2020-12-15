@@ -72,7 +72,7 @@ public type IntrospectionResponse record {|
 # };
 # oauth2:InboundOAuth2Provider inboundOAuth2Provider = new(introspectionServerConfig);
 # ```
-public class InboundOAuth2Provider {
+public class ListenerOAuth2Provider {
 
     IntrospectionServerConfig introspectionServerConfig;
 
