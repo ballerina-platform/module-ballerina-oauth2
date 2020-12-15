@@ -223,31 +223,6 @@ public class ClientOAuth2Provider {
             return prepareError("Failed to generate OAuth2 token.", authToken);
         }
     }
-
-    //# Inspects the incoming data and generates the token for the OAuth2 authentication.
-    //# ```ballerina
-    //# string:auth:Error? token = outboundOAuth2Provider.inspect(data);
-    //# ```
-    //#
-    //# + data - Map of data, which is extracted from the HTTP response
-    //# + return - Generated `string` token, an `auth:Error` occurred while generating the token, or else
-    //#            `()` if nothing is to be returned
-    //public function inspect(map<anydata> data) returns string|auth:Error? {
-    //    GrantConfig? grantConfig = self.grantConfig;
-    //    if (oauth2ProviderConfig is ()) {
-    //        return ();
-    //    } else {
-    //        if (data["STATUS_CODE"] == 401) {
-    //            string|Error authToken = inspectAuthTokenForOAuth2(oauth2ProviderConfig, self.oauth2CacheEntry);
-    //            if (authToken is string) {
-    //                return authToken;
-    //            } else {
-    //                return prepareAuthError("Failed to generate OAuth2 token at inspection.", authToken);
-    //            }
-    //        }
-    //        return ();
-    //    }
-    //}
 }
 
 # Generates the OAuth2 token.
@@ -264,30 +239,6 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, OutboundOAuth2Cac
     } else {
         return getOAuth2TokenForDirectTokenMode(grantConfig, oauth2CacheEntry);
     }
-}
-
-# Processes the OAuth2 token at the inspection flow.
-#
-# + grantConfig - OAuth2 configurations
-# + oauth2CacheEntry - OAuth2 cache entry
-# + return - OAuth2 token or else an `oauth2:Error` if the validation failed
-isolated function inspectAuthTokenForOAuth2(GrantConfig grantConfig, OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                            returns string|Error {
-    if (grantConfig is PasswordGrantConfig) {
-        if (grantConfig.retryRequest) {
-            return getOAuth2TokenForPasswordGrant(grantConfig, oauth2CacheEntry);
-        }
-    } else if (grantConfig is ClientCredentialsGrantConfig) {
-        if (grantConfig.retryRequest) {
-            return getOAuth2TokenForClientCredentialsGrant(grantConfig, oauth2CacheEntry);
-        }
-    } else {
-        if (grantConfig.retryRequest) {
-            grantConfig.accessToken = "";
-            return getOAuth2TokenForDirectTokenMode(grantConfig, oauth2CacheEntry);
-        }
-    }
-    return prepareError("Failed to get the access token since retry request is set as false.");
 }
 
 # Processes the OAuth2 token for the password grant type.
