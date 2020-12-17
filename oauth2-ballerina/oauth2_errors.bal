@@ -22,18 +22,11 @@ public type OAuth2Error distinct error;
 # Represents the OAuth2 error.
 public type Error OAuth2Error;
 
-# Logs and prepares the `error` as an `oauth2:Error`.
-#
-# + message - Error message
-# + err - `error` instance
-# + return - Prepared `oauth2:Error` instance
+// Logs and prepares the `error` as an `oauth2:Error`.
 isolated function prepareError(string message, error? err = ()) returns Error {
     log:printError(message, err = err);
-    Error oauth2Error;
     if (err is error) {
-        oauth2Error = OAuth2Error(message, err);
-    } else {
-        oauth2Error = OAuth2Error(message);
+        return OAuth2Error(message, err);
     }
-    return oauth2Error;
+    return OAuth2Error(message);
 }
