@@ -21,7 +21,7 @@ package org.ballerinalang.stdlib.oauth2;
 /**
  * Constants related to Ballerina OAuth2 stdlib.
  */
-public class Constants {
+public class OAuth2Constants {
     public static final String OAUTH2_ERROR_TYPE = "OAuth2Error";
 
     public static final String HTTP_VERSION = "httpVersion";

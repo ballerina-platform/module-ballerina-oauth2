@@ -53,7 +53,7 @@ public class OAuth2Client {
 
     public static Object doHttpRequest(BString url, BMap<BString, Object> clientConfig, BMap<BString, BString> headers,
                                        BString payload) {
-        String customPayload = getStringValueIfPresent(clientConfig, Constants.CUSTOM_PAYLOAD);
+        String customPayload = getStringValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_PAYLOAD);
         String textPayload = payload.getValue();
         if (customPayload != null) {
             textPayload += "&" + customPayload;
@@ -66,7 +66,7 @@ public class OAuth2Client {
         }
 
         BMap<BString, BString> customHeaders =
-                (BMap<BString, BString>) getMapValueIfPresent(clientConfig, Constants.CUSTOM_HEADERS);
+                (BMap<BString, BString>) getMapValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_HEADERS);
         if (customHeaders != null) {
             for (Map.Entry<BString, BString> entry : customHeaders.entrySet()) {
                 headersList.add(entry.getKey().getValue());
@@ -82,11 +82,11 @@ public class OAuth2Client {
             request = buildHttpRequest(url.getValue(), flatHeaders, textPayload);
         }
 
-        String httpVersion = getStringValueIfPresent(clientConfig, Constants.HTTP_VERSION);
+        String httpVersion = getStringValueIfPresent(clientConfig, OAuth2Constants.HTTP_VERSION);
         BMap<BString, Object> secureSocket =
-                (BMap<BString, Object>) getMapValueIfPresent(clientConfig, Constants.SECURE_SOCKET);
+                (BMap<BString, Object>) getMapValueIfPresent(clientConfig, OAuth2Constants.SECURE_SOCKET);
         if (secureSocket != null) {
-            boolean disable = secureSocket.getBooleanValue(StringUtils.fromString(Constants.DISABLE));
+            boolean disable = secureSocket.getBooleanValue(StringUtils.fromString(OAuth2Constants.DISABLE));
             if (disable) {
                 try {
                     SSLContext sslContext = initSslContext();
@@ -97,7 +97,7 @@ public class OAuth2Client {
                 }
             }
             BMap<BString, BString> trustStore =
-                    (BMap<BString, BString>) getMapValueIfPresent(secureSocket, Constants.TRUSTSTORE);
+                    (BMap<BString, BString>) getMapValueIfPresent(secureSocket, OAuth2Constants.TRUSTSTORE);
             if (trustStore != null) {
                 try {
                     SSLContext sslContext = initSslContext(trustStore);
@@ -113,7 +113,7 @@ public class OAuth2Client {
     }
 
     private static HttpClient.Version getHttpVersion(String httpVersion) {
-        if (Constants.HTTP_2.equals(httpVersion)) {
+        if (OAuth2Constants.HTTP_2.equals(httpVersion)) {
             return HttpClient.Version.HTTP_2;
         }
         return HttpClient.Version.HTTP_1_1;
@@ -133,21 +133,21 @@ public class OAuth2Client {
                     }
                 }
         };
-        SSLContext sslContext = SSLContext.getInstance(Constants.TLS);
+        SSLContext sslContext = SSLContext.getInstance(OAuth2Constants.TLS);
         sslContext.init(null, trustAllCerts, new SecureRandom());
         return sslContext;
     }
 
     private static SSLContext initSslContext(BMap<BString, BString> trustStore) throws Exception {
-        String path = trustStore.getStringValue(StringUtils.fromString(Constants.PATH)).getValue();
-        String password = trustStore.getStringValue(StringUtils.fromString(Constants.PASSWORD)).getValue();
+        String path = trustStore.getStringValue(StringUtils.fromString(OAuth2Constants.PATH)).getValue();
+        String password = trustStore.getStringValue(StringUtils.fromString(OAuth2Constants.PASSWORD)).getValue();
         InputStream is = new FileInputStream(new File(path));
         char[] passphrase = password.toCharArray();
-        KeyStore ks = KeyStore.getInstance(Constants.PKCS12);
+        KeyStore ks = KeyStore.getInstance(OAuth2Constants.PKCS12);
         ks.load(is, passphrase);
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         tmf.init(ks);
-        SSLContext sslContext = SSLContext.getInstance(Constants.TLS);
+        SSLContext sslContext = SSLContext.getInstance(OAuth2Constants.TLS);
         sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
         return sslContext;
     }
@@ -163,7 +163,7 @@ public class OAuth2Client {
     private static HttpRequest buildHttpRequest(String url, String payload) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .setHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_FORM_URLENCODED)
+                .setHeader(OAuth2Constants.CONTENT_TYPE, OAuth2Constants.APPLICATION_FORM_URLENCODED)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
     }
@@ -172,7 +172,7 @@ public class OAuth2Client {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .headers(headers)
-                .setHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_FORM_URLENCODED)
+                .setHeader(OAuth2Constants.CONTENT_TYPE, OAuth2Constants.APPLICATION_FORM_URLENCODED)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
     }
@@ -201,7 +201,7 @@ public class OAuth2Client {
     }
 
     private static BError createError(String errMsg) {
-        return ErrorCreator.createDistinctError(Constants.OAUTH2_ERROR_TYPE, ModuleUtils.getModule(),
+        return ErrorCreator.createDistinctError(OAuth2Constants.OAUTH2_ERROR_TYPE, ModuleUtils.getModule(),
                                                 StringUtils.fromString(errMsg));
     }
 }
