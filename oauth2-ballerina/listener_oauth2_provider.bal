@@ -26,13 +26,13 @@ import ballerina/time;
 # + oauth2Cache - Cache used to store the OAuth2 token and other related information
 # + defaultTokenExpTimeInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations which calls the introspection server
-public type IntrospectionServerConfig record {|
+public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
     cache:Cache oauth2Cache?;
     int defaultTokenExpTimeInSeconds = 3600;
     ClientConfiguration clientConfig = {};
-|};
+};
 
 # Represents the introspection server response.
 #
@@ -66,20 +66,20 @@ public type IntrospectionResponse record {|
 # Represents the inbound OAuth2 provider, which calls the introspection server, validates the received credentials,
 # and performs authentication and authorization.
 # ```ballerina
-# oauth2:IntrospectionServerConfig config = {
+# oauth2:IntrospectionConfig config = {
 #     url: "https://localhost:9196/oauth2/token/introspect"
 # };
 # oauth2:ListenerOAuth2Provider provider = new(config);
 # ```
 public class ListenerOAuth2Provider {
 
-    IntrospectionServerConfig introspectionServerConfig;
+    IntrospectionConfig introspectionConfig;
 
     # Provides authentication based on the provided introspection configurations.
     #
-    # + introspectionServerConfig - OAuth2 introspection server configurations
-    public isolated function init(IntrospectionServerConfig introspectionServerConfig) {
-        self.introspectionServerConfig = introspectionServerConfig;
+    # + introspectionConfig - OAuth2 introspection server configurations
+    public isolated function init(IntrospectionConfig introspectionConfig) {
+        self.introspectionConfig = introspectionConfig;
     }
 
     # Authenticates the provider OAuth2 tokens with an introspection endpoint.
@@ -94,7 +94,7 @@ public class ListenerOAuth2Provider {
             return prepareError("Credential cannot be empty.");
         }
 
-        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionServerConfig);
+        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig);
         if (validationResult is IntrospectionResponse) {
             return validationResult;
         } else {
@@ -111,7 +111,7 @@ public class ListenerOAuth2Provider {
 # + token - OAuth2 token, which needs to be validated
 # + config -  OAuth2 introspection server configurations
 # + return - OAuth2 introspection server response or else an `oauth2:Error` if token validation fails
-public isolated function validate(string token, IntrospectionServerConfig config) returns IntrospectionResponse|Error {
+public isolated function validate(string token, IntrospectionConfig config) returns IntrospectionResponse|Error {
     cache:Cache? oauth2Cache = config?.oauth2Cache;
     if (oauth2Cache is cache:Cache && oauth2Cache.hasKey(token)) {
         IntrospectionResponse? response = validateFromCache(oauth2Cache, token);
