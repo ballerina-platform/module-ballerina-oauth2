@@ -37,7 +37,7 @@ public type IntrospectionConfig record {
 # Represents the introspection server response.
 #
 # + active - Boolean indicator of whether or not the presented token is currently active
-# + scopes - A JSON string containing a space-separated list of scopes associated with this token
+# + scope - A JSON string containing a space-separated list of scopes associated with this token
 # + clientId - Client identifier for the OAuth 2.0 client, which requested this token
 # + username - Resource owner who authorized this token
 # + tokenType - Type of the token
@@ -48,9 +48,9 @@ public type IntrospectionConfig record {
 # + aud - Intended audience of the token
 # + iss - Issuer of the token
 # + jti - String identifier for the token
-public type IntrospectionResponse record {|
+public type IntrospectionResponse record {
     boolean active;
-    string scopes?;
+    string scope?;
     string clientId?;
     string username?;
     string tokenType?;
@@ -61,7 +61,21 @@ public type IntrospectionResponse record {|
     string aud?;
     string iss?;
     string jti?;
-|};
+};
+
+// IntrospectionResponse parameters
+const string ACTIVE = "active";
+const string SCOPE = "scope";
+const string CLIENT_ID = "client_id";
+const string USERNAME = "username";
+const string TOKEN_TYPE = "token_type";
+const string EXP = "exp";
+const string IAT = "iat";
+const string NBF = "nbf";
+const string SUB = "sub";
+const string AUD = "aud";
+const string ISS = "iss";
+const string JTI = "jti";
 
 # Represents the inbound OAuth2 provider, which calls the introspection server, validates the received credentials,
 # and performs authentication and authorization.
@@ -146,43 +160,52 @@ public isolated function validate(string token, IntrospectionConfig config) retu
 }
 
 isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
-    boolean active = <boolean>payload.active;
     IntrospectionResponse introspectionResponse = {
-        active: active
+        active: false
     };
-    if (active) {
-        if (payload.scope is string) {
-            introspectionResponse.scopes = <string>payload.scope;
-        }
-        if (payload.client_id is string) {
-            introspectionResponse.clientId = <string>payload.client_id;
-        }
-        if (payload.username is string) {
-            introspectionResponse.username = <string>payload.username;
-        }
-        if (payload.token_type is string) {
-            introspectionResponse.tokenType = <string>payload.token_type;
-        }
-        if (payload.exp is int) {
-            introspectionResponse.exp = <int>payload.exp;
-        }
-        if (payload.iat is int) {
-            introspectionResponse.iat = <int>payload.iat;
-        }
-        if (payload.nbf is int) {
-            introspectionResponse.nbf = <int>payload.nbf;
-        }
-        if (payload.sub is string) {
-            introspectionResponse.sub = <string>payload.sub;
-        }
-        if (payload.aud is string) {
-            introspectionResponse.aud = <string>payload.aud;
-        }
-        if (payload.iss is string) {
-            introspectionResponse.iss = <string>payload.iss;
-        }
-        if (payload.jti is string) {
-            introspectionResponse.jti = <string>payload.jti;
+    map<json> payloadMap = <map<json>>payload;
+    string[] keys = payloadMap.keys();
+    foreach string key in keys {
+        match (key) {
+            ACTIVE => {
+                introspectionResponse.active = <boolean>payloadMap[key];
+            }
+            SCOPE => {
+                introspectionResponse.scope = <string>payloadMap[key];
+            }
+            CLIENT_ID => {
+                introspectionResponse.clientId = <string>payloadMap[key];
+            }
+            USERNAME => {
+                introspectionResponse.username = <string>payloadMap[key];
+            }
+            TOKEN_TYPE => {
+                introspectionResponse.tokenType = <string>payloadMap[key];
+            }
+            EXP => {
+                introspectionResponse.exp = <int>payloadMap[key];
+            }
+            IAT => {
+                introspectionResponse.iat = <int>payloadMap[key];
+            }
+            NBF => {
+                introspectionResponse.nbf = <int>payloadMap[key];
+            }
+            SUB => {
+                introspectionResponse.sub = <string>payloadMap[key];
+            }
+            AUD => {
+                introspectionResponse.aud = <string>payloadMap[key];
+            }
+            ISS => {
+                introspectionResponse.iss = <string>payloadMap[key];
+            }
+            JTI => {
+                introspectionResponse.jti = <string>payloadMap[key];
+            }
+            _ => {
+                introspectionResponse[key] = payloadMap[key].toJsonString();
+            }
         }
     }
     return introspectionResponse;
