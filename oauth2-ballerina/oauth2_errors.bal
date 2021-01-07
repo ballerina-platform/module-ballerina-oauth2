@@ -26,7 +26,7 @@ public type Error OAuth2Error;
 isolated function prepareError(string message, error? err = ()) returns Error {
     log:printError(message, err = err);
     if (err is error) {
-        return OAuth2Error(message, err);
+        return error OAuth2Error(message, err);
     }
-    return OAuth2Error(message);
+    return error OAuth2Error(message);
 }
