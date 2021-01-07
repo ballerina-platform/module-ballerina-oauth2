@@ -146,11 +146,11 @@ public isolated function validate(string token, IntrospectionConfig config) retu
     if (stringResponse is Error) {
         return prepareError("Failed to call introspection endpoint.", stringResponse);
     }
-    json|error jsonResponse = (<string>stringResponse).fromJsonString();
+    json|error jsonResponse = (checkpanic stringResponse).fromJsonString();
     if (jsonResponse is error) {
         return prepareError(jsonResponse.message(), jsonResponse);
     }
-    IntrospectionResponse introspectionResponse = prepareIntrospectionResponse(<json>jsonResponse);
+    IntrospectionResponse introspectionResponse = prepareIntrospectionResponse(checkpanic jsonResponse);
     if (introspectionResponse.active) {
         if (oauth2Cache is cache:Cache) {
             addToCache(oauth2Cache, token, introspectionResponse, config.defaultTokenExpTimeInSeconds);
@@ -237,7 +237,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         log:printError("Failed to validate the token from the cache. Cache error: " + cachedEntry.toString());
         return;
     }
-    IntrospectionResponse response = <IntrospectionResponse>cachedEntry;
+    IntrospectionResponse response = <IntrospectionResponse> checkpanic cachedEntry;
     int? expTime = response?.exp;
     // The `expTime` can be `()`. This means that the `defaultTokenExpTimeInSeconds` is not exceeded yet.
     // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
