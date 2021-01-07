@@ -212,7 +212,7 @@ public class ClientOAuth2Provider {
         if (authToken is Error) {
             return prepareError("Failed to generate OAuth2 token.", authToken);
         }
-        return <string>authToken;
+        return checkpanic authToken;
     }
 }
 
@@ -432,7 +432,7 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     if (stringResponse is Error) {
         return prepareError("Failed to call introspection endpoint.", stringResponse);
     }
-    return extractAccessToken(<string>stringResponse, oauth2CacheEntry, clockSkewInSeconds);
+    return extractAccessToken(checkpanic stringResponse, oauth2CacheEntry, clockSkewInSeconds);
 }
 
 isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
@@ -492,7 +492,7 @@ isolated function extractAccessToken(string response, OutboundOAuth2CacheEntry o
         return prepareError("Failed to retrieve access token since the response payload is not a JSON.", jsonResponse);
     } else {
         updateOAuth2CacheEntry(jsonResponse, oauth2CacheEntry, clockSkewInSeconds);
-        return jsonResponse.access_token.toString();
+        return (checkpanic (jsonResponse.access_token)).toJsonString();
     }
 }
 
@@ -500,14 +500,14 @@ isolated function extractAccessToken(string response, OutboundOAuth2CacheEntry o
 isolated function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2CacheEntry oauth2CacheEntry,
                                          int clockSkewInSeconds) {
     int issueTime = time:currentTime().time;
-    string accessToken = responsePayload.access_token.toString();
+    string accessToken = (checkpanic (responsePayload.access_token)).toJsonString();
     oauth2CacheEntry.accessToken = accessToken;
     json|error expiresIn = responsePayload?.expires_in;
     if (expiresIn is int) {
         oauth2CacheEntry.expTime = issueTime + (expiresIn - clockSkewInSeconds) * 1000;
     }
     if (responsePayload.refresh_token is string) {
-        string refreshToken = responsePayload.refresh_token.toString();
+        string refreshToken = (checkpanic (responsePayload.refresh_token)).toJsonString();
         oauth2CacheEntry.refreshToken = refreshToken;
     }
     return ();
