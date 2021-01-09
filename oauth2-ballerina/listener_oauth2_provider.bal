@@ -23,13 +23,13 @@ import ballerina/time;
 #
 # + url - URL of the introspection server
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
-# + oauth2Cache - Cache used to store the OAuth2 token and other related information
+# + cacheConfig - Configurations for the cache used to store the OAuth2 token and other related information
 # + defaultTokenExpTimeInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations which calls the introspection server
 public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
-    cache:Cache oauth2Cache?;
+    cache:CacheConfig cacheConfig?;
     int defaultTokenExpTimeInSeconds = 3600;
     ClientConfiguration clientConfig = {};
 };
@@ -88,12 +88,17 @@ const string JTI = "jti";
 public class ListenerOAuth2Provider {
 
     IntrospectionConfig introspectionConfig;
+    cache:Cache? oauth2Cache = ();
 
     # Provides authentication based on the provided introspection configurations.
     #
     # + introspectionConfig - OAuth2 introspection server configurations
     public isolated function init(IntrospectionConfig introspectionConfig) {
         self.introspectionConfig = introspectionConfig;
+        cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
+        if (oauth2CacheConfig is cache:CacheConfig) {
+            self.oauth2Cache = new(oauth2CacheConfig);
+        }
     }
 
     # Authenticates the provider OAuth2 tokens with an introspection endpoint.
@@ -108,12 +113,23 @@ public class ListenerOAuth2Provider {
             return prepareError("Credential cannot be empty.");
         }
 
+        cache:Cache? oauth2Cache = self.oauth2Cache;
+        if (oauth2Cache is cache:Cache && oauth2Cache.hasKey(credential)) {
+            IntrospectionResponse? response = validateFromCache(oauth2Cache, credential);
+            if (response is IntrospectionResponse) {
+                return response;
+            }
+        }
+
         IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig);
-        if (validationResult is IntrospectionResponse) {
-            return validationResult;
-        } else {
+        if (validationResult is Error) {
             return prepareError("OAuth2 validation failed.", validationResult);
         }
+        if (oauth2Cache is cache:Cache) {
+            addToCache(oauth2Cache, credential, checkpanic validationResult,
+                       self.introspectionConfig.defaultTokenExpTimeInSeconds);
+        }
+        return checkpanic validationResult;
     }
 }
 
@@ -126,16 +142,7 @@ public class ListenerOAuth2Provider {
 //# + config -  OAuth2 introspection server configurations
 //# + return - OAuth2 introspection server response or else an `oauth2:Error` if token validation fails
 isolated function validate(string token, IntrospectionConfig config) returns IntrospectionResponse|Error {
-    cache:Cache? oauth2Cache = config?.oauth2Cache;
-    if (oauth2Cache is cache:Cache && oauth2Cache.hasKey(token)) {
-        IntrospectionResponse? response = validateFromCache(oauth2Cache, token);
-        if (response is IntrospectionResponse) {
-            return response;
-        }
-    }
-
-    // Builds the request to be sent to the introspection endpoint.
-    // For more information, see the
+    // Builds the request to be sent to the introspection endpoint. For more information, refer to the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
     string textPayload = "token=" + token;
     string? tokenTypeHint = config?.tokenTypeHint;
@@ -150,13 +157,7 @@ isolated function validate(string token, IntrospectionConfig config) returns Int
     if (jsonResponse is error) {
         return prepareError(jsonResponse.message(), jsonResponse);
     }
-    IntrospectionResponse introspectionResponse = prepareIntrospectionResponse(checkpanic jsonResponse);
-    if (introspectionResponse.active) {
-        if (oauth2Cache is cache:Cache) {
-            addToCache(oauth2Cache, token, introspectionResponse, config.defaultTokenExpTimeInSeconds);
-        }
-    }
-    return introspectionResponse;
+    return prepareIntrospectionResponse(checkpanic jsonResponse);
 }
 
 isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
