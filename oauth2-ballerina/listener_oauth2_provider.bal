@@ -133,14 +133,7 @@ public class ListenerOAuth2Provider {
     }
 }
 
-//# Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
-//# ```ballerina
-//# oauth2:IntrospectionResponse|oauth2:Error result = oauth2:validate(token, introspectionServerConfig);
-//# ```
-//#
-//# + token - OAuth2 token, which needs to be validated
-//# + config -  OAuth2 introspection server configurations
-//# + return - OAuth2 introspection server response or else an `oauth2:Error` if token validation fails
+// Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
 isolated function validate(string token, IntrospectionConfig config) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, refer to the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)

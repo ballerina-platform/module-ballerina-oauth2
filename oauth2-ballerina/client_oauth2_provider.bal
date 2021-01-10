@@ -230,15 +230,14 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
     if (cachedAccessToken == "") {
         return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
     } else {
-        if (isOAuth2CacheEntryValid(tokenCache)) {
+        if (isCachedTokenExpired(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isOAuth2CacheEntryValid(tokenCache)) {
+                if (isCachedTokenExpired(tokenCache.expTime)) {
                     return tokenCache.accessToken;
-                } else {
-                    return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
                 }
+                return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
             }
         }
     }
@@ -251,16 +250,14 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     if (cachedAccessToken == "") {
         return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
     } else {
-        if (isOAuth2CacheEntryValid(tokenCache)) {
+        if (isCachedTokenExpired(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isOAuth2CacheEntryValid(tokenCache)) {
-                    cachedAccessToken = tokenCache.accessToken;
-                    return cachedAccessToken;
-                } else {
-                    return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
+                if (isCachedTokenExpired(tokenCache.expTime)) {
+                    return tokenCache.accessToken;
                 }
+                return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
             }
         }
     }
@@ -274,20 +271,17 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig
         string? directAccessToken = grantConfig?.accessToken;
         if (directAccessToken is string && directAccessToken != "") {
             return directAccessToken;
-        } else {
-            return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
         }
+        return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
     } else {
-        if (isOAuth2CacheEntryValid(tokenCache)) {
+        if (isCachedTokenExpired(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isOAuth2CacheEntryValid(tokenCache)) {
-                    cachedAccessToken = tokenCache.accessToken;
-                    return cachedAccessToken;
-                } else {
-                    return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
+                if (isCachedTokenExpired(tokenCache.expTime)) {
+                    return tokenCache.accessToken;
                 }
+                return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
             }
         }
     }
@@ -295,8 +289,7 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig
 
 // Checks the validity of the access token, which is in the cache. If the expiry time is 0, that means no expiry time is
 // returned with the authorization request. This implies that the token is valid forever.
-isolated function isOAuth2CacheEntryValid(TokenCache tokenCache) returns boolean {
-    int expTime = tokenCache.expTime;
+isolated function isCachedTokenExpired(int expTime) returns boolean {
     if (expTime == 0) {
         return true;
     }
@@ -503,5 +496,4 @@ isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenC
         string refreshToken = (checkpanic (responsePayload.refresh_token)).toJsonString();
         tokenCache.refreshToken = refreshToken;
     }
-    return ();
 }
