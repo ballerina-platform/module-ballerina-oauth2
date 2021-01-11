@@ -120,13 +120,9 @@ public type DirectTokenRefreshConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# The data structure, which stores the values received from the authorization/token server to use them
-# for the latter requests without requesting tokens again.
-#
-# + accessToken - Access token received from the authorization endpoint
-# + refreshToken - Refresh token for the refresh token server
-# + expTime - Expiry time (milliseconds since the Epoch) of the access token
-public type OutboundOAuth2CacheEntry record {
+// The data structure, which stores the values received from the authorization/token server to use them
+// for the latter requests without requesting tokens again.
+type TokenCache record {
     string accessToken;
     string refreshToken;
     int expTime;
@@ -187,14 +183,14 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectT
 public class ClientOAuth2Provider {
 
     GrantConfig grantConfig;
-    OutboundOAuth2CacheEntry oauth2CacheEntry;
+    TokenCache tokenCache;
 
     # Provides authentication based on the provided OAuth2 configurations.
     #
     # + grantConfig - OAuth2 grant type configurations
     public isolated function init(GrantConfig grantConfig) {
         self.grantConfig = grantConfig;
-        self.oauth2CacheEntry = {
+        self.tokenCache = {
             accessToken: "",
             refreshToken: "",
             expTime: 0
@@ -208,7 +204,7 @@ public class ClientOAuth2Provider {
     #
     # + return - Generated `string` token or else an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
-        string|Error authToken = generateOAuth2Token(self.grantConfig, self.oauth2CacheEntry);
+        string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
         if (authToken is Error) {
             return prepareError("Failed to generate OAuth2 token.", authToken);
         }
@@ -217,33 +213,31 @@ public class ClientOAuth2Provider {
 }
 
 // Generates the OAuth2 token.
-isolated function generateOAuth2Token(GrantConfig grantConfig, OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                      returns string|Error {
+isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache) returns string|Error {
     if (grantConfig is PasswordGrantConfig) {
-        return getOAuth2TokenForPasswordGrant(grantConfig, oauth2CacheEntry);
+        return getOAuth2TokenForPasswordGrant(grantConfig, tokenCache);
     } else if (grantConfig is ClientCredentialsGrantConfig) {
-        return getOAuth2TokenForClientCredentialsGrant(grantConfig, oauth2CacheEntry);
+        return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else {
-        return getOAuth2TokenForDirectTokenMode(grantConfig, oauth2CacheEntry);
+        return getOAuth2TokenForDirectTokenMode(grantConfig, tokenCache);
     }
 }
 
 // Processes the OAuth2 token for the password grant type.
-isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig,
-                                                 OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
-    string cachedAccessToken = oauth2CacheEntry.accessToken;
+isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig, TokenCache tokenCache)
+                                                 returns string|Error {
+    string cachedAccessToken = tokenCache.accessToken;
     if (cachedAccessToken == "") {
-        return getAccessTokenFromAuthorizationRequest(grantConfig, oauth2CacheEntry);
+        return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
     } else {
-        if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
+        if (isCachedTokenExpired(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-                    return oauth2CacheEntry.accessToken;
-                } else {
-                    return getAccessTokenFromRefreshRequest(grantConfig, oauth2CacheEntry);
+                if (isCachedTokenExpired(tokenCache.expTime)) {
+                    return tokenCache.accessToken;
                 }
+                return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
             }
         }
     }
@@ -251,22 +245,19 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
 
 // Processes the OAuth2 token for the client credentials grant type.
 isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantConfig,
-                                                          OutboundOAuth2CacheEntry oauth2CacheEntry)
-                                                          returns string|Error {
-    string cachedAccessToken = oauth2CacheEntry.accessToken;
+                                                          TokenCache tokenCache) returns string|Error {
+    string cachedAccessToken = tokenCache.accessToken;
     if (cachedAccessToken == "") {
-        return getAccessTokenFromAuthorizationRequest(grantConfig, oauth2CacheEntry);
+        return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
     } else {
-        if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
+        if (isCachedTokenExpired(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-                    cachedAccessToken = oauth2CacheEntry.accessToken;
-                    return cachedAccessToken;
-                } else {
-                    return getAccessTokenFromAuthorizationRequest(grantConfig, oauth2CacheEntry);
+                if (isCachedTokenExpired(tokenCache.expTime)) {
+                    return tokenCache.accessToken;
                 }
+                return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
             }
         }
     }
@@ -274,26 +265,23 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
 
 // Processes the OAuth2 token for the direct token mode.
 isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig,
-                                                   OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
-    string cachedAccessToken = oauth2CacheEntry.accessToken;
+                                                   TokenCache tokenCache) returns string|Error {
+    string cachedAccessToken = tokenCache.accessToken;
     if (cachedAccessToken == "") {
         string? directAccessToken = grantConfig?.accessToken;
         if (directAccessToken is string && directAccessToken != "") {
             return directAccessToken;
-        } else {
-            return getAccessTokenFromRefreshRequest(grantConfig, oauth2CacheEntry);
         }
+        return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
     } else {
-        if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
+        if (isCachedTokenExpired(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isOAuth2CacheEntryValid(oauth2CacheEntry)) {
-                    cachedAccessToken = oauth2CacheEntry.accessToken;
-                    return cachedAccessToken;
-                } else {
-                    return getAccessTokenFromRefreshRequest(grantConfig, oauth2CacheEntry);
+                if (isCachedTokenExpired(tokenCache.expTime)) {
+                    return tokenCache.accessToken;
                 }
+                return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
             }
         }
     }
@@ -301,8 +289,7 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig
 
 // Checks the validity of the access token, which is in the cache. If the expiry time is 0, that means no expiry time is
 // returned with the authorization request. This implies that the token is valid forever.
-isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEntry) returns boolean {
-    int expTime = oauth2CacheEntry.expTime;
+isolated function isCachedTokenExpired(int expTime) returns boolean {
     if (expTime == 0) {
         return true;
     }
@@ -315,7 +302,7 @@ isolated function isOAuth2CacheEntryValid(OutboundOAuth2CacheEntry oauth2CacheEn
 
 // Requests an access token from the authorization endpoint using the provided configurations.
 isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|PasswordGrantConfig config,
-                                                         OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
+                                                         TokenCache tokenCache) returns string|Error {
     RequestConfig requestConfig;
     int clockSkewInSeconds;
     string tokenUrl;
@@ -363,12 +350,12 @@ isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantC
         clockSkewInSeconds = config.clockSkewInSeconds;
         clientConfig = config.clientConfig;
     }
-    return sendRequest(requestConfig, tokenUrl, clientConfig, oauth2CacheEntry, clockSkewInSeconds);
+    return sendRequest(requestConfig, tokenUrl, clientConfig, tokenCache, clockSkewInSeconds);
 }
 
 // Requests an access token from the authorization endpoint using the provided refresh configurations.
 isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
-                                                   OutboundOAuth2CacheEntry oauth2CacheEntry) returns string|Error {
+                                                   TokenCache tokenCache) returns string|Error {
     RequestConfig requestConfig;
     int clockSkewInSeconds;
     string refreshUrl;
@@ -385,7 +372,7 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTok
                 }
                 refreshUrl = refreshConfig.refreshUrl;
                 requestConfig = {
-                    payload: "grant_type=refresh_token&refresh_token=" + oauth2CacheEntry.refreshToken,
+                    payload: "grant_type=refresh_token&refresh_token=" + tokenCache.refreshToken,
                     clientId: clientId,
                     clientSecret: clientSecret,
                     scopes: refreshConfig?.scopes,
@@ -421,18 +408,18 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTok
         }
         clockSkewInSeconds = config.clockSkewInSeconds;
     }
-    return sendRequest(requestConfig, refreshUrl, clientConfig, oauth2CacheEntry, clockSkewInSeconds);
+    return sendRequest(requestConfig, refreshUrl, clientConfig, tokenCache, clockSkewInSeconds);
 }
 
 isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig,
-                              OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds) returns string|Error {
+                              TokenCache tokenCache, int clockSkewInSeconds) returns string|Error {
     map<string> headers = check prepareHeaders(requestConfig);
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
     if (stringResponse is Error) {
         return prepareError("Failed to call introspection endpoint.", stringResponse);
     }
-    return extractAccessToken(checkpanic stringResponse, oauth2CacheEntry, clockSkewInSeconds);
+    return extractAccessToken(checkpanic stringResponse, tokenCache, clockSkewInSeconds);
 }
 
 isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
@@ -485,30 +472,28 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
     return textPayload;
 }
 
-isolated function extractAccessToken(string response, OutboundOAuth2CacheEntry oauth2CacheEntry, int clockSkewInSeconds)
+isolated function extractAccessToken(string response, TokenCache tokenCache, int clockSkewInSeconds)
                                      returns string|Error {
     json|error jsonResponse = response.fromJsonString();
     if (jsonResponse is error) {
         return prepareError("Failed to retrieve access token since the response payload is not a JSON.", jsonResponse);
     } else {
-        updateOAuth2CacheEntry(jsonResponse, oauth2CacheEntry, clockSkewInSeconds);
+        updateOAuth2CacheEntry(jsonResponse, tokenCache, clockSkewInSeconds);
         return (checkpanic (jsonResponse.access_token)).toJsonString();
     }
 }
 
 // Updates the OAuth2 token entry with the received JSON payload of the response.
-isolated function updateOAuth2CacheEntry(json responsePayload, OutboundOAuth2CacheEntry oauth2CacheEntry,
-                                         int clockSkewInSeconds) {
+isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenCache, int clockSkewInSeconds) {
     int issueTime = time:currentTime().time;
     string accessToken = (checkpanic (responsePayload.access_token)).toJsonString();
-    oauth2CacheEntry.accessToken = accessToken;
+    tokenCache.accessToken = accessToken;
     json|error expiresIn = responsePayload?.expires_in;
     if (expiresIn is int) {
-        oauth2CacheEntry.expTime = issueTime + (expiresIn - clockSkewInSeconds) * 1000;
+        tokenCache.expTime = issueTime + (expiresIn - clockSkewInSeconds) * 1000;
     }
     if (responsePayload.refresh_token is string) {
         string refreshToken = (checkpanic (responsePayload.refresh_token)).toJsonString();
-        oauth2CacheEntry.refreshToken = refreshToken;
+        tokenCache.refreshToken = refreshToken;
     }
-    return ();
 }
