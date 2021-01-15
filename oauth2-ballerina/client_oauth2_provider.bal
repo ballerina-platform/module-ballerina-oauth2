@@ -27,7 +27,7 @@ import ballerina/time;
 # + parameters - Map of endpoint parameters use with the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
-public type ClientCredentialsGrantConfig record {|
+public type ClientCredentialsGrantConfig record {
     string tokenUrl;
     string clientId;
     string clientSecret;
@@ -37,7 +37,7 @@ public type ClientCredentialsGrantConfig record {|
     map<string> parameters?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
-|};
+};
 
 # The data structure, which is used to configure the OAuth2 password grant type.
 #
@@ -53,7 +53,7 @@ public type ClientCredentialsGrantConfig record {|
 # + parameters - Map of endpoint parameters use with the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
-public type PasswordGrantConfig record {|
+public type PasswordGrantConfig record {
     string tokenUrl;
     string username;
     string password;
@@ -66,7 +66,7 @@ public type PasswordGrantConfig record {|
     map<string> parameters?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
-|};
+};
 
 # The data structure, which is used to configure the OAuth2 access token directly.
 #
@@ -75,13 +75,13 @@ public type PasswordGrantConfig record {|
 # + defaultTokenExpTimeInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
 # + clockSkewInSeconds - Clock skew in seconds
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
-public type DirectTokenConfig record {|
+public type DirectTokenConfig record {
     string accessToken?;
     DirectTokenRefreshConfig refreshConfig?;
     int defaultTokenExpTimeInSeconds = 3600;
     int clockSkewInSeconds = 0;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
-|};
+};
 
 # The data structure, which can be used to pass the configurations for refreshing the access token of
 # the password grant type.
