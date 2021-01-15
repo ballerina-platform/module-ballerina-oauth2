@@ -23,7 +23,6 @@ import ballerina/time;
 # + clientSecret - Client secret for the client credentials grant authentication
 # + scopes - Scope(s) of the access request
 # + clockSkewInSeconds - Clock skew in seconds
-# + retryRequest - Retry the request if the initial request returns a 401 response
 # + parameters - Map of endpoint parameters use with the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
@@ -33,7 +32,6 @@ public type ClientCredentialsGrantConfig record {|
     string clientSecret;
     string[] scopes?;
     int clockSkewInSeconds = 0;
-    boolean retryRequest = true;
     map<string> parameters?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
@@ -49,7 +47,6 @@ public type ClientCredentialsGrantConfig record {|
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
 # + clockSkewInSeconds - Clock skew in seconds
-# + retryRequest - Retry the request if the initial request returns a 401 response
 # + parameters - Map of endpoint parameters use with the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
@@ -62,7 +59,6 @@ public type PasswordGrantConfig record {|
     string[] scopes?;
     RefreshConfig refreshConfig?;
     int clockSkewInSeconds = 0;
-    boolean retryRequest = true;
     map<string> parameters?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
@@ -73,13 +69,11 @@ public type PasswordGrantConfig record {|
 # + accessToken - Access token for the authorization endpoint
 # + refreshConfig - Configurations for refreshing the access token
 # + clockSkewInSeconds - Clock skew in seconds
-# + retryRequest - Retry the request if the initial request returns a 401 response
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 public type DirectTokenConfig record {|
     string accessToken?;
     DirectTokenRefreshConfig refreshConfig?;
     int clockSkewInSeconds = 0;
-    boolean retryRequest = true;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
 |};
 
@@ -230,11 +224,11 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
     if (cachedAccessToken == "") {
         return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
     } else {
-        if (isCachedTokenExpired(tokenCache.expTime)) {
+        if (isCachedTokenValid(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isCachedTokenExpired(tokenCache.expTime)) {
+                if (isCachedTokenValid(tokenCache.expTime)) {
                     return tokenCache.accessToken;
                 }
                 return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
@@ -250,11 +244,11 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     if (cachedAccessToken == "") {
         return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
     } else {
-        if (isCachedTokenExpired(tokenCache.expTime)) {
+        if (isCachedTokenValid(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isCachedTokenExpired(tokenCache.expTime)) {
+                if (isCachedTokenValid(tokenCache.expTime)) {
                     return tokenCache.accessToken;
                 }
                 return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
@@ -274,11 +268,11 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig
         }
         return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
     } else {
-        if (isCachedTokenExpired(tokenCache.expTime)) {
+        if (isCachedTokenValid(tokenCache.expTime)) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isCachedTokenExpired(tokenCache.expTime)) {
+                if (isCachedTokenValid(tokenCache.expTime)) {
                     return tokenCache.accessToken;
                 }
                 return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
@@ -289,7 +283,7 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig
 
 // Checks the validity of the access token, which is in the cache. If the expiry time is 0, that means no expiry time is
 // returned with the authorization request. This implies that the token is valid forever.
-isolated function isCachedTokenExpired(int expTime) returns boolean {
+isolated function isCachedTokenValid(int expTime) returns boolean {
     if (expTime == 0) {
         return true;
     }
