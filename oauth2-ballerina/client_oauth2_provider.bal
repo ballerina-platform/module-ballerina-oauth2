@@ -22,7 +22,7 @@ import ballerina/time;
 # + clientId - Client ID for the client credentials grant authentication
 # + clientSecret - Client secret for the client credentials grant authentication
 # + scopes - Scope(s) of the access request
-# + defaultTokenExpTimeInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
+# + defaultTokenExpInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
 # + clockSkewInSeconds - Clock skew in seconds
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
@@ -32,7 +32,7 @@ public type ClientCredentialsGrantConfig record {|
     string clientId;
     string clientSecret;
     string[] scopes?;
-    int defaultTokenExpTimeInSeconds = 3600;
+    int defaultTokenExpInSeconds = 3600;
     int clockSkewInSeconds = 0;
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
@@ -48,7 +48,7 @@ public type ClientCredentialsGrantConfig record {|
 # + clientSecret - Client secret for the password grant authentication
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
-# + defaultTokenExpTimeInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
+# + defaultTokenExpInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
 # + clockSkewInSeconds - Clock skew in seconds
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
@@ -61,7 +61,7 @@ public type PasswordGrantConfig record {|
     string clientSecret?;
     string[] scopes?;
     RefreshConfig refreshConfig?;
-    int defaultTokenExpTimeInSeconds = 3600;
+    int defaultTokenExpInSeconds = 3600;
     int clockSkewInSeconds = 0;
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
@@ -75,7 +75,7 @@ public type PasswordGrantConfig record {|
 # + clientId - Client ID for authentication with the authorization endpoint
 # + clientSecret - Client secret for authentication with the authorization endpoint
 # + scopes - Scope(s) of the access request
-# + defaultTokenExpTimeInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
+# + defaultTokenExpInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
 # + clockSkewInSeconds - Clock skew in seconds
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
@@ -86,7 +86,7 @@ public type DirectTokenConfig record {|
     string clientId;
     string clientSecret;
     string[] scopes?;
-    int defaultTokenExpTimeInSeconds = 3600;
+    int defaultTokenExpInSeconds = 3600;
     int clockSkewInSeconds = 0;
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
@@ -272,7 +272,7 @@ isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig
 isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantConfig|PasswordGrantConfig config,
                                                          TokenCache tokenCache) returns string|Error {
     RequestConfig requestConfig;
-    int defaultTokenExpTimeInSeconds;
+    int defaultTokenExpInSeconds;
     int clockSkewInSeconds;
     string tokenUrl;
     ClientConfiguration clientConfig;
@@ -290,7 +290,7 @@ isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantC
             optionalParams: config?.optionalParams,
             credentialBearer: config.credentialBearer
         };
-        defaultTokenExpTimeInSeconds = config.defaultTokenExpTimeInSeconds;
+        defaultTokenExpInSeconds = config.defaultTokenExpInSeconds;
         clockSkewInSeconds = config.clockSkewInSeconds;
         clientConfig = config.clientConfig;
     } else {
@@ -317,18 +317,18 @@ isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantC
                 credentialBearer: config.credentialBearer
             };
         }
-        defaultTokenExpTimeInSeconds = config.defaultTokenExpTimeInSeconds;
+        defaultTokenExpInSeconds = config.defaultTokenExpInSeconds;
         clockSkewInSeconds = config.clockSkewInSeconds;
         clientConfig = config.clientConfig;
     }
-    return sendRequest(requestConfig, tokenUrl, clientConfig, tokenCache, defaultTokenExpTimeInSeconds, clockSkewInSeconds);
+    return sendRequest(requestConfig, tokenUrl, clientConfig, tokenCache, defaultTokenExpInSeconds, clockSkewInSeconds);
 }
 
 // Requests an access token from the authorization endpoint using the provided refresh configurations.
 isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
                                                    TokenCache tokenCache) returns string|Error {
     RequestConfig requestConfig;
-    int defaultTokenExpTimeInSeconds;
+    int defaultTokenExpInSeconds;
     int clockSkewInSeconds;
     string refreshUrl;
     ClientConfiguration clientConfig;
@@ -358,7 +358,7 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTok
         } else {
             return prepareError("Failed to refresh access token since RefreshTokenConfig is not provided.");
         }
-        defaultTokenExpTimeInSeconds = config.defaultTokenExpTimeInSeconds;
+        defaultTokenExpInSeconds = config.defaultTokenExpInSeconds;
         clockSkewInSeconds = config.clockSkewInSeconds;
     } else {
         if (config.clientId == "" || config.clientSecret == "") {
@@ -374,14 +374,14 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTok
             credentialBearer: config.credentialBearer
         };
         clientConfig = config.clientConfig;
-        defaultTokenExpTimeInSeconds = config.defaultTokenExpTimeInSeconds;
+        defaultTokenExpInSeconds = config.defaultTokenExpInSeconds;
         clockSkewInSeconds = config.clockSkewInSeconds;
     }
-    return sendRequest(requestConfig, refreshUrl, clientConfig, tokenCache, defaultTokenExpTimeInSeconds, clockSkewInSeconds);
+    return sendRequest(requestConfig, refreshUrl, clientConfig, tokenCache, defaultTokenExpInSeconds, clockSkewInSeconds);
 }
 
 isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig,
-                              TokenCache tokenCache, int defaultTokenExpTimeInSeconds, int clockSkewInSeconds)
+                              TokenCache tokenCache, int defaultTokenExpInSeconds, int clockSkewInSeconds)
                               returns string|Error {
     map<string> headers = check prepareHeaders(requestConfig);
     string payload = check preparePayload(requestConfig);
@@ -389,7 +389,7 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     if (stringResponse is Error) {
         return prepareError("Failed to call introspection endpoint.", stringResponse);
     }
-    return extractAccessToken(checkpanic stringResponse, tokenCache, defaultTokenExpTimeInSeconds, clockSkewInSeconds);
+    return extractAccessToken(checkpanic stringResponse, tokenCache, defaultTokenExpInSeconds, clockSkewInSeconds);
 }
 
 isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
@@ -442,13 +442,13 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
     return textPayload;
 }
 
-isolated function extractAccessToken(string response, TokenCache tokenCache, int defaultTokenExpTimeInSeconds,
+isolated function extractAccessToken(string response, TokenCache tokenCache, int defaultTokenExpInSeconds,
                                      int clockSkewInSeconds) returns string|Error {
     json|error jsonResponse = response.fromJsonString();
     if (jsonResponse is error) {
         return prepareError("Failed to retrieve access token since the response payload is not a JSON.", jsonResponse);
     } else {
-        updateOAuth2CacheEntry(jsonResponse, tokenCache, defaultTokenExpTimeInSeconds, clockSkewInSeconds);
+        updateOAuth2CacheEntry(jsonResponse, tokenCache, defaultTokenExpInSeconds, clockSkewInSeconds);
         return (checkpanic (jsonResponse.access_token)).toJsonString();
     }
 }
@@ -463,7 +463,7 @@ isolated function isCachedTokenValid(int expTime) returns boolean {
 }
 
 // Updates the OAuth2 token entry with the received JSON payload of the response.
-isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenCache, int defaultTokenExpTimeInSeconds,
+isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenCache, int defaultTokenExpInSeconds,
                                          int clockSkewInSeconds) {
     int issueTime = time:currentTime().time;
     string accessToken = (checkpanic (responsePayload.access_token)).toJsonString();
@@ -472,7 +472,7 @@ isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenC
     if (expiresIn is int) {
         tokenCache.expTime = issueTime + (expiresIn - clockSkewInSeconds) * 1000;
     } else {
-        tokenCache.expTime = issueTime + (defaultTokenExpTimeInSeconds - clockSkewInSeconds) * 1000;
+        tokenCache.expTime = issueTime + (defaultTokenExpInSeconds - clockSkewInSeconds) * 1000;
     }
     if (responsePayload.refresh_token is string) {
         string refreshToken = (checkpanic (responsePayload.refresh_token)).toJsonString();
