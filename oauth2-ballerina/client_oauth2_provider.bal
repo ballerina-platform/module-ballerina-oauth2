@@ -195,20 +195,6 @@ public class ClientOAuth2Provider {
         }
         return checkpanic authToken;
     }
-
-    # Refresh a token for the OAuth2 authentication.
-    # ```ballerina
-    # string:oauth2:Error token = provider.refreshToken();
-    # ```
-    #
-    # + return - Generated `string` token or else an `oauth2:Error` if an error occurred
-    public isolated function refreshToken() returns string|Error {
-        string|Error authToken = refreshOAuth2Token(self.grantConfig, self.tokenCache);
-        if (authToken is Error) {
-            return prepareError("Failed to refresh OAuth2 token.", authToken);
-        }
-        return checkpanic authToken;
-    }
 }
 
 // Generates the OAuth2 token.
@@ -219,17 +205,6 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenC
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else {
         return getOAuth2TokenForDirectTokenMode(grantConfig, tokenCache);
-    }
-}
-
-// Refreshes the OAuth2 token.
-isolated function refreshOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache) returns string|Error {
-    if (grantConfig is PasswordGrantConfig) {
-        return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
-    } else if (grantConfig is ClientCredentialsGrantConfig) {
-        return getAccessTokenFromAuthorizationRequest(grantConfig, tokenCache);
-    } else {
-        return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
     }
 }
 
