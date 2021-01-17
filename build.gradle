@@ -27,7 +27,7 @@ ext.ballerinaLangVersion = project.ballerinaLangVersion
 ext.stdlibCacheVersion = project.stdlibCacheVersion
 ext.stdlibCryptoVersion = project.stdlibCryptoVersion
 ext.stdlibLogVersion = project.stdlibLogVersion
-ext.stdlibStringUtilsVersion = project.stdlibStringUtilsVersion
+ext.stdlibRegexVersion = project.stdlibRegexVersion
 ext.stdlibTimeVersion = project.stdlibTimeVersion
 // Transitive dependencies
 ext.stdlibRuntimeVersion = project.stdlibRuntimeVersion
@@ -80,7 +80,7 @@ allprojects {
             }
         }
         maven {
-            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-stringutils'
+            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-regex'
             credentials {
                 username System.getenv("packageUser")
                 password System.getenv("packagePAT")
@@ -122,7 +122,7 @@ subprojects {
         ballerinaStdLibs "org.ballerinalang:cache-ballerina:${stdlibCacheVersion}"
         ballerinaStdLibs "org.ballerinalang:crypto-ballerina:${stdlibCryptoVersion}"
         ballerinaStdLibs "org.ballerinalang:log-ballerina:${stdlibLogVersion}"
-        ballerinaStdLibs "org.ballerinalang:stringutils-ballerina:${stdlibStringUtilsVersion}"
+        ballerinaStdLibs "org.ballerinalang:regex-ballerina:${stdlibRegexVersion}"
         ballerinaStdLibs "org.ballerinalang:time-ballerina:${stdlibTimeVersion}"
         // Transitive dependencies
         ballerinaStdLibs "org.ballerinalang:runtime-ballerina:${stdlibRuntimeVersion}"

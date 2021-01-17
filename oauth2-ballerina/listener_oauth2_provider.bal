@@ -16,7 +16,7 @@
 
 import ballerina/cache;
 import ballerina/log;
-import ballerina/stringutils;
+import ballerina/regex;
 import ballerina/time;
 
 # Represents the introspection server configurations.
@@ -269,6 +269,6 @@ isolated function getScopes(string? scopes) returns string[] {
         if (scopeVal == "") {
             return [];
         }
-        return stringutils:split(scopeVal, " ");
+        return regex:split(scopeVal, " ");
     }
 }
