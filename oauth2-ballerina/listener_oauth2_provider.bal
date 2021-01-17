@@ -25,14 +25,14 @@ import ballerina/time;
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
 # + optionalParams - Map of optional parameters used for the introspection endpoint
 # + cacheConfig - Configurations for the cache used to store the OAuth2 token and other related information
-# + defaultTokenExpTimeInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
+# + defaultTokenExpInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations which calls the introspection server
 public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
     map<string> optionalParams?;
     cache:CacheConfig cacheConfig?;
-    int defaultTokenExpTimeInSeconds = 3600;
+    int defaultTokenExpInSeconds = 3600;
     ClientConfiguration clientConfig = {};
 };
 
@@ -130,7 +130,7 @@ public class ListenerOAuth2Provider {
         }
         if (oauth2Cache is cache:Cache) {
             addToCache(oauth2Cache, credential, checkpanic validationResult,
-                       self.introspectionConfig.defaultTokenExpTimeInSeconds);
+                       self.introspectionConfig.defaultTokenExpInSeconds);
         }
         return checkpanic validationResult;
     }
@@ -221,14 +221,14 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
 }
 
 isolated function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
-                             int defaultTokenExpTimeInSeconds) {
+                             int defaultTokenExpInSeconds) {
     cache:Error? result;
     if (response?.exp is int) {
         result = oauth2Cache.put(token, response);
     } else {
         // If the `exp` parameter is not set by the introspection response, use the cache default expiry by
-        // the `defaultTokenExpTimeInSeconds`. Then, the cached value will be removed when retrieving.
-        result = oauth2Cache.put(token, response, defaultTokenExpTimeInSeconds);
+        // the `defaultTokenExpInSeconds`. Then, the cached value will be removed when retrieving.
+        result = oauth2Cache.put(token, response, defaultTokenExpInSeconds);
     }
     if (result is cache:Error) {
         log:printError("Failed to add OAuth2 token to the cache. Introspection response: " + response.toString());
@@ -239,7 +239,7 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
 isolated function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
     any|cache:Error cachedEntry = oauth2Cache.get(token);
     if (cachedEntry is ()) {
-        // If the cached value is expired (defaultTokenExpTimeInSeconds is passed), it will return `()`.
+        // If the cached value is expired (defaultTokenExpInSeconds is passed), it will return `()`.
         return;
     }
     if (cachedEntry is cache:Error) {
@@ -248,7 +248,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     }
     IntrospectionResponse response = <IntrospectionResponse> checkpanic cachedEntry;
     int? expTime = response?.exp;
-    // The `expTime` can be `()`. This means that the `defaultTokenExpTimeInSeconds` is not exceeded yet.
+    // The `expTime` can be `()`. This means that the `defaultTokenExpInSeconds` is not exceeded yet.
     // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
     // check if the expiry time is exceeded.
     if (expTime is () || expTime > (time:currentTime().time / 1000)) {
