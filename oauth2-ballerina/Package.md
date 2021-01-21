@@ -1,6 +1,6 @@
 ## Module Overview
 
-This module provides a listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint, and a client OAuth2 authentication provider, which can be used to authenticate an external endpoint.
+This module provides a listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint, and a client OAuth2 authentication provider, which can be used to authenticate against an external endpoint.
 
 For information on the operations, which you can perform with this module, see the below **Functions**. For examples on the usage of the operations, see the following.
 * [Secured Service with OAuth2 Example](https://ballerina.io/swan-lake/learn/by-example/secured-service-with-oauth2.html)
