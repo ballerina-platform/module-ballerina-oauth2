@@ -1,5 +1,9 @@
 ## Module Overview
 
-This module provides an inbound OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint and an outbound OAuth2 authentication provider, which can be used to authenticate an external endpoint.
+This module provides an listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint and a client OAuth2 authentication provider, which can be used to authenticate with an external endpoint.
 
-For information on the operations, which you can perform with this module, see the below **Functions**. For examples on the usage of the operations, see the [Secured Service with OAuth2 Example](https://ballerina.io/swan-lake/learn/by-example/secured-service-with-oauth2.html) and [Secured Client with OAuth2 Example](https://ballerina.io/swan-lake/learn/by-example/secured-client-with-oauth2.html).
+For information on the operations, which you can perform with this module, see the below **Functions**. For examples on the usage of the operations, see the following.
+* [Secured Service with OAuth2 Example](https://ballerina.io/swan-lake/learn/by-example/secured-service-with-oauth2.html)
+* [Secured Client with OAuth2 Client Credentials Grant Type](https://ballerina.io/swan-lake/learn/by-example/secured-client-with-oauth2-client-credentials-grant-type.html)
+* [Secured Client with OAuth2 Password Grant Type](https://ballerina.io/swan-lake/learn/by-example/secured-client-with-oauth2-password-grant-type.html)
+* [Secured Client with OAuth2 Direct Token Type](https://ballerina.io/swan-lake/learn/by-example/secured-client-with-oauth2-direct-token-type.html)
