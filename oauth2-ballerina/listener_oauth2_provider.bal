@@ -103,7 +103,7 @@ public class ListenerOAuth2Provider {
         }
     }
 
-    # Authenticates the provider OAuth2 tokens with an introspection endpoint.
+    # Authenticates the provider OAuth2 tokens against the introspection endpoint.
     # ```ballerina
     # boolean|oauth2:Error result = provider.authenticate("<credential>");
     # ```
