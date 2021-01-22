@@ -19,7 +19,8 @@ import ballerina/log;
 # Represents the OAuth2 distinct error.
 public type OAuth2Error distinct error;
 
-# Represents the OAuth2 error.
+# Represents the OAuth2 error type with details. This will be returned if an error occurred while listener OAuth2
+# provider try to authenticate the received credentials and client OAuth 2provider try to generate the token.
 public type Error OAuth2Error;
 
 // Logs and prepares the `error` as an `oauth2:Error`.

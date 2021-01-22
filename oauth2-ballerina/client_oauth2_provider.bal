@@ -23,7 +23,7 @@ import ballerina/time;
 # + clientSecret - Client secret for the client credentials grant authentication
 # + scopes - Scope(s) of the access request
 # + defaultTokenExpInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
-# + clockSkewInSeconds - Clock skew in seconds
+# + clockSkewInSeconds - Clock skew in seconds that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
@@ -49,7 +49,7 @@ public type ClientCredentialsGrantConfig record {|
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
 # + defaultTokenExpInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
-# + clockSkewInSeconds - Clock skew in seconds
+# + clockSkewInSeconds - Clock skew in seconds that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
@@ -76,7 +76,7 @@ public type PasswordGrantConfig record {|
 # + clientSecret - Client secret for authentication with the authorization endpoint
 # + scopes - Scope(s) of the access request
 # + defaultTokenExpInSeconds - Expiration time of the tokens if authorization server response does not contain an `expires_in` field
-# + clockSkewInSeconds - Clock skew in seconds
+# + clockSkewInSeconds - Clock skew in seconds that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
@@ -128,11 +128,11 @@ type RequestConfig record {|
     CredentialBearer credentialBearer;
 |};
 
-# Represents the grant type configs supported for OAuth2.
+# Represents the grant type configurations supported for OAuth2.
 public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectTokenConfig;
 
-# Represents the client OAuth2 provider, which generates OAtuh2 tokens. This supports the client credentials grant type,
-# password grant type, and the direct token mode, which sends the access token directly.
+# Represents the client OAuth2 provider, which generates OAuth2 tokens. This supports the client credentials grant type,
+# password grant type, and the direct token type, which sends the access token directly.
 #
 # 1. Client Credentials Grant Type
 # ```ballerina
@@ -156,17 +156,14 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectT
 # });
 # ```
 #
-# 3. Direct Token Mode
+# 3. Direct Token Type
 # ```ballerina
 # oauth2:ClientOAuth2Provider provider = new({
-#     accessToken: "2YotnFZFEjr1zCsicMWpAA",
-#     refreshConfig: {
-#         refreshUrl: "https://localhost:9196/oauth2/token/refresh",
-#         refreshToken: "XlfBs91yquexJqDaKEMzVg==",
-#         clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L",
-#         clientSecret: "9205371918321623741",
-#         scopes: ["token-scope1", "token-scope2"]
-#     }
+#     refreshUrl: "https://localhost:9196/oauth2/token/refresh",
+#     refreshToken: "XlfBs91yquexJqDaKEMzVg==",
+#     clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L",
+#     clientSecret: "9205371918321623741",
+#     scopes: ["token-scope1", "token-scope2"]
 # });
 # ```
 public class ClientOAuth2Provider {
@@ -182,12 +179,12 @@ public class ClientOAuth2Provider {
         self.tokenCache = initTokenCache();
     }
 
-    # Generate a token for the OAuth2 authentication.
+    # Get an OAuth2 access token from authorization server for the OAuth2 authentication.
     # ```ballerina
     # string:oauth2:Error token = provider.generateToken();
     # ```
     #
-    # + return - Generated `string` token or else an `oauth2:Error` if an error occurred
+    # + return - Generated OAuth2 token or else an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
         string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
         if (authToken is Error) {
@@ -204,7 +201,7 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenC
     } else if (grantConfig is ClientCredentialsGrantConfig) {
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else {
-        return getOAuth2TokenForDirectTokenMode(grantConfig, tokenCache);
+        return getOAuth2TokenForDirectTokenType(grantConfig, tokenCache);
     }
 }
 
@@ -248,8 +245,8 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     }
 }
 
-// Processes the OAuth2 token for the direct token mode.
-isolated function getOAuth2TokenForDirectTokenMode(DirectTokenConfig grantConfig,
+// Processes the OAuth2 token for the direct token type.
+isolated function getOAuth2TokenForDirectTokenType(DirectTokenConfig grantConfig,
                                                    TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.accessToken;
     if (cachedAccessToken == "") {
