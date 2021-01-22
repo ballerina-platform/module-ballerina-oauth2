@@ -15,7 +15,7 @@
 // under the License.
 
 import ballerina/crypto;
-import ballerina/java;
+import ballerina/jballerina.java;
 
 # Represents the configurations of the client used to call the introspection endpoint.
 #
