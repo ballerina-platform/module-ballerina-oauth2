@@ -24,10 +24,8 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -124,7 +122,7 @@ public class OAuth2Client {
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {
-                        return null;
+                        return new X509Certificate[0];
                     }
 
                     public void checkClientTrusted(X509Certificate[] certs, String authType) {
@@ -142,15 +140,16 @@ public class OAuth2Client {
     private static SSLContext initSslContext(BMap<BString, BString> trustStore) throws Exception {
         String path = trustStore.getStringValue(StringUtils.fromString(OAuth2Constants.PATH)).getValue();
         String password = trustStore.getStringValue(StringUtils.fromString(OAuth2Constants.PASSWORD)).getValue();
-        InputStream is = new FileInputStream(new File(path));
-        char[] passphrase = password.toCharArray();
-        KeyStore ks = KeyStore.getInstance(OAuth2Constants.PKCS12);
-        ks.load(is, passphrase);
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        tmf.init(ks);
-        SSLContext sslContext = SSLContext.getInstance(OAuth2Constants.TLS);
-        sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
-        return sslContext;
+        try (FileInputStream is = new FileInputStream(path)) {
+            char[] passphrase = password.toCharArray();
+            KeyStore ks = KeyStore.getInstance(OAuth2Constants.PKCS12);
+            ks.load(is, passphrase);
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            tmf.init(ks);
+            SSLContext sslContext = SSLContext.getInstance(OAuth2Constants.TLS);
+            sslContext.init(null, tmf.getTrustManagers(), new SecureRandom());
+            return sslContext;
+        }
     }
 
     private static HttpClient buildHttpClient(String httpVersion) {
