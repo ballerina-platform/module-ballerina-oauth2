@@ -138,11 +138,6 @@ task initializeVariables {
 }
 
 task ballerinaTest {
-    dependsOn(copyStdlibs)
-    dependsOn(":oauth2-native:build")
-    dependsOn(updateTomlVersions)
-    finalizedBy(revertTomlFile)
-
     doLast {
         exec {
             workingDir project.projectDir
@@ -159,15 +154,8 @@ task ballerinaTest {
     }
 }
 
-test {
-    dependsOn(ballerinaTest)
-}
-
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
-    dependsOn(":oauth2-native:build")
-    dependsOn(initializeVariables)
-    finalizedBy(revertTomlFile)
 
     def testParams = "--skip-tests"
     gradle.taskGraph.whenReady { graph ->
@@ -265,6 +253,16 @@ publishing {
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlVersions.dependsOn copyStdlibs
-ballerinaBuild.dependsOn updateTomlVersions
+
+ballerinaTest.finalizedBy revertTomlFile
+ballerinaTest.dependsOn initializeVariables
+ballerinaTest.dependsOn updateTomlVersions
+ballerinaTest.dependsOn ":oauth2-native:build"
+test.dependsOn ballerinaTest
+
 ballerinaBuild.dependsOn test
+ballerinaBuild.finalizedBy revertTomlFile
+ballerinaBuild.dependsOn initializeVariables
+ballerinaBuild.dependsOn updateTomlVersions
+ballerinaBuild.dependsOn ":oauth2-native:build"
 build.dependsOn ballerinaBuild
