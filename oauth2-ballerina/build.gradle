@@ -159,7 +159,7 @@ task ballerinaBuild {
 
     def testParams = "--skip-tests"
     gradle.taskGraph.whenReady { graph ->
-        if (graph.hasTask(':oauth2-ballerina:build')) {
+        if (graph.hasTask(':oauth2-ballerina:build') || graph.hasTask(':oauth2-ballerina:publish')) {
             ballerinaTest.enabled = false
         }
         if (graph.hasTask(':oauth2-ballerina:test')) {
