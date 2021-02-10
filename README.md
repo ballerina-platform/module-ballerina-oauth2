@@ -10,9 +10,9 @@ The OAuth2 library is one of the standard library modules of the <a target="_bla
 
 It provides a listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint, and a client OAuth2 authentication provider, which can be used to authenticate against an external endpoint.
 
-For more information go to [The OAuth2 Module](https://ballerina.io/swan-lake/learn/api-docs/ballerina/#/ballerina/oauth2/latest/oauth2/).
+For more information go to [The OAuth2 Module](https://ballerina.io/learn/api-docs/ballerina/#/ballerina/oauth2/latest/oauth2/).
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/swan-lake/learn/by-example/).
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
 ## Issues and Projects
 
