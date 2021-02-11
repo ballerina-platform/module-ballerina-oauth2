@@ -14,43 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/auth;
 import ballerina/log;
 
 # Represents the OAuth2 distinct error.
 public type OAuth2Error distinct error;
 
-# Represents the OAuth2 error.
+# Represents the OAuth2 error type with details. This will be returned if an error occurred while listener OAuth2
+# provider try to authenticate the received credentials and client OAuth 2provider try to generate the token.
 public type Error OAuth2Error;
 
-# Logs and prepares the `error` as an `oauth2:Error`.
-#
-# + message - Error message
-# + err - `error` instance
-# + return - Prepared `Error` instance
+// Logs and prepares the `error` as an `oauth2:Error`.
 isolated function prepareError(string message, error? err = ()) returns Error {
-    log:printError(message, err);
-    Error oauth2Error;
+    log:printError(message, err = err);
     if (err is error) {
-        oauth2Error = OAuth2Error(message, err);
-    } else {
-        oauth2Error = OAuth2Error(message);
+        return error OAuth2Error(message, err);
     }
-    return oauth2Error;
-}
-
-# Log and prepare `error` as a `auth:Error`.
-#
-# + message - Error message
-# + err - `error` instance
-# + return - Prepared `auth:Error` instance
-isolated function prepareAuthError(string message, error? err = ()) returns auth:Error {
-    log:printError(message, err);
-    auth:Error authError;
-    if (err is error) {
-        authError = auth:AuthError(message, err);
-    } else {
-        authError = auth:AuthError(message);
-    }
-    return authError;
+    return error OAuth2Error(message);
 }

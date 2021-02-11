@@ -6,13 +6,13 @@ Ballerina OAuth2 Library
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/oauth2.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Foauth2)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The OAuth2 library is one of the standard library modules of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
+The OAuth2 library is one of the standard library modules of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
 
-It provides an inbound OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint and an outbound OAuth2 authentication provider, which can be used to authenticate an external endpoint.
+It provides a listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint, and a client OAuth2 authentication provider, which can be used to authenticate against an external endpoint.
 
-For more information go to [The OAuth2 Module](https://ballerina.io/swan-lake/learn/api-docs/ballerina/oauth2/index.html).
+For more information go to [The OAuth2 Module](https://ballerina.io/learn/api-docs/ballerina/#/ballerina/oauth2/latest/oauth2/).
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/swan-lake/learn/by-example/).
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
 ## Issues and Projects
 
@@ -31,7 +31,14 @@ This repository only contains the source code for the module.
    * [OpenJDK](https://adoptopenjdk.net)
    
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
-     
+
+2. Export Github Personal Access Token (PAT) with read package permissions as follows:
+
+    ```
+    export packageUser=<Username>
+    export packagePAT=<Personal Access Token>
+    ```
+
 ### Building the Source
 
 Execute the commands below to build from the source.

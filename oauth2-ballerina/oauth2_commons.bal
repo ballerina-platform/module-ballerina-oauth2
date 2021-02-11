@@ -15,7 +15,7 @@
 // under the License.
 
 import ballerina/crypto;
-import ballerina/java;
+import ballerina/jballerina.java;
 
 # Represents the configurations of the client used to call the introspection endpoint.
 #
@@ -48,8 +48,7 @@ public type SecureSocket record {|
 # Represents HTTP versions.
 public enum CredentialBearer {
     AUTH_HEADER_BEARER,
-    POST_BODY_BEARER,
-    NO_BEARER
+    POST_BODY_BEARER
 }
 
 isolated function doHttpRequest(string url, ClientConfiguration clientConfig, map<string> headers, string payload)

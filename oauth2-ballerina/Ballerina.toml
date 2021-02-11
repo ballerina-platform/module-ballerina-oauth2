@@ -1,26 +1,10 @@
-[project]
-org-name = "ballerina"
+[package]
+org = "ballerina"
+name = "oauth2"
 version = "@toml.version@"
 
-[dependencies]
-"ballerina/auth" = "@stdlib.auth.version@"
-"ballerina/cache" = "@stdlib.cache.version@"
-"ballerina/stringutils" = "@stdlib.stringutils.version@"
-"ballerina/log" = "@stdlib.log.version@"
-"ballerina/crypto" = "@stdlib.crypto.version@"
-"ballerina/io" = "@stdlib.io.version@"
-"ballerina/time" = "@stdlib.time.version@"
-"ballerina/system" = "@stdlib.system.version@"
-"ballerina/config" = "@stdlib.config.version@"
-"ballerina/task" = "@stdlib.task.version@"
-"ballerina/runtime" = "@stdlib.runtime.version@"
-
-[platform]
-target = "java11"
-
-    [[platform.libraries]]
-    artifactId = "oauth2"
-    version = "@project.version@"
-    path = "../oauth2-native/build/libs/oauth2-native-@project.version@.jar"
-    groupId = "ballerina"
-    modules = ["oauth2"]
+[[platform.java11.dependency]]
+path = "../oauth2-native/build/libs/oauth2-native-@project.version@.jar"
+groupId = "ballerina"
+artifactId = "oauth2"
+version = "@project.version@"
