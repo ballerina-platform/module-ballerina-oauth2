@@ -38,7 +38,9 @@ isolated function getAccessToken() returns string {
 }
 
 // Test the introspection request with successful token
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testIntrospectionServer1() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -70,7 +72,9 @@ isolated function testIntrospectionServer1() {
 }
 
 // Test the introspection request with invalid token
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testIntrospectionServer2() {
     string accessToken = "invalid_token";
     IntrospectionConfig config = {
@@ -95,7 +99,9 @@ isolated function testIntrospectionServer2() {
 }
 
 // Test the introspection request with successful token without authenticating the client
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testIntrospectionServer3() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {

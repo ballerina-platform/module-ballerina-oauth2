@@ -136,6 +136,14 @@ task initializeVariables {
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
     }
+    // This check is added to disable the 'provider' group tests in Windows OS since the Docker image does not support
+    // for Windows OS.
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        if (disableGroups == "") {
+            disableGroups = "--disable-groups"
+        }
+        disableGroups += " provider"
+    }
     gradle.taskGraph.whenReady { graph ->
         if (graph.hasTask(":${packageName}-ballerina:build") || graph.hasTask(":${packageName}-ballerina:publish"))  {
             ballerinaTest.enabled = false
@@ -263,60 +271,52 @@ publishing {
 
 task startWso2IS() {
     doLast {
-        def stdOut = new ByteArrayOutputStream()
-        exec {
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "docker ps --filter name=wso2-is"
-            } else {
-                commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
-            }
-            standardOutput = stdOut
-        }
-        if (!stdOut.toString().contains("wso2-is")) {
-            println "Starting WSO2 IS."
+        // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
+        // for Windows OS.
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def stdOut = new ByteArrayOutputStream()
             exec {
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
-                } else {
-                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
-                }
+                commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
                 standardOutput = stdOut
             }
-            println stdOut.toString()
-            println "Waiting 100s until the WSO2 IS get initiated."
-            sleep(100 * 1000)
-        } else {
-            println "WSO2 IS is already started."
+            if (!stdOut.toString().contains("wso2-is")) {
+                println "Starting WSO2 IS."
+                exec {
+                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
+                    standardOutput = stdOut
+                }
+                println stdOut.toString()
+                println "Waiting 100s until the WSO2 IS get initiated."
+                sleep(100 * 1000)
+            } else {
+                println "WSO2 IS is already started."
+            }
         }
     }
 }
 
 task stopWso2IS() {
     doLast {
-        def stdOut = new ByteArrayOutputStream()
-        exec {
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "docker ps --filter name=wso2-is"
-            } else {
-                commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
-            }
-            standardOutput = stdOut
-        }
-        if (stdOut.toString().contains("wso2-is")) {
-            println "Stopping WSO2 IS."
+        // This check is added to prevent trying to stop the server in Windows OS, since the Docker image not started
+        // in Windows OS.
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def stdOut = new ByteArrayOutputStream()
             exec {
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "docker stop wso2-is"
-                } else {
-                    commandLine 'sh', '-c', "docker stop wso2-is"
-                }
+                commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
                 standardOutput = stdOut
             }
-            println stdOut.toString()
-            println "Waiting 15s until the WSO2 IS get stopped."
-            sleep(15 * 1000)
-        } else {
-            println "WSO2 IS is not started."
+            if (stdOut.toString().contains("wso2-is")) {
+                println "Stopping WSO2 IS."
+                exec {
+                    commandLine 'sh', '-c', "docker stop wso2-is"
+                    standardOutput = stdOut
+                }
+                println stdOut.toString()
+                println "Waiting 15s until the WSO2 IS get stopped."
+                sleep(15 * 1000)
+            } else {
+                println "WSO2 IS is not started."
+            }
         }
     }
 }

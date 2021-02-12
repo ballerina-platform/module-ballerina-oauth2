@@ -19,7 +19,9 @@
 import ballerina/test;
 
 // Test the client credentials grant type with valid credentials
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testClientCredentialsGrantType1() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -55,7 +57,9 @@ isolated function testClientCredentialsGrantType1() {
 }
 
 // Test the client credentials grant type with invalid client credentials
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testClientCredentialsGrantType2() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -91,7 +95,9 @@ isolated function testClientCredentialsGrantType2() {
 }
 
 // Test the client credentials grant type with valid client id and invalid client secret
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testClientCredentialsGrantType3() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -127,7 +133,9 @@ isolated function testClientCredentialsGrantType3() {
 }
 
 // Test the password grant type with valid credentials
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testPasswordGrantType1() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -165,7 +173,9 @@ isolated function testPasswordGrantType1() {
 }
 
 // Test the password grant type with valid credentials and a valid refresh config
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testPasswordGrantType2() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -215,7 +225,9 @@ isolated function testPasswordGrantType2() {
 }
 
 // Test the password grant type with an invalid username, password, and a valid refresh config
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testPasswordGrantType3() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -264,7 +276,9 @@ isolated function testPasswordGrantType3() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["provider"]
+}
 isolated function testDirectToken1() {
     // Test the direct token mode with an invalid access token and a valid refresh config
     DirectTokenConfig config = {
