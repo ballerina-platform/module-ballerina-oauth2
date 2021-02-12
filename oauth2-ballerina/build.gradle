@@ -263,48 +263,60 @@ publishing {
 
 task startWso2IS() {
     doLast {
-        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-            def stdOut = new ByteArrayOutputStream()
-            exec {
+        def stdOut = new ByteArrayOutputStream()
+        exec {
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "docker ps --filter name=wso2-is"
+            } else {
                 commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
+            }
+            standardOutput = stdOut
+        }
+        if (!stdOut.toString().contains("wso2-is")) {
+            println "Starting WSO2 IS."
+            exec {
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
+                } else {
+                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
+                }
                 standardOutput = stdOut
             }
-            if (!stdOut.toString().contains("wso2-is")) {
-                println "Starting WSO2 IS."
-                exec {
-                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
-                    standardOutput = stdOut
-                }
-                println stdOut.toString()
-                println "Waiting 100s until the WSO2 IS get initiated."
-                sleep(100 * 1000)
-            } else {
-                println "WSO2 IS is already started."
-            }
+            println stdOut.toString()
+            println "Waiting 100s until the WSO2 IS get initiated."
+            sleep(100 * 1000)
+        } else {
+            println "WSO2 IS is already started."
         }
     }
 }
 
 task stopWso2IS() {
     doLast {
-        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-            def stdOut = new ByteArrayOutputStream()
-            exec {
+        def stdOut = new ByteArrayOutputStream()
+        exec {
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "docker ps --filter name=wso2-is"
+            } else {
                 commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
+            }
+            standardOutput = stdOut
+        }
+        if (stdOut.toString().contains("wso2-is")) {
+            println "Stopping WSO2 IS."
+            exec {
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "docker stop wso2-is"
+                } else {
+                    commandLine 'sh', '-c', "docker stop wso2-is"
+                }
                 standardOutput = stdOut
             }
-            if (stdOut.toString().contains("wso2-is")) {
-                println "Stopping WSO2 IS."
-                exec {
-                    commandLine 'sh', '-c', "docker stop wso2-is"
-                    standardOutput = stdOut
-                }
-                println stdOut.toString()
-                println "Waiting 15s until the WSO2 IS get stopped."
-                sleep(15 * 1000)
-            } else {
-                println "WSO2 IS is not started."
-            }
+            println stdOut.toString()
+            println "Waiting 15s until the WSO2 IS get stopped."
+            sleep(15 * 1000)
+        } else {
+            println "WSO2 IS is not started."
         }
     }
 }
