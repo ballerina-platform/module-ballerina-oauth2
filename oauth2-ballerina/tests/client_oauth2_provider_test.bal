@@ -16,7 +16,6 @@
 
 // NOTE: All the tokens/credentials used in this test are dummy tokens/credentials and used only for testing purposes.
 
-import ballerina/regex;
 import ballerina/test;
 
 // Test the client credentials grant type with valid credentials
@@ -290,28 +289,4 @@ isolated function testDirectToken1() {
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
-}
-
-isolated function assertToken(string token) {
-    string[] parts = regex:split(token, "-");
-    test:assertEquals(parts.length(), 5);
-    test:assertEquals(parts[0].length(), 8);
-    test:assertEquals(parts[1].length(), 4);
-    test:assertEquals(parts[2].length(), 4);
-    test:assertEquals(parts[3].length(), 4);
-    test:assertEquals(parts[4].length(), 12);
-}
-
-isolated function assertContains(Error err, string text) {
-    string message = err.message();
-    var cause = err.cause();
-    if (cause is error) {
-        var innerCause = cause.cause();
-        while (innerCause is error) {
-            cause = innerCause;
-            innerCause = innerCause.cause();
-        }
-        message = cause.message();
-    }
-    test:assertTrue(message.includes(text));
 }
