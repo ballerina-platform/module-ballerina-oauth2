@@ -14,5 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const string KEYSTORE_PATH = "src/oauth2/tests/resources/keystore/ballerinaKeystore.p12";
-const string TRUSTSTORE_PATH = "src/oauth2/tests/resources/keystore/ballerinaTruststore.p12";
+const string KEYSTORE_PATH = "tests/resources/keystore/ballerinaKeystore.p12";
+const string TRUSTSTORE_PATH = "tests/resources/keystore/ballerinaTruststore.p12";
+const string WSO2_KEYSTORE_PATH = "tests/resources/keystore/wso2Keystore.p12";
+const string WSO2_TRUSTSTORE_PATH = "tests/resources/keystore/wso2Truststore.p12";
