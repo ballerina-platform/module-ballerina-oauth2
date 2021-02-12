@@ -384,7 +384,7 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
     if (stringResponse is Error) {
-        return prepareError("Failed to call introspection endpoint.", stringResponse);
+        return prepareError("Failed to call token endpoint.", stringResponse);
     }
     return extractAccessToken(checkpanic stringResponse, tokenCache, defaultTokenExpInSeconds, clockSkewInSeconds);
 }
@@ -397,8 +397,6 @@ isolated function prepareHeaders(RequestConfig config) returns map<string>|Error
         if (clientId is string && clientSecret is string) {
             string clientIdSecret = clientId + ":" + clientSecret;
             headers["Authorization"] = "Basic " + clientIdSecret.toBytes().toBase64();
-        } else {
-            return prepareError("Client ID or client secret is not provided for client authentication.");
         }
     }
     return headers;
@@ -432,8 +430,6 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
         string? clientSecret = config?.clientSecret;
         if (clientId is string && clientSecret is string) {
             textPayload = textPayload + "&client_id=" + clientId + "&client_secret=" + clientSecret;
-        } else {
-            return prepareError("Client ID or client secret is not provided for client authentication.");
         }
     }
     return textPayload;
