@@ -384,7 +384,7 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
     if (stringResponse is Error) {
-        return prepareError("Failed to call token endpoint.", stringResponse);
+        return prepareError("Failed to call the token endpoint.", stringResponse);
     }
     return extractAccessToken(checkpanic stringResponse, tokenCache, defaultTokenExpInSeconds, clockSkewInSeconds);
 }

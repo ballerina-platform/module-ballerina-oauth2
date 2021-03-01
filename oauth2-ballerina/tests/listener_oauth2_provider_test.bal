@@ -118,7 +118,7 @@ isolated function testIntrospectionServer3() {
     ListenerOAuth2Provider provider = new(config);
     IntrospectionResponse|Error response = provider.authorize(accessToken);
     if (response is Error) {
-        assertContains(response, "Failed to get a success response from the endpoint. Response Code: 401.");
+        assertContains(response, "Failed to get a success response from the endpoint. Response Code: '401'.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }

@@ -159,7 +159,7 @@ isolated function validate(string token, IntrospectionConfig config, map<string>
     }
     string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);
     if (stringResponse is Error) {
-        return prepareError("Failed to call introspection endpoint.", stringResponse);
+        return prepareError("Failed to call the introspection endpoint.", stringResponse);
     }
     json|error jsonResponse = (checkpanic stringResponse).fromJsonString();
     if (jsonResponse is error) {
