@@ -128,7 +128,8 @@ public class ListenerOAuth2Provider {
                 return response;
             }
         }
-        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig, self.clientOAuth2Provider, optionalParams);
+        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig,
+                                                                self.clientOAuth2Provider, optionalParams);
         if (validationResult is Error) {
             return prepareError("OAuth2 validation failed.", validationResult);
         }
@@ -141,8 +142,8 @@ public class ListenerOAuth2Provider {
 }
 
 // Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
-isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider, map<string>? optionalParams)
-                           returns IntrospectionResponse|Error {
+isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
+                           map<string>? optionalParams) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, refer to the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
     string textPayload = "token=" + token;
