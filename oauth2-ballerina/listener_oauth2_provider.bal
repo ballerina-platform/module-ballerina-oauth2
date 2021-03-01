@@ -91,6 +91,7 @@ public class ListenerOAuth2Provider {
 
     IntrospectionConfig introspectionConfig;
     cache:Cache? oauth2Cache = ();
+    ClientOAuth2Provider? clientOAuth2Provider = ();
 
     # Provides authentication based on the provided introspection configurations.
     #
@@ -100,6 +101,10 @@ public class ListenerOAuth2Provider {
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
         if (oauth2CacheConfig is cache:CacheConfig) {
             self.oauth2Cache = new(oauth2CacheConfig);
+        }
+        ClientAuth? auth = introspectionConfig.clientConfig?.auth;
+        if (auth is ClientAuth) {
+            self.clientOAuth2Provider = new(auth);
         }
     }
 
@@ -123,8 +128,7 @@ public class ListenerOAuth2Provider {
                 return response;
             }
         }
-
-        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig, optionalParams);
+        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig, self.clientOAuth2Provider, optionalParams);
         if (validationResult is Error) {
             return prepareError("OAuth2 validation failed.", validationResult);
         }
@@ -137,7 +141,7 @@ public class ListenerOAuth2Provider {
 }
 
 // Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
-isolated function validate(string token, IntrospectionConfig config, map<string>? optionalParams = ())
+isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider, map<string>? optionalParams)
                            returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, refer to the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
@@ -155,6 +159,18 @@ isolated function validate(string token, IntrospectionConfig config, map<string>
     if (optionalParams is map<string>) {
         foreach [string, string] [key, value] in optionalParams.entries() {
             textPayload = textPayload + "&" + key.trim() + "=" + value.trim();
+        }
+    }
+    ClientOAuth2Provider? oauth2Provider = clientOAuth2Provider;
+    if (oauth2Provider is ClientOAuth2Provider) {
+        string|Error accessToken = oauth2Provider.generateToken();
+        if (accessToken is string) {
+            map<string>? customHeadersMap = config.clientConfig?.customHeaders;
+            if (customHeadersMap is map<string>) {
+                customHeadersMap["Authorization"] = "Bearer " + accessToken;
+            } else {
+                config.clientConfig.customHeaders = { "Authorization" : "Bearer " + accessToken };
+            }
         }
     }
     string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);

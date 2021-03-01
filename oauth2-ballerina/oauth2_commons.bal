@@ -22,13 +22,18 @@ import ballerina/jballerina.java;
 # + httpVersion - The HTTP version of the client
 # + customHeaders - The list of custom HTTP headers
 # + customPayload - The list of custom HTTP payload parameters
+# + auth - The client auth configurations
 # + secureSocket - SSL/TLS related configurations
 public type ClientConfiguration record {|
     HttpVersion httpVersion = HTTP_1_1;
     map<string> customHeaders?;
     string customPayload?;
+    ClientAuth auth?;
     SecureSocket secureSocket?;
 |};
+
+# Defines the authentication configuration types for the HTTP client used for token introspection.
+public type ClientAuth ClientCredentialsGrantConfig|PasswordGrantConfig|DirectTokenConfig;
 
 # Represents HTTP versions.
 public enum HttpVersion {
