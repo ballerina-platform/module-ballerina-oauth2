@@ -183,10 +183,10 @@ public class OAuth2Client {
             if (response.statusCode() == 200) {
                 return StringUtils.fromString(response.body());
             }
-            return createError("Failed to get a success response from introspection endpoint. Response Code: '" +
+            return createError("Failed to get a success response from the endpoint. Response Code: '" +
                                        response.statusCode() + "'. Response Body: '" + response.body() + "'");
         } catch (IOException | InterruptedException e) {
-            return createError("Failed to send the request to introspection endpoint. " + e.getMessage());
+            return createError("Failed to send the request to the endpoint. " + e.getMessage());
         }
     }
 
