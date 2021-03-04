@@ -18,20 +18,27 @@
 
 package org.ballerinalang.stdlib.oauth2;
 
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BString;
+
 /**
  * Constants related to Ballerina OAuth2 stdlib.
  */
 public class OAuth2Constants {
     public static final String OAUTH2_ERROR_TYPE = "OAuth2Error";
 
-    public static final String HTTP_VERSION = "httpVersion";
-    public static final String DISABLE = "disable";
-    public static final String SECURE_SOCKET = "secureSocket";
-    public static final String TRUSTSTORE = "trustStore";
-    public static final String PATH = "path";
-    public static final String PASSWORD = "password";
-    public static final String CUSTOM_HEADERS = "customHeaders";
-    public static final String CUSTOM_PAYLOAD = "customPayload";
+    public static final BString HTTP_VERSION = StringUtils.fromString("httpVersion");
+    public static final BString SECURE_SOCKET = StringUtils.fromString("secureSocket");
+    public static final BString DISABLE = StringUtils.fromString("disable");
+    public static final BString CERT = StringUtils.fromString("cert");
+    public static final BString KEY = StringUtils.fromString("key");
+    public static final BString CERT_FILE = StringUtils.fromString("certFile");
+    public static final BString KEY_FILE = StringUtils.fromString("keyFile");
+    public static final BString KEY_PASSWORD = StringUtils.fromString("keyPassword");
+    public static final BString PATH = StringUtils.fromString("path");
+    public static final BString PASSWORD = StringUtils.fromString("password");
+    public static final BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
+    public static final BString CUSTOM_PAYLOAD = StringUtils.fromString("customPayload");
 
     public static final String TLS = "TLS";
     public static final String PKCS12 = "PKCS12";
@@ -39,4 +46,7 @@ public class OAuth2Constants {
 
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
+
+    public static final String NATIVE_DATA_PUBLIC_KEY_CERTIFICATE = "NATIVE_DATA_PUBLIC_KEY_CERTIFICATE";
+    public static final String NATIVE_DATA_PRIVATE_KEY = "NATIVE_DATA_PRIVATE_KEY";
 }
