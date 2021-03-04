@@ -30,7 +30,7 @@ isolated function testClientCredentialsGrantType1() {
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -68,7 +68,7 @@ isolated function testClientCredentialsGrantType2() {
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -106,7 +106,7 @@ isolated function testClientCredentialsGrantType3() {
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -146,7 +146,7 @@ isolated function testPasswordGrantType1() {
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -189,7 +189,7 @@ isolated function testPasswordGrantType2() {
             scopes: ["view-order"],
             clientConfig: {
                 secureSocket: {
-                   trustStore: {
+                   cert: {
                        path: WSO2_TRUSTSTORE_PATH,
                        password: "wso2carbon"
                    }
@@ -198,7 +198,7 @@ isolated function testPasswordGrantType2() {
         },
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -241,7 +241,7 @@ isolated function testPasswordGrantType3() {
             scopes: ["view-order"],
             clientConfig: {
                 secureSocket: {
-                   trustStore: {
+                   cert: {
                        path: WSO2_TRUSTSTORE_PATH,
                        password: "wso2carbon"
                    }
@@ -250,7 +250,7 @@ isolated function testPasswordGrantType3() {
         },
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -289,7 +289,7 @@ isolated function testDirectToken1() {
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }

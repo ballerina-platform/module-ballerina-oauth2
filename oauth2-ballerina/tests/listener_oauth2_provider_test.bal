@@ -26,10 +26,7 @@ isolated function getAccessToken() returns string {
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
-               trustStore: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT
             }
         }
     };
@@ -48,7 +45,7 @@ isolated function testIntrospectionServer1() {
         clientConfig: {
             customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -82,7 +79,7 @@ isolated function testIntrospectionServer2() {
         clientConfig: {
             customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -108,7 +105,7 @@ isolated function testIntrospectionServer3() {
         url: "https://localhost:9443/oauth2/introspect",
         clientConfig: {
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -139,7 +136,7 @@ isolated function testIntrospectionServer4() {
                 clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
                 clientConfig: {
                     secureSocket: {
-                       trustStore: {
+                       cert: {
                            path: WSO2_TRUSTSTORE_PATH,
                            password: "wso2carbon"
                        }
@@ -147,7 +144,7 @@ isolated function testIntrospectionServer4() {
                 }
             },
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -188,7 +185,7 @@ isolated function testIntrospectionServer5() {
                 scopes: ["view-order"],
                 clientConfig: {
                     secureSocket: {
-                       trustStore: {
+                       cert: {
                            path: WSO2_TRUSTSTORE_PATH,
                            password: "wso2carbon"
                        }
@@ -196,7 +193,7 @@ isolated function testIntrospectionServer5() {
                 }
             },
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -234,7 +231,7 @@ isolated function testIntrospectionServer6() {
                 clientSecret: "invalid_client_secret",
                 clientConfig: {
                     secureSocket: {
-                       trustStore: {
+                       cert: {
                            path: WSO2_TRUSTSTORE_PATH,
                            password: "wso2carbon"
                        }
@@ -242,7 +239,7 @@ isolated function testIntrospectionServer6() {
                 }
             },
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
@@ -276,7 +273,7 @@ isolated function testIntrospectionServer7() {
                 scopes: ["view-order"],
                 clientConfig: {
                     secureSocket: {
-                       trustStore: {
+                       cert: {
                            path: WSO2_TRUSTSTORE_PATH,
                            password: "wso2carbon"
                        }
@@ -284,7 +281,7 @@ isolated function testIntrospectionServer7() {
                 }
             },
             secureSocket: {
-               trustStore: {
+               cert: {
                    path: WSO2_TRUSTSTORE_PATH,
                    password: "wso2carbon"
                }
