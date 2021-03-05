@@ -1,0 +1,6 @@
+fixes:
+  - "ballerina/oauth2/*/::oauth2-ballerina/"
+
+ignore:
+  - "**/test"
+
