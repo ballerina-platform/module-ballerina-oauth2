@@ -16,18 +16,15 @@
 
 import ballerina/log;
 
-# Represents the OAuth2 distinct error.
-public type OAuth2Error distinct error;
-
-# Represents the OAuth2 error type with details. This will be returned if an error occurred while listener OAuth2
-# provider try to authenticate the received credentials and client OAuth 2provider try to generate the token.
-public type Error OAuth2Error;
+# Represents the OAuth2 error. This will be returned if an error occurred while listener OAuth2 provider try to
+# authenticate the received credentials and client OAuth 2provider try to generate the token.
+public type Error distinct error;
 
 // Logs and prepares the `error` as an `oauth2:Error`.
 isolated function prepareError(string message, error? err = ()) returns Error {
-    log:printError(message, err = err);
+    log:printError(message, 'error = err);
     if (err is error) {
-        return error OAuth2Error(message, err);
+        return error Error(message, err);
     }
-    return error OAuth2Error(message);
+    return error Error(message);
 }

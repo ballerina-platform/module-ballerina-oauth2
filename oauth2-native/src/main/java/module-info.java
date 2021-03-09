@@ -18,5 +18,6 @@
 module io.ballerina.stdlib.oauth2 {
     requires io.ballerina.runtime;
     requires java.net.http;
+    requires io.ballerina.stdlib.crypto;
     exports org.ballerinalang.stdlib.oauth2;
 }

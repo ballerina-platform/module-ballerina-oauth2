@@ -21,13 +21,13 @@ description = 'Ballerina - OAuth2 Ballerina'
 
 def packageName = "oauth2"
 def packageOrg = "ballerina"
+def platform = "java11"
 def tomlVersion = project.version.replace("-SNAPSHOT", "")
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
 def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
 def artifactBallerinaDocs = file("$project.projectDir/build/docs_parent/")
 def artifactCacheParent = file("$project.projectDir/build/cache_parent/")
 def artifactLibParent = file("$project.projectDir/build/lib_parent/")
-def artifactCodeCoverageReport = file("$project.projectDir/target/cache/tests_cache/coverage/ballerina.exec")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 def originalConfig = ballerinaConfigFile.text
 def originalDependencyConfig = ballerinaDependencyFile.text
@@ -136,6 +136,14 @@ task initializeVariables {
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
     }
+    // This check is added to disable the 'provider' group tests in Windows OS since the Docker image does not support
+    // for Windows OS.
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        if (disableGroups == "") {
+            disableGroups = "--disable-groups"
+        }
+        disableGroups += " provider"
+    }
     gradle.taskGraph.whenReady { graph ->
         if (graph.hasTask(":${packageName}-ballerina:build") ||
                 graph.hasTask(":${packageName}-ballerina:publish") ||
@@ -191,9 +199,12 @@ task ballerinaBuild {
                 commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build ${testParams} ${debugParams}"
             }
         }
-        copy {
-            from file("$project.projectDir/target/bala")
-            into file("$artifactCacheParent/bala/${packageOrg}/${packageName}/${tomlVersion}")
+        // extract bala file to artifact cache directory
+        file("$project.projectDir/target/bala").eachFileMatch(~/.*.bala/) { balaFile ->
+            copy {
+                from zipTree(balaFile)
+                into file("$artifactCacheParent/bala/${packageOrg}/${packageName}/${tomlVersion}/${platform}")
+            }
         }
         copy {
             from file("$project.projectDir/target/cache")
@@ -254,7 +265,6 @@ publishing {
     publications {
         maven(MavenPublication) {
             artifact source: createArtifactZip, extension: 'zip'
-            artifact source: artifactCodeCoverageReport, classifier: 'jacoco'
         }
     }
     repositories {
@@ -269,11 +279,65 @@ publishing {
     }
 }
 
+task startWso2IS() {
+    doLast {
+        // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
+        // for Windows OS.
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def stdOut = new ByteArrayOutputStream()
+            exec {
+                commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
+                standardOutput = stdOut
+            }
+            if (!stdOut.toString().contains("wso2-is")) {
+                println "Starting WSO2 IS."
+                exec {
+                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
+                    standardOutput = stdOut
+                }
+                println stdOut.toString()
+                println "Waiting 100s until the WSO2 IS get initiated."
+                sleep(100 * 1000)
+            } else {
+                println "WSO2 IS is already started."
+            }
+        }
+    }
+}
+
+task stopWso2IS() {
+    doLast {
+        // This check is added to prevent trying to stop the server in Windows OS, since the Docker image not started
+        // in Windows OS.
+        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+            def stdOut = new ByteArrayOutputStream()
+            exec {
+                commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
+                standardOutput = stdOut
+            }
+            if (stdOut.toString().contains("wso2-is")) {
+                println "Stopping WSO2 IS."
+                exec {
+                    commandLine 'sh', '-c', "docker stop wso2-is"
+                    standardOutput = stdOut
+                }
+                println stdOut.toString()
+                println "Waiting 15s until the WSO2 IS get stopped."
+                sleep(15 * 1000)
+            } else {
+                println "WSO2 IS is not started."
+            }
+        }
+    }
+}
+
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlVersions.dependsOn copyStdlibs
 
 ballerinaTest.finalizedBy revertTomlFile
+ballerinaTest.finalizedBy stopWso2IS
+ballerinaTest.dependsOn startWso2IS
 ballerinaTest.dependsOn initializeVariables
 ballerinaTest.dependsOn updateTomlVersions
 ballerinaTest.dependsOn ":${packageName}-native:build"
@@ -281,6 +345,8 @@ test.dependsOn ballerinaTest
 
 ballerinaBuild.dependsOn test
 ballerinaBuild.finalizedBy revertTomlFile
+ballerinaBuild.finalizedBy stopWso2IS
+ballerinaBuild.dependsOn startWso2IS
 ballerinaBuild.dependsOn initializeVariables
 ballerinaBuild.dependsOn updateTomlVersions
 ballerinaBuild.dependsOn ":${packageName}-native:build"

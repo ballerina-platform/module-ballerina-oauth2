@@ -25,14 +25,14 @@ import ballerina/time;
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
 # + optionalParams - Map of optional parameters used for the introspection endpoint
 # + cacheConfig - Configurations for the cache used to store the OAuth2 token and other related information
-# + defaultTokenExpInSeconds - Expiration time of the tokens if introspection response does not contain an `exp` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations which calls the introspection server
 public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
     map<string> optionalParams?;
     cache:CacheConfig cacheConfig?;
-    int defaultTokenExpInSeconds = 3600;
+    decimal defaultTokenExpTime = 3600;
     ClientConfiguration clientConfig = {};
 };
 
@@ -91,6 +91,7 @@ public class ListenerOAuth2Provider {
 
     IntrospectionConfig introspectionConfig;
     cache:Cache? oauth2Cache = ();
+    ClientOAuth2Provider? clientOAuth2Provider = ();
 
     # Provides authentication based on the provided introspection configurations.
     #
@@ -100,6 +101,10 @@ public class ListenerOAuth2Provider {
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
         if (oauth2CacheConfig is cache:CacheConfig) {
             self.oauth2Cache = new(oauth2CacheConfig);
+        }
+        ClientAuth? auth = introspectionConfig.clientConfig?.auth;
+        if (auth is ClientAuth) {
+            self.clientOAuth2Provider = new(auth);
         }
     }
 
@@ -123,22 +128,21 @@ public class ListenerOAuth2Provider {
                 return response;
             }
         }
-
-        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig, optionalParams);
+        IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig,
+                                                                self.clientOAuth2Provider, optionalParams);
         if (validationResult is Error) {
             return prepareError("OAuth2 validation failed.", validationResult);
         }
         if (oauth2Cache is cache:Cache) {
-            addToCache(oauth2Cache, credential, checkpanic validationResult,
-                       self.introspectionConfig.defaultTokenExpInSeconds);
+            addToCache(oauth2Cache, credential, checkpanic validationResult, self.introspectionConfig.defaultTokenExpTime);
         }
         return checkpanic validationResult;
     }
 }
 
 // Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
-isolated function validate(string token, IntrospectionConfig config, map<string>? optionalParams = ())
-                           returns IntrospectionResponse|Error {
+isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
+                           map<string>? optionalParams) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, refer to the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
     string textPayload = "token=" + token;
@@ -157,9 +161,21 @@ isolated function validate(string token, IntrospectionConfig config, map<string>
             textPayload = textPayload + "&" + key.trim() + "=" + value.trim();
         }
     }
+    ClientOAuth2Provider? oauth2Provider = clientOAuth2Provider;
+    if (oauth2Provider is ClientOAuth2Provider) {
+        string|Error accessToken = oauth2Provider.generateToken();
+        if (accessToken is string) {
+            map<string>? customHeadersMap = config.clientConfig?.customHeaders;
+            if (customHeadersMap is map<string>) {
+                customHeadersMap["Authorization"] = "Bearer " + accessToken;
+            } else {
+                config.clientConfig.customHeaders = { "Authorization" : "Bearer " + accessToken };
+            }
+        }
+    }
     string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);
     if (stringResponse is Error) {
-        return prepareError("Failed to call introspection endpoint.", stringResponse);
+        return prepareError("Failed to call the introspection endpoint.", stringResponse);
     }
     json|error jsonResponse = (checkpanic stringResponse).fromJsonString();
     if (jsonResponse is error) {
@@ -221,17 +237,17 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
 }
 
 isolated function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
-                             int defaultTokenExpInSeconds) {
+                             decimal defaultTokenExpTime) {
     cache:Error? result;
     if (response?.exp is int) {
         result = oauth2Cache.put(token, response);
     } else {
         // If the `exp` parameter is not set by the introspection response, use the cache default expiry by
-        // the `defaultTokenExpInSeconds`. Then, the cached value will be removed when retrieving.
-        result = oauth2Cache.put(token, response, defaultTokenExpInSeconds);
+        // the `defaultTokenExpTime`. Then, the cached value will be removed when retrieving.
+        result = oauth2Cache.put(token, response, <int> defaultTokenExpTime);
     }
     if (result is cache:Error) {
-        log:printError("Failed to add OAuth2 token to the cache. Introspection response: " + response.toString());
+        log:printError("Failed to add OAuth2 token to the cache. Introspection response: '" + response.toString() + "'");
         return;
     }
 }
@@ -239,16 +255,16 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
 isolated function validateFromCache(cache:Cache oauth2Cache, string token) returns IntrospectionResponse? {
     any|cache:Error cachedEntry = oauth2Cache.get(token);
     if (cachedEntry is ()) {
-        // If the cached value is expired (defaultTokenExpInSeconds is passed), it will return `()`.
+        // If the cached value is expired (defaultTokenExpTime is passed), it will return `()`.
         return;
     }
     if (cachedEntry is cache:Error) {
-        log:printError("Failed to validate the token from the cache. Cache error: " + cachedEntry.toString());
+        log:printError("Failed to validate the token from the cache. Cache error: '" + cachedEntry.toString() + "'");
         return;
     }
     IntrospectionResponse response = <IntrospectionResponse> checkpanic cachedEntry;
     int? expTime = response?.exp;
-    // The `expTime` can be `()`. This means that the `defaultTokenExpInSeconds` is not exceeded yet.
+    // The `expTime` can be `()`. This means that the `defaultTokenExpTime` is not exceeded yet.
     // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
     // check if the expiry time is exceeded.
     if (expTime is () || expTime > (time:currentTime().time / 1000)) {
@@ -256,7 +272,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     } else {
         cache:Error? result = oauth2Cache.invalidate(token);
         if (result is cache:Error) {
-            log:printError("Failed to invalidate OAuth2 token from the cache. Introspection response: " + response.toString());
+            log:printError("Failed to invalidate OAuth2 token from the cache. Introspection response: '" + response.toString() + "'");
         }
     }
 }
