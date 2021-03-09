@@ -25,7 +25,7 @@ import io.ballerina.runtime.api.values.BString;
  * Constants related to Ballerina OAuth2 stdlib.
  */
 public class OAuth2Constants {
-    public static final String OAUTH2_ERROR_TYPE = "OAuth2Error";
+    public static final String OAUTH2_ERROR_TYPE = "Error";
 
     public static final BString HTTP_VERSION = StringUtils.fromString("httpVersion");
     public static final BString SECURE_SOCKET = StringUtils.fromString("secureSocket");
