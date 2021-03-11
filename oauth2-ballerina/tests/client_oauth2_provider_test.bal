@@ -75,20 +75,18 @@ isolated function testClientCredentialsGrantType2() {
             }
         }
     };
-    ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "A valid OAuth client could not be found for client_id: invalid_client_id");
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "A valid OAuth client could not be found for client_id: invalid_client_id");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
-    provider = new(config);
-    response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "A valid OAuth client could not be found for client_id: invalid_client_id");
+    provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "A valid OAuth client could not be found for client_id: invalid_client_id");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -113,20 +111,18 @@ isolated function testClientCredentialsGrantType3() {
             }
         }
     };
-    ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Client Authentication failed.");
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Client Authentication failed.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
-    provider = new(config);
-    response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Client Authentication failed.");
+    provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Client Authentication failed.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -257,20 +253,18 @@ isolated function testPasswordGrantType3() {
             }
         }
     };
-    ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Authentication failed for invalid_username");
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Authentication failed for invalid_username");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
-    provider = new(config);
-    response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Authentication failed for invalid_username");
+    provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Authentication failed for invalid_username");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -296,10 +290,9 @@ isolated function testDirectToken1() {
             }
         }
     };
-    ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Persisted access token data not found");
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Persisted access token data not found");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }

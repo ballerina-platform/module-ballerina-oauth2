@@ -33,7 +33,7 @@ isolated function assertToken(string token) {
     test:assertEquals(parts[4].length(), 12);
 }
 
-isolated function assertContains(Error err, string text) {
+isolated function assertContains(error err, string text) {
     string message = err.message();
     var cause = err.cause();
     if (cause is error) {
