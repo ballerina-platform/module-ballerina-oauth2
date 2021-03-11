@@ -177,6 +177,11 @@ public class ClientOAuth2Provider {
     public isolated function init(GrantConfig grantConfig) {
         self.grantConfig = grantConfig;
         self.tokenCache = initTokenCache();
+        // This generates the token and keep it in the `TokenCache` to be used by the initial request.
+        string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache);
+        if (result is Error) {
+            panic result;
+        }
     }
 
     # Get an OAuth2 access token from authorization server for the OAuth2 authentication.
@@ -448,8 +453,8 @@ isolated function extractAccessToken(string response, TokenCache tokenCache, dec
 
 // Checks the validity of the cached access-token.
 isolated function isCachedTokenValid(int expTime) returns boolean {
-    int currentSystemTime = time:currentTime().time;
-    if (currentSystemTime < expTime) {
+    [int, decimal] currentTime = time:utcNow();
+    if (currentTime[0] < expTime) {
         return true;
     }
     return false;
@@ -458,14 +463,15 @@ isolated function isCachedTokenValid(int expTime) returns boolean {
 // Updates the OAuth2 token entry with the received JSON payload of the response.
 isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenCache, decimal defaultTokenExpTime,
                                          decimal clockSkew) {
-    int issueTime = time:currentTime().time;
+    [int, decimal] currentTime = time:utcNow();
+    int issueTime = currentTime[0];
     string accessToken = (checkpanic (responsePayload.access_token)).toJsonString();
     tokenCache.accessToken = accessToken;
     json|error expiresIn = responsePayload?.expires_in;
     if (expiresIn is int) {
-        tokenCache.expTime = issueTime + (expiresIn - <int> clockSkew) * 1000;
+        tokenCache.expTime = issueTime + expiresIn - <int> clockSkew;
     } else {
-        tokenCache.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew) * 1000;
+        tokenCache.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
     }
     if (responsePayload.refresh_token is string) {
         string refreshToken = (checkpanic (responsePayload.refresh_token)).toJsonString();

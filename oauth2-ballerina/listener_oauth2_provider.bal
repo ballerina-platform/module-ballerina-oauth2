@@ -244,7 +244,7 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
     } else {
         // If the `exp` parameter is not set by the introspection response, use the cache default expiry by
         // the `defaultTokenExpTime`. Then, the cached value will be removed when retrieving.
-        result = oauth2Cache.put(token, response, <int> defaultTokenExpTime);
+        result = oauth2Cache.put(token, response, defaultTokenExpTime);
     }
     if (result is cache:Error) {
         log:printError("Failed to add OAuth2 token to the cache. Introspection response: '" + response.toString() + "'");
@@ -267,7 +267,8 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     // The `expTime` can be `()`. This means that the `defaultTokenExpTime` is not exceeded yet.
     // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
     // check if the expiry time is exceeded.
-    if (expTime is () || expTime > (time:currentTime().time / 1000)) {
+    [int, decimal] currentTime = time:utcNow();
+    if (expTime is () || expTime > currentTime[0]) {
         return response;
     } else {
         cache:Error? result = oauth2Cache.invalidate(token);
