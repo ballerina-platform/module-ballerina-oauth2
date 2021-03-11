@@ -244,7 +244,7 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
     } else {
         // If the `exp` parameter is not set by the introspection response, use the cache default expiry by
         // the `defaultTokenExpTime`. Then, the cached value will be removed when retrieving.
-        result = oauth2Cache.put(token, response, <int> defaultTokenExpTime);
+        result = oauth2Cache.put(token, response, defaultTokenExpTime);
     }
     if (result is cache:Error) {
         log:printError("Failed to add OAuth2 token to the cache. Introspection response: '" + response.toString() + "'");
