@@ -177,6 +177,11 @@ public class ClientOAuth2Provider {
     public isolated function init(GrantConfig grantConfig) {
         self.grantConfig = grantConfig;
         self.tokenCache = initTokenCache();
+        // This generates the token and keep it in the `TokenCache` to be used by the initial request.
+        string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache);
+        if (result is Error) {
+            panic result;
+        }
     }
 
     # Get an OAuth2 access token from authorization server for the OAuth2 authentication.
