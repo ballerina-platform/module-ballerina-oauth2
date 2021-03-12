@@ -22,7 +22,7 @@ import ballerina/time;
 # + clientId - Client ID for the client credentials grant authentication
 # + clientSecret - Client secret for the client credentials grant authentication
 # + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if authorization server response does not contain an `expires_in` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the authorization server response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
@@ -48,7 +48,7 @@ public type ClientCredentialsGrantConfig record {|
 # + clientSecret - Client secret for the password grant authentication
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if authorization server response does not contain an `expires_in` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the authorization server response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
@@ -75,7 +75,7 @@ public type PasswordGrantConfig record {|
 # + clientId - Client ID for authentication with the authorization endpoint
 # + clientSecret - Client secret for authentication with the authorization endpoint
 # + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if authorization server response does not contain an `expires_in` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the authorization server response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint

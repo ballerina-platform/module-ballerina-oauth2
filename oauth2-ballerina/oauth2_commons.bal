@@ -23,7 +23,7 @@ import ballerina/jballerina.java;
 # + customHeaders - The list of custom HTTP headers
 # + customPayload - The list of custom HTTP payload parameters
 # + auth - The client auth configurations
-# + secureSocket - SSL/TLS related configurations
+# + secureSocket - SSL/TLS-related configurations
 public type ClientConfiguration record {|
     HttpVersion httpVersion = HTTP_1_1;
     map<string> customHeaders?;
@@ -44,8 +44,8 @@ public enum HttpVersion {
 # Represents the SSL/TLS configurations.
 #
 # + disable - Disable SSL validation
-# + cert - Configurations associated with `crypto:TrustStore` or single certificate file that the client trusts
-# + key - Configurations associated with `crypto:KeyStore` or combination of certificate and private key of the client
+# + cert - Configurations associated with the `crypto:TrustStore` or single certificate file that the client trusts
+# + key - Configurations associated with the `crypto:KeyStore` or combination of certificate and private key of the client
 public type SecureSocket record {|
     boolean disable = false;
     crypto:TrustStore|string cert;
@@ -56,7 +56,7 @@ public type SecureSocket record {|
 #
 # + certFile - A file containing the certificate
 # + keyFile - A file containing the private key
-# + keyPassword - Password of the private key if it is encrypted
+# + keyPassword - Password of the private key (if encrypted)
 public type CertKey record {|
    string certFile;
    string keyFile;
