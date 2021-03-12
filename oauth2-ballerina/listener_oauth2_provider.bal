@@ -25,7 +25,7 @@ import ballerina/time;
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
 # + optionalParams - Map of optional parameters used for the introspection endpoint
 # + cacheConfig - Configurations for the cache used to store the OAuth2 token and other related information
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if introspection response does not contain an `exp` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations which calls the introspection server
 public type IntrospectionConfig record {
     string url;
