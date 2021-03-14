@@ -60,7 +60,13 @@ public type PasswordGrantConfig record {|
     string clientId?;
     string clientSecret?;
     string[] scopes?;
-    RefreshConfig refreshConfig?;
+    record {|
+        string refreshUrl;
+        string[] scopes?;
+        map<string> optionalParams?;
+        CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+        ClientConfiguration clientConfig = {};
+    |} refreshConfig?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -88,22 +94,6 @@ public type DirectTokenConfig record {|
     string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
-    map<string> optionalParams?;
-    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
-    ClientConfiguration clientConfig = {};
-|};
-
-# The data structure, which can be used to pass the configurations for refreshing the access token of
-# the password grant type.
-#
-# + refreshUrl - Refresh token URL for the refresh token server
-# + scopes - Scope(s) of the access request
-# + optionalParams - Map of optional parameters use for the authorization endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
-# + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
-public type RefreshConfig record {|
-    string refreshUrl;
-    string[] scopes?;
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
@@ -336,8 +326,8 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTok
     ClientConfiguration clientConfig;
 
     if (config is PasswordGrantConfig) {
-        RefreshConfig? refreshConfig = config?.refreshConfig;
-        if (refreshConfig is RefreshConfig) {
+        var refreshConfig = config?.refreshConfig;
+        if (refreshConfig is record {}) {
             string? clientId = config?.clientId;
             string? clientSecret = config?.clientSecret;
             if (clientId is string && clientSecret is string) {
