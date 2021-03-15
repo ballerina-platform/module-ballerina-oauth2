@@ -327,7 +327,9 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|RefreshTo
 
     if (config is PasswordGrantConfig) {
         var refreshConfig = config?.refreshConfig;
-        if (refreshConfig is record {}) {
+        if (refreshConfig is ()) {
+            return prepareError("Failed to refresh access-token since refresh configurations are not provided.");
+        } else {
             string? clientId = config?.clientId;
             string? clientSecret = config?.clientSecret;
             if (clientId is string && clientSecret is string) {
@@ -347,8 +349,6 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|RefreshTo
             } else {
                 return prepareError("Client-id or client-secret cannot be empty.");
             }
-        } else {
-            return prepareError("Failed to refresh access-token since refresh configurations are not provided.");
         }
         defaultTokenExpTime = config.defaultTokenExpTime;
         clockSkew = config.clockSkew;
