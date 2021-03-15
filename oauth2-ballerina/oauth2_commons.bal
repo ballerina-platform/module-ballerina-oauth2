@@ -33,7 +33,7 @@ public type ClientConfiguration record {|
 |};
 
 # Defines the authentication configuration types for the HTTP client used for token introspection.
-public type ClientAuth ClientCredentialsGrantConfig|PasswordGrantConfig|DirectTokenConfig;
+public type ClientAuth ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig;
 
 # Represents HTTP versions.
 public enum HttpVersion {

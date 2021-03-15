@@ -74,7 +74,7 @@ public type PasswordGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# The data structure, which can be used to pass the configurations for refreshing the access token directly.
+# The data structure, which can be used to configure OAuth2 refresh token grant type.
 #
 # + refreshUrl - Refresh token URL for the refresh token server
 # + refreshToken - Refresh token for the refresh token server
@@ -86,7 +86,7 @@ public type PasswordGrantConfig record {|
 # + optionalParams - Map of optional parameters use for the authorization endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
 # + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
-public type DirectTokenConfig record {|
+public type RefreshTokenGrantConfig record {|
     string refreshUrl;
     string refreshToken;
     string clientId;
@@ -119,10 +119,10 @@ type RequestConfig record {|
 |};
 
 # Represents the grant type configurations supported for OAuth2.
-public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectTokenConfig;
+public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig;
 
 # Represents the client OAuth2 provider, which generates OAuth2 tokens. This supports the client credentials grant type,
-# password grant type, and the direct token type, which sends the access token directly.
+# password grant type, and the refresh token grant type.
 #
 # 1. Client Credentials Grant Type
 # ```ballerina
@@ -146,7 +146,7 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|DirectT
 # });
 # ```
 #
-# 3. Direct Token Type
+# 3. Refresh Token Grant Type
 # ```ballerina
 # oauth2:ClientOAuth2Provider provider = new({
 #     refreshUrl: "https://localhost:9196/oauth2/token/refresh",
@@ -196,7 +196,7 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenC
     } else if (grantConfig is ClientCredentialsGrantConfig) {
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else {
-        return getOAuth2TokenForDirectTokenType(grantConfig, tokenCache);
+        return getOAuth2TokenForRefreshTokenGrantType(grantConfig, tokenCache);
     }
 }
 
@@ -240,8 +240,8 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     }
 }
 
-// Processes the OAuth2 token for the direct token type.
-isolated function getOAuth2TokenForDirectTokenType(DirectTokenConfig grantConfig,
+// Processes the OAuth2 token for the refresh token grant type.
+isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
                                                    TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.accessToken;
     if (cachedAccessToken == "") {
@@ -317,7 +317,7 @@ isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantC
 }
 
 // Requests an access-token from the authorization endpoint using the provided refresh configurations.
-isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|DirectTokenConfig config,
+isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|RefreshTokenGrantConfig config,
                                                    TokenCache tokenCache) returns string|Error {
     RequestConfig requestConfig;
     decimal defaultTokenExpTime;

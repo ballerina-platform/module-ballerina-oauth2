@@ -273,9 +273,9 @@ isolated function testPasswordGrantType3() {
 @test:Config {
     groups: ["provider"]
 }
-isolated function testDirectToken1() {
-    // Test the direct token mode with an invalid access token and a valid refresh config
-    DirectTokenConfig config = {
+isolated function testRefreshTokenGrantType1() {
+    // Test the refresh token grant type with an invalid access token and a valid refresh config
+    RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
         refreshToken: "invalid_refresh_token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
