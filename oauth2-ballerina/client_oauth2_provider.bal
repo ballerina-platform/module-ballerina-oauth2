@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/log;
 import ballerina/time;
 
 # The data structure, which is used to configure the OAuth2 client credentials grant type.
@@ -182,10 +183,11 @@ public class ClientOAuth2Provider {
     # + return - Generated OAuth2 token or else an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
         string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
-        if (authToken is Error) {
+        if (authToken is string) {
+            return authToken;
+        } else {
             return prepareError("Failed to generate OAuth2 token.", authToken);
         }
-        return checkpanic authToken;
     }
 }
 
@@ -378,10 +380,11 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     map<string> headers = check prepareHeaders(requestConfig);
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
-    if (stringResponse is Error) {
+    if (stringResponse is string) {
+        return extractAccessToken(stringResponse, tokenCache, defaultTokenExpTime, clockSkew);
+    } else {
         return prepareError("Failed to call the token endpoint.", stringResponse);
     }
-    return extractAccessToken(checkpanic stringResponse, tokenCache, defaultTokenExpTime, clockSkew);
 }
 
 isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
@@ -433,11 +436,16 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
 isolated function extractAccessToken(string response, TokenCache tokenCache, decimal defaultTokenExpTime,
                                      decimal clockSkew) returns string|Error {
     json|error jsonResponse = response.fromJsonString();
-    if (jsonResponse is error) {
-        return prepareError("Failed to retrieve access-token since the response payload is not a JSON.", jsonResponse);
-    } else {
+    if (jsonResponse is json) {
         updateOAuth2CacheEntry(jsonResponse, tokenCache, defaultTokenExpTime, clockSkew);
-        return (checkpanic (jsonResponse.access_token)).toJsonString();
+        json|error accessToken = jsonResponse.access_token;
+        if (accessToken is json) {
+            return accessToken.toJsonString();
+        } else {
+            return prepareError("Failed to access 'access_token' property from the JSON '" + jsonResponse.toJsonString() + "'.", accessToken);
+        }
+    } else {
+        return prepareError("Failed to retrieve access-token since the response payload is not a JSON.", jsonResponse);
     }
 }
 
@@ -455,17 +463,23 @@ isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenC
                                          decimal clockSkew) {
     [int, decimal] currentTime = time:utcNow();
     int issueTime = currentTime[0];
-    string accessToken = (checkpanic (responsePayload.access_token)).toJsonString();
-    tokenCache.accessToken = accessToken;
+    json|error accessToken = responsePayload.access_token;
+    if (accessToken is json) {
+        tokenCache.accessToken = accessToken.toJsonString();
+    } else {
+        log:printError("Failed to access 'accessToken' property from the JSON '" + responsePayload.toJsonString() + "'");
+    }
     json|error expiresIn = responsePayload?.expires_in;
     if (expiresIn is int) {
         tokenCache.expTime = issueTime + expiresIn - <int> clockSkew;
     } else {
         tokenCache.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
     }
-    if (responsePayload.refresh_token is string) {
-        string refreshToken = (checkpanic (responsePayload.refresh_token)).toJsonString();
-        tokenCache.refreshToken = refreshToken;
+    json|error refreshToken = responsePayload.refresh_token;
+    if (refreshToken is json) {
+        tokenCache.refreshToken = refreshToken.toJsonString();
+    } else {
+        log:printError("Failed to access 'refreshToken' property from the JSON '" + responsePayload.toJsonString() + "'");
     }
 }
 
