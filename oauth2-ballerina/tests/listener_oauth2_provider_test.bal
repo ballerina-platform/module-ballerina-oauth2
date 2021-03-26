@@ -31,7 +31,12 @@ isolated function getAccessToken() returns string {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    return checkpanic provider.generateToken();
+    string|Error token = provider.generateToken();
+    if (token is string) {
+        return token;
+    } else {
+        panic token;
+    }
 }
 
 // Test the introspection request with successful token
