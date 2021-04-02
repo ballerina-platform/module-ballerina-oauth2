@@ -130,13 +130,14 @@ public class ListenerOAuth2Provider {
         }
         IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig,
                                                                 self.clientOAuth2Provider, optionalParams);
-        if (validationResult is Error) {
+        if (validationResult is IntrospectionResponse) {
+            if (oauth2Cache is cache:Cache) {
+                addToCache(oauth2Cache, credential, validationResult, self.introspectionConfig.defaultTokenExpTime);
+            }
+            return validationResult;
+        } else {
             return prepareError("OAuth2 validation failed.", validationResult);
         }
-        if (oauth2Cache is cache:Cache) {
-            addToCache(oauth2Cache, credential, checkpanic validationResult, self.introspectionConfig.defaultTokenExpTime);
-        }
-        return checkpanic validationResult;
     }
 }
 
@@ -174,14 +175,16 @@ isolated function validate(string token, IntrospectionConfig config, ClientOAuth
         }
     }
     string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);
-    if (stringResponse is Error) {
+    if (stringResponse is string) {
+        json|error jsonResponse = stringResponse.fromJsonString();
+        if (jsonResponse is json) {
+            return prepareIntrospectionResponse(jsonResponse);
+        } else {
+            return prepareError("Failed to convert '" + stringResponse + "' to JSON.", jsonResponse);
+        }
+    } else {
         return prepareError("Failed to call the introspection endpoint.", stringResponse);
     }
-    json|error jsonResponse = (checkpanic stringResponse).fromJsonString();
-    if (jsonResponse is error) {
-        return prepareError(jsonResponse.message(), jsonResponse);
-    }
-    return prepareIntrospectionResponse(checkpanic jsonResponse);
 }
 
 isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
@@ -258,23 +261,24 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         // If the cached value is expired (defaultTokenExpTime is passed), it will return `()`.
         return;
     }
-    if (cachedEntry is cache:Error) {
+    if (cachedEntry is any) {
+        IntrospectionResponse response = <IntrospectionResponse> cachedEntry;
+        int? expTime = response?.exp;
+        // The `expTime` can be `()`. This means that the `defaultTokenExpTime` is not exceeded yet.
+        // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
+        // check if the expiry time is exceeded.
+        [int, decimal] currentTime = time:utcNow();
+        if (expTime is () || expTime > currentTime[0]) {
+            return response;
+        } else {
+            cache:Error? result = oauth2Cache.invalidate(token);
+            if (result is cache:Error) {
+                log:printError("Failed to invalidate OAuth2 token from the cache. Introspection response: '" + response.toString() + "'");
+            }
+        }
+    } else {
         log:printError("Failed to validate the token from the cache. Cache error: '" + cachedEntry.toString() + "'");
         return;
-    }
-    IntrospectionResponse response = <IntrospectionResponse> checkpanic cachedEntry;
-    int? expTime = response?.exp;
-    // The `expTime` can be `()`. This means that the `defaultTokenExpTime` is not exceeded yet.
-    // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
-    // check if the expiry time is exceeded.
-    [int, decimal] currentTime = time:utcNow();
-    if (expTime is () || expTime > currentTime[0]) {
-        return response;
-    } else {
-        cache:Error? result = oauth2Cache.invalidate(token);
-        if (result is cache:Error) {
-            log:printError("Failed to invalidate OAuth2 token from the cache. Introspection response: '" + response.toString() + "'");
-        }
     }
 }
 
