@@ -442,7 +442,7 @@ isolated function extractAccessToken(string response, TokenCache tokenCache, dec
         if (accessToken is json) {
             return accessToken.toJsonString();
         } else {
-            return prepareError("Failed to access 'access_token' property from the JSON '" + jsonResponse.toJsonString() + "'.", accessToken);
+            return prepareError("Failed to access 'access_token' property from the JSON.", accessToken);
         }
     } else {
         return prepareError("Failed to retrieve access-token since the response payload is not a JSON.", jsonResponse);
@@ -467,7 +467,7 @@ isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenC
     if (accessToken is json) {
         tokenCache.accessToken = accessToken.toJsonString();
     } else {
-        log:printError("Failed to access 'accessToken' property from the JSON '" + responsePayload.toJsonString() + "'");
+        log:printWarn("Failed to access 'access_token' property from the JSON.");
     }
     json|error expiresIn = responsePayload?.expires_in;
     if (expiresIn is int) {
@@ -479,7 +479,7 @@ isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenC
     if (refreshToken is json) {
         tokenCache.refreshToken = refreshToken.toJsonString();
     } else {
-        log:printError("Failed to access 'refreshToken' property from the JSON '" + responsePayload.toJsonString() + "'");
+        // TODO: https://github.com/ballerina-platform/ballerina-standard-library/issues/1206
     }
 }
 
