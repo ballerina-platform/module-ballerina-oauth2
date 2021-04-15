@@ -183,7 +183,7 @@ isolated function validate(string token, IntrospectionConfig config, ClientOAuth
             return prepareError("Failed to convert '" + stringResponse + "' to JSON.", jsonResponse);
         }
     } else {
-        return prepareError("Failed to call the introspection endpoint '" + url + "'.", stringResponse);
+        return prepareError("Failed to call the introspection endpoint '" + config.url + "'.", stringResponse);
     }
 }
 
