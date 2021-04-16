@@ -120,7 +120,7 @@ isolated function testIntrospectionServer3() {
     ListenerOAuth2Provider provider = new(config);
     IntrospectionResponse|Error response = provider.authorize(accessToken);
     if (response is Error) {
-        assertContains(response, "Failed to get a success response from the endpoint. Response Code: '401'.");
+        assertContains(response, "Failed to get a success response from the endpoint. Response code: '401'.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -253,7 +253,7 @@ isolated function testIntrospectionServer6() {
     };
     ListenerOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Failed to get a success response from the endpoint. Response Code: '401'.");
+        assertContains(provider, "Failed to get a success response from the endpoint. Response code: '401'.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -294,7 +294,7 @@ isolated function testIntrospectionServer7() {
     };
     ListenerOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Failed to get a success response from the endpoint. Response Code: '401'.");
+        assertContains(provider, "Failed to get a success response from the endpoint. Response code: '401'.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }

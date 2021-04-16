@@ -383,7 +383,7 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     if (stringResponse is string) {
         return extractAccessToken(stringResponse, tokenCache, defaultTokenExpTime, clockSkew);
     } else {
-        return prepareError("Failed to call the token endpoint.", stringResponse);
+        return prepareError("Failed to call the token endpoint '" + url + "'.", stringResponse);
     }
 }
 
