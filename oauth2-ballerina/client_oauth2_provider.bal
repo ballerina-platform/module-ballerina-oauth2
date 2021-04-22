@@ -244,7 +244,7 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
 
 // Processes the OAuth2 token for the refresh token grant type.
 isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
-                                                   TokenCache tokenCache) returns string|Error {
+                                                         TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.accessToken;
     if (cachedAccessToken == "") {
         return getAccessTokenFromRefreshRequest(grantConfig, tokenCache);
@@ -315,7 +315,10 @@ isolated function getAccessTokenFromAuthorizationRequest(ClientCredentialsGrantC
         clockSkew = config.clockSkew;
         clientConfig = config.clientConfig;
     }
-    return sendRequest(requestConfig, tokenUrl, clientConfig, tokenCache, defaultTokenExpTime, clockSkew);
+    json response = check sendRequest(requestConfig, tokenUrl, clientConfig);
+    string accessToken = check extractAccessToken(response);
+    updateTokenCache(tokenCache, accessToken, response, defaultTokenExpTime, clockSkew, tokenUrl);
+    return accessToken;
 }
 
 // Requests an access-token from the authorization endpoint using the provided refresh configurations.
@@ -339,6 +342,10 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|RefreshTo
                     return prepareError("Client-id or client-secret cannot be empty.");
                 }
                 refreshUrl = refreshConfig.refreshUrl;
+                string refreshToken = tokenCache.refreshToken;
+                if (refreshToken == "") {
+                    return prepareError("Failed to refresh access-token since refresh-token is empty. Refresh-token have not been received from the initial authorization response with password grant type.");
+                }
                 requestConfig = {
                     payload: "grant_type=refresh_token&refresh_token=" + tokenCache.refreshToken,
                     clientId: clientId,
@@ -359,8 +366,12 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|RefreshTo
             return prepareError("Client-id or client-secret cannot be empty.");
         }
         refreshUrl = config.refreshUrl;
+        // The initial request does not have a cached `refreshToken`. Also, the subsequent requests also may not have
+        // a cached `refreshToken` since the authorization server does not update the `refreshToken`.
+        // Hence, the `config.refreshToken` is used.
+        string refreshToken = (tokenCache.refreshToken != "") ? (tokenCache.refreshToken) : (config.refreshToken);
         requestConfig = {
-            payload: "grant_type=refresh_token&refresh_token=" + config.refreshToken,
+            payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
             clientId: config.clientId,
             clientSecret: config.clientSecret,
             scopes: config?.scopes,
@@ -371,17 +382,24 @@ isolated function getAccessTokenFromRefreshRequest(PasswordGrantConfig|RefreshTo
         defaultTokenExpTime = config.defaultTokenExpTime;
         clockSkew = config.clockSkew;
     }
-    return sendRequest(requestConfig, refreshUrl, clientConfig, tokenCache, defaultTokenExpTime, clockSkew);
+    json response = check sendRequest(requestConfig, refreshUrl, clientConfig);
+    string accessToken = check extractAccessToken(response);
+    updateTokenCache(tokenCache, accessToken, response, defaultTokenExpTime, clockSkew, refreshUrl);
+    return accessToken;
 }
 
-isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig,
-                              TokenCache tokenCache, decimal defaultTokenExpTime, decimal clockSkew)
-                              returns string|Error {
+isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig)
+                              returns json|Error {
     map<string> headers = check prepareHeaders(requestConfig);
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
     if (stringResponse is string) {
-        return extractAccessToken(stringResponse, tokenCache, defaultTokenExpTime, clockSkew);
+        json|error jsonResponse = stringResponse.fromJsonString();
+        if (jsonResponse is json) {
+            return jsonResponse;
+        } else {
+            return prepareError("Failed to get JSON from the response payload.", jsonResponse);
+        }
     } else {
         return prepareError("Failed to call the token endpoint '" + url + "'.", stringResponse);
     }
@@ -433,19 +451,12 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
     return textPayload;
 }
 
-isolated function extractAccessToken(string response, TokenCache tokenCache, decimal defaultTokenExpTime,
-                                     decimal clockSkew) returns string|Error {
-    json|error jsonResponse = response.fromJsonString();
-    if (jsonResponse is json) {
-        updateOAuth2CacheEntry(jsonResponse, tokenCache, defaultTokenExpTime, clockSkew);
-        json|error accessToken = jsonResponse.access_token;
-        if (accessToken is json) {
-            return accessToken.toJsonString();
-        } else {
-            return prepareError("Failed to access 'access_token' property from the JSON.", accessToken);
-        }
+isolated function extractAccessToken(json response) returns string|Error {
+    json|error accessToken = response.access_token;
+    if (accessToken is json) {
+        return accessToken.toJsonString();
     } else {
-        return prepareError("Failed to retrieve access-token since the response payload is not a JSON.", jsonResponse);
+        return prepareError("Failed to access 'access_token' property from the JSON.", accessToken);
     }
 }
 
@@ -458,32 +469,27 @@ isolated function isCachedTokenValid(int expTime) returns boolean {
     return false;
 }
 
-// Updates the OAuth2 token entry with the received JSON payload of the response.
-isolated function updateOAuth2CacheEntry(json responsePayload, TokenCache tokenCache, decimal defaultTokenExpTime,
-                                         decimal clockSkew) {
+// Updates the OAuth2 token cache with the received JSON payload of the response.
+isolated function updateTokenCache(TokenCache tokenCache, string accessToken, json response,
+                                   decimal defaultTokenExpTime, decimal clockSkew, string url) {
+    tokenCache.accessToken = accessToken;
     [int, decimal] currentTime = time:utcNow();
     int issueTime = currentTime[0];
-    json|error accessToken = responsePayload.access_token;
-    if (accessToken is json) {
-        tokenCache.accessToken = accessToken.toJsonString();
-    } else {
-        log:printWarn("Failed to access 'access_token' property from the JSON.");
-    }
-    json|error expiresIn = responsePayload?.expires_in;
+    json|error expiresIn = response?.expires_in;
     if (expiresIn is int) {
         tokenCache.expTime = issueTime + expiresIn - <int> clockSkew;
     } else {
         tokenCache.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
     }
-    json|error refreshToken = responsePayload.refresh_token;
+    json|error refreshToken = response.refresh_token;
     if (refreshToken is json) {
         tokenCache.refreshToken = refreshToken.toJsonString();
     } else {
-        // TODO: https://github.com/ballerina-platform/ballerina-standard-library/issues/1206
+        log:printDebug("Failed to access 'refresh-token' property from the JSON received from '" + url + "'.");
     }
 }
 
-// Initialize OAuth2 token entry with the default exp time of provided configurations.
+// Initialize OAuth2 token cache with the default exp time and empty values.
 isolated function initTokenCache() returns TokenCache {
     TokenCache tokenCache = {
         accessToken: "",
