@@ -193,36 +193,16 @@ public class ClientOAuth2Provider {
 
 // Generates the OAuth2 token.
 isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache) returns string|Error {
-    if (grantConfig is PasswordGrantConfig) {
-        return getOAuth2TokenForPasswordGrant(grantConfig, tokenCache);
-    } else if (grantConfig is ClientCredentialsGrantConfig) {
+    if (grantConfig is ClientCredentialsGrantConfig) {
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
+    } else if (grantConfig is PasswordGrantConfig) {
+        return getOAuth2TokenForPasswordGrant(grantConfig, tokenCache);
     } else {
         return getOAuth2TokenForRefreshTokenGrantType(grantConfig, tokenCache);
     }
 }
 
-// Processes the OAuth2 token for the password grant type.
-isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig, TokenCache tokenCache)
-                                                 returns string|Error {
-    string cachedAccessToken = tokenCache.accessToken;
-    if (cachedAccessToken == "") {
-        return getAccessTokenFromTokenRequestForPasswordGrant(grantConfig, tokenCache);
-    } else {
-        if (isCachedTokenValid(tokenCache.expTime)) {
-            return cachedAccessToken;
-        } else {
-            lock {
-                if (isCachedTokenValid(tokenCache.expTime)) {
-                    return tokenCache.accessToken;
-                }
-                return getAccessTokenFromRefreshRequestForPasswordGrant(grantConfig, tokenCache);
-            }
-        }
-    }
-}
-
-// Processes the OAuth2 token for the client credentials grant type.
+// Processes the OAuth2 token for the CLIENT CREDENTIALS GRANT type.
 isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantConfig,
                                                           TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.accessToken;
@@ -242,7 +222,27 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     }
 }
 
-// Processes the OAuth2 token for the refresh token grant type.
+// Processes the OAuth2 token for the PASSWORD GRANT type.
+isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig, TokenCache tokenCache)
+                                                 returns string|Error {
+    string cachedAccessToken = tokenCache.accessToken;
+    if (cachedAccessToken == "") {
+        return getAccessTokenFromTokenRequestForPasswordGrant(grantConfig, tokenCache);
+    } else {
+        if (isCachedTokenValid(tokenCache.expTime)) {
+            return cachedAccessToken;
+        } else {
+            lock {
+                if (isCachedTokenValid(tokenCache.expTime)) {
+                    return tokenCache.accessToken;
+                }
+                return getAccessTokenFromRefreshRequestForPasswordGrant(grantConfig, tokenCache);
+            }
+        }
+    }
+}
+
+// Processes the OAuth2 token for the REFRESH TOKEN GRANT type.
 isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
                                                          TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.accessToken;
@@ -262,7 +262,8 @@ isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig
     }
 }
 
-// Requests an access-token from the token endpoint using the provided client credentials grant configurations.
+// Requests an access-token from the token endpoint using the provided CLIENT CREDENTIALS GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc6749#section-4.4
 isolated function getAccessTokenFromTokenRequestForClientCredentialsGrant(ClientCredentialsGrantConfig config,
                                                                           TokenCache tokenCache) returns string|Error {
     if (config.clientId == "" || config.clientSecret == "") {
@@ -288,7 +289,8 @@ isolated function getAccessTokenFromTokenRequestForClientCredentialsGrant(Client
     return accessToken;
 }
 
-// Requests an access-token from the token endpoint using the provided password grant configurations.
+// Requests an access-token from the token endpoint using the provided PASSWORD GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc6749#section-4.3
 isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantConfig config,
                                                                  TokenCache tokenCache) returns string|Error {
     string tokenUrl = config.tokenUrl;
@@ -327,7 +329,8 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     return accessToken;
 }
 
-// Requests an access-token from the refresh endpoint using the provided password grant configurations.
+// Refreshes an access-token from the token endpoint using the provided refresh configurations of PASSWORD GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc6749#section-6
 isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrantConfig config, TokenCache tokenCache)
                                                                    returns string|Error {
     var refreshConfig = config?.refreshConfig;
@@ -370,7 +373,8 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
     }
 }
 
-// Requests an access-token from the refresh endpoint using the provided refresh grant configurations.
+// Refreshes an access-token from the token endpoint using the provided REFRESH TOKEN GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc6749#section-6
 isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTokenGrantConfig config,
                                                                        TokenCache tokenCache) returns string|Error {
     if (config.clientId == "" || config.clientSecret == "") {
@@ -380,6 +384,7 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     // The initial request does not have a cached `refreshToken`. Also, the subsequent requests also may not have
     // a cached `refreshToken` since the authorization server does not update the `refreshToken`.
     // Hence, the `config.refreshToken` is used.
+    // Refer: https://tools.ietf.org/html/rfc6749#page-48
     string refreshToken = (tokenCache.refreshToken != "") ? (tokenCache.refreshToken) : (config.refreshToken);
     RequestConfig requestConfig = {
         payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
