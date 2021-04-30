@@ -16,7 +16,6 @@
 
 import ballerina/cache;
 import ballerina/log;
-import ballerina/regex;
 import ballerina/time;
 
 # Represents the introspection server configurations.
@@ -279,17 +278,5 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
     } else {
         log:printError("Failed to validate the token from the cache.", 'error = cachedEntry);
         return;
-    }
-}
-
-isolated function getScopes(string? scopes) returns string[] {
-    if (scopes is ()) {
-        return [];
-    } else {
-        string scopeVal = scopes.trim();
-        if (scopeVal == "") {
-            return [];
-        }
-        return regex:split(scopeVal, " ");
     }
 }

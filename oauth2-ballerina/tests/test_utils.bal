@@ -19,9 +19,12 @@ import ballerina/test;
 
 const string KEYSTORE_PATH = "tests/resources/keystore/ballerinaKeystore.p12";
 const string TRUSTSTORE_PATH = "tests/resources/keystore/ballerinaTruststore.p12";
+const string PRIVATE_KEY_PATH = "tests/resources/key/private.key";
+const string ENCRYPTED_PRIVATE_KEY_PATH = "tests/resources/key/encryptedPrivate.key";
+const string PUBLIC_CERT_PATH = "tests/resources/cert/public.crt";
 const string WSO2_KEYSTORE_PATH = "tests/resources/keystore/wso2Keystore.p12";
 const string WSO2_TRUSTSTORE_PATH = "tests/resources/keystore/wso2Truststore.p12";
-const string WSO2_PUBLIC_CERT = "tests/resources/cert/wso2Public.crt";
+const string WSO2_PUBLIC_CERT_PATH = "tests/resources/cert/wso2Public.crt";
 
 isolated function assertToken(string token) {
     string[] parts = regex:split(token, "-");
