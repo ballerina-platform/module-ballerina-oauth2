@@ -48,7 +48,7 @@ public enum HttpVersion {
 # + key - Configurations associated with the `crypto:KeyStore` or combination of certificate and private key of the client
 public type SecureSocket record {|
     boolean disable = false;
-    crypto:TrustStore|string cert;
+    crypto:TrustStore|string cert?;
     crypto:KeyStore|CertKey key?;
 |};
 

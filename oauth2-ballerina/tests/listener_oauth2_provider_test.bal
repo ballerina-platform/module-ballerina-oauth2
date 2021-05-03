@@ -384,7 +384,7 @@ isolated function testIntrospectionServer9() {
     }
 }
 
-// Test the introspection request with successful token and with all the configurations
+// Test the introspection request with successful token and with all the configurations (keystore & truststore)
 @test:Config {
     groups: ["provider"]
 }
@@ -413,6 +413,59 @@ isolated function testIntrospectionServer10() {
                     password: "ballerina"
                 },
                 key: {
+                    path: KEYSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
+    if (response is IntrospectionResponse) {
+        test:assertTrue(response.active);
+        test:assertEquals(response?.scope, "read write dolphin");
+        test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+        test:assertEquals(response?.username, "jdoe");
+        test:assertEquals(response?.tokenType, "token_type");
+        test:assertTrue(response?.exp is int);
+        test:assertTrue(response?.iat is int);
+        test:assertTrue(response?.nbf is int);
+        test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+        test:assertEquals(response?.aud, "https://protected.example.net/resource");
+        test:assertEquals(response?.iss, "https://server.example.com/");
+        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the introspection request with successful token and with all the configurations (private/public key)
+@test:Config {
+    groups: ["provider"]
+}
+isolated function testIntrospectionServer11() {
+    string accessToken = getAccessToken();
+    IntrospectionConfig config = {
+        url: "https://localhost:9090/oauth2/token/introspect",
+        tokenTypeHint: "access_token",
+        optionalParams: {
+            "client": "ballerina"
+        },
+        cacheConfig: {
+            capacity: 10,
+            evictionFactor: 0.25,
+            evictionPolicy: cache:LRU,
+            defaultMaxAge: -1,
+            cleanupInterval: 3600
+        },
+        defaultTokenExpTime: 3600,
+        clientConfig: {
+            customHeaders: {"example": "example_header_value"},
+            customPayload: "example_payload_key=example_payload_value",
+            secureSocket: {
+                cert: PUBLIC_CERT_PATH,
+                key: {
                     certFile: PUBLIC_CERT_PATH,
                     keyFile: ENCRYPTED_PRIVATE_KEY_PATH,
                     keyPassword: "ballerina"
@@ -436,6 +489,91 @@ isolated function testIntrospectionServer10() {
         test:assertEquals(response?.iss, "https://server.example.com/");
         test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
         test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the introspection request with successful token and with all the configurations (disable SSL)
+@test:Config {
+    groups: ["provider"]
+}
+isolated function testIntrospectionServer12() {
+    string accessToken = getAccessToken();
+    IntrospectionConfig config = {
+        url: "https://localhost:9090/oauth2/token/introspect",
+        tokenTypeHint: "access_token",
+        optionalParams: {
+            "client": "ballerina"
+        },
+        cacheConfig: {
+            capacity: 10,
+            evictionFactor: 0.25,
+            evictionPolicy: cache:LRU,
+            defaultMaxAge: -1,
+            cleanupInterval: 3600
+        },
+        defaultTokenExpTime: 3600,
+        clientConfig: {
+            customHeaders: {"example": "example_header_value"},
+            customPayload: "example_payload_key=example_payload_value",
+            secureSocket: {
+                disable: true
+            }
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
+    if (response is IntrospectionResponse) {
+        test:assertTrue(response.active);
+        test:assertEquals(response?.scope, "read write dolphin");
+        test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+        test:assertEquals(response?.username, "jdoe");
+        test:assertEquals(response?.tokenType, "token_type");
+        test:assertTrue(response?.exp is int);
+        test:assertTrue(response?.iat is int);
+        test:assertTrue(response?.nbf is int);
+        test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+        test:assertEquals(response?.aud, "https://protected.example.net/resource");
+        test:assertEquals(response?.iss, "https://server.example.com/");
+        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the introspection request with successful token and with all the configurations (empty secure socket)
+@test:Config {
+    groups: ["provider"]
+}
+isolated function testIntrospectionServer13() {
+    string accessToken = getAccessToken();
+    IntrospectionConfig config = {
+        url: "https://localhost:9090/oauth2/token/introspect",
+        tokenTypeHint: "access_token",
+        optionalParams: {
+            "client": "ballerina"
+        },
+        cacheConfig: {
+            capacity: 10,
+            evictionFactor: 0.25,
+            evictionPolicy: cache:LRU,
+            defaultMaxAge: -1,
+            cleanupInterval: 3600
+        },
+        defaultTokenExpTime: 3600,
+        clientConfig: {
+            customHeaders: {"example": "example_header_value"},
+            customPayload: "example_payload_key=example_payload_value",
+            secureSocket: {
+            }
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
+    if (response is Error) {
+        assertContains(response, "Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
