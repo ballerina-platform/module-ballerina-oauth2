@@ -52,6 +52,8 @@ import javax.net.ssl.X509TrustManager;
  */
 public class OAuth2Client {
 
+    private OAuth2Client() {}
+
     public static Object doHttpRequest(BString url, BMap<BString, Object> clientConfig, BMap<BString, BString> headers,
                                        BString payload) {
         BString customPayload = getBStringValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_PAYLOAD);
