@@ -36,16 +36,13 @@ isolated function assertToken(string token) {
     test:assertEquals(parts[4].length(), 12);
 }
 
+// Build complete error message by evaluating all the inner causes and assert the inclusion.
 isolated function assertContains(error err, string text) {
     string message = err.message();
     var cause = err.cause();
-    if (cause is error) {
-        var innerCause = cause.cause();
-        while (innerCause is error) {
-            cause = innerCause;
-            innerCause = innerCause.cause();
-        }
-        message = cause.message();
+    while (cause is error) {
+        message += " " + cause.message();
+        cause = cause.cause();
     }
     test:assertTrue(message.includes(text));
 }
