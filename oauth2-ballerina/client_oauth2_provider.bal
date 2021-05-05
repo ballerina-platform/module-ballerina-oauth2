@@ -340,9 +340,8 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
         string? clientId = config?.clientId;
         string? clientSecret = config?.clientSecret;
         if (clientId is string && clientSecret is string) {
-            if (clientId == "" || clientSecret == "") {
-                return prepareError("Client-id or client-secret cannot be empty.");
-            }
+            // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access-token by token
+            // request, initially.
             string refreshUrl = refreshConfig.refreshUrl;
             string refreshToken = tokenCache.refreshToken;
             if (refreshToken == "") {

@@ -52,6 +52,8 @@ import javax.net.ssl.X509TrustManager;
  */
 public class OAuth2Client {
 
+    private OAuth2Client() {}
+
     public static Object doHttpRequest(BString url, BMap<BString, Object> clientConfig, BMap<BString, BString> headers,
                                        BString payload) {
         BString customPayload = getBStringValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_PAYLOAD);
@@ -99,10 +101,13 @@ public class OAuth2Client {
 
     private static SSLContext getSslContext(BMap<BString, ?> secureSocket) throws Exception {
         boolean disable = secureSocket.getBooleanValue(OAuth2Constants.DISABLE);
-        Object cert = secureSocket.get(OAuth2Constants.CERT);
-        BMap<BString, BString> key = (BMap<BString, BString>) getBMapValueIfPresent(secureSocket, OAuth2Constants.KEY);
         if (disable) {
             return initSslContext();
+        }
+        BMap<BString, BString> key = (BMap<BString, BString>) getBMapValueIfPresent(secureSocket, OAuth2Constants.KEY);
+        Object cert = secureSocket.get(OAuth2Constants.CERT);
+        if (cert == null) {
+            throw new Exception("Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
         }
         KeyManagerFactory kmf;
         TrustManagerFactory tmf;
