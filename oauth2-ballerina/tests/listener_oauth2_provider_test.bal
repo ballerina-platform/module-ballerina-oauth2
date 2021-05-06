@@ -204,7 +204,7 @@ isolated function testIntrospectionServer5() {
     ListenerOAuth2Provider provider = new(config);
     IntrospectionResponse|Error response = provider.authorize(accessToken);
     if (response is Error) {
-        assertContains(response, "Failed to get a success response from the endpoint. Response code: '401'.");
+        assertContains(response, "Failed to call the introspection endpoint 'https://localhost:9443/oauth2/introspect'.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -337,7 +337,7 @@ isolated function testIntrospectionServer8() {
     };
     ListenerOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Failed to get a success response from the endpoint. Response code: '401'.");
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -378,7 +378,7 @@ isolated function testIntrospectionServer9() {
     };
     ListenerOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Failed to get a success response from the endpoint. Response code: '401'.");
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -389,9 +389,9 @@ isolated function testIntrospectionServer9() {
     groups: ["provider"]
 }
 isolated function testIntrospectionServer10() {
-    string accessToken = getAccessToken();
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
-        url: "https://localhost:9090/oauth2/token/introspect",
+        url: "https://localhost:9445/oauth2/introspect",
         tokenTypeHint: "access_token",
         optionalParams: {
             "client": "ballerina"
@@ -405,7 +405,7 @@ isolated function testIntrospectionServer10() {
         },
         defaultTokenExpTime: 3600,
         clientConfig: {
-            customHeaders: {"example": "example_header_value"},
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             customPayload: "example_payload_key=example_payload_value",
             secureSocket: {
                 cert: {
@@ -445,9 +445,9 @@ isolated function testIntrospectionServer10() {
     groups: ["provider"]
 }
 isolated function testIntrospectionServer11() {
-    string accessToken = getAccessToken();
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
-        url: "https://localhost:9090/oauth2/token/introspect",
+        url: "https://localhost:9445/oauth2/introspect",
         tokenTypeHint: "access_token",
         optionalParams: {
             "client": "ballerina"
@@ -461,7 +461,7 @@ isolated function testIntrospectionServer11() {
         },
         defaultTokenExpTime: 3600,
         clientConfig: {
-            customHeaders: {"example": "example_header_value"},
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             customPayload: "example_payload_key=example_payload_value",
             secureSocket: {
                 cert: PUBLIC_CERT_PATH,
@@ -499,9 +499,9 @@ isolated function testIntrospectionServer11() {
     groups: ["provider"]
 }
 isolated function testIntrospectionServer12() {
-    string accessToken = getAccessToken();
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
-        url: "https://localhost:9090/oauth2/token/introspect",
+        url: "https://localhost:9445/oauth2/introspect",
         tokenTypeHint: "access_token",
         optionalParams: {
             "client": "ballerina"
@@ -515,7 +515,7 @@ isolated function testIntrospectionServer12() {
         },
         defaultTokenExpTime: 3600,
         clientConfig: {
-            customHeaders: {"example": "example_header_value"},
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             customPayload: "example_payload_key=example_payload_value",
             secureSocket: {
                 disable: true
@@ -548,9 +548,9 @@ isolated function testIntrospectionServer12() {
     groups: ["provider"]
 }
 isolated function testIntrospectionServer13() {
-    string accessToken = getAccessToken();
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
-        url: "https://localhost:9090/oauth2/token/introspect",
+        url: "https://localhost:9445/oauth2/introspect",
         tokenTypeHint: "access_token",
         optionalParams: {
             "client": "ballerina"
@@ -564,7 +564,7 @@ isolated function testIntrospectionServer13() {
         },
         defaultTokenExpTime: 3600,
         clientConfig: {
-            customHeaders: {"example": "example_header_value"},
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             customPayload: "example_payload_key=example_payload_value",
             secureSocket: {
             }

@@ -86,7 +86,7 @@ isolated function testClientCredentialsGrantType2() {
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "A valid OAuth client could not be found for client_id: invalid_client_id");
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -95,7 +95,7 @@ isolated function testClientCredentialsGrantType2() {
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "A valid OAuth client could not be found for client_id: invalid_client_id");
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -125,7 +125,7 @@ isolated function testClientCredentialsGrantType3() {
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Client Authentication failed.");
+        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -134,7 +134,7 @@ isolated function testClientCredentialsGrantType3() {
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Client Authentication failed.");
+        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -185,7 +185,7 @@ isolated function testClientCredentialsGrantType4() {
 }
 isolated function testClientCredentialsGrantType5() {
     ClientCredentialsGrantConfig config = {
-        tokenUrl: "https://localhost:9090/oauth2/token",
+        tokenUrl: "https://localhost:9445/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
         scopes: ["view-order"],
@@ -282,7 +282,7 @@ isolated function testPasswordGrantType1() {
 }
 isolated function testPasswordGrantType2() {
     PasswordGrantConfig config = {
-        tokenUrl: "https://localhost:9090/oauth2/token",
+        tokenUrl: "https://localhost:9445/oauth2/token",
         username: "admin",
         password: "admin",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
@@ -292,7 +292,7 @@ isolated function testPasswordGrantType2() {
             "client": "ballerina"
         },
         refreshConfig: {
-            refreshUrl: "https://localhost:9090/oauth2/token/refresh",
+            refreshUrl: "https://localhost:9445/oauth2/token",
             scopes: ["view-order"],
             optionalParams: {
                 "client": "ballerina"
@@ -386,7 +386,7 @@ isolated function testPasswordGrantType3() {
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Authentication failed for invalid_username");
+        assertContains(provider, "{\"error_description\":\"Authentication failed for invalid_username\",\"error\":\"invalid_grant\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -395,7 +395,7 @@ isolated function testPasswordGrantType3() {
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Authentication failed for invalid_username");
+        assertContains(provider, "{\"error_description\":\"Authentication failed for invalid_username\",\"error\":\"invalid_grant\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -466,7 +466,7 @@ isolated function testPasswordGrantType5() {
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "invalid_client");
+        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -475,7 +475,7 @@ isolated function testPasswordGrantType5() {
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "invalid_client");
+        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -487,7 +487,7 @@ isolated function testPasswordGrantType5() {
 }
 isolated function testPasswordGrantType6() {
     PasswordGrantConfig config = {
-        tokenUrl: "https://localhost:9090/oauth2/token",
+        tokenUrl: "https://localhost:9445/oauth2/token",
         username: "admin",
         password: "admin",
         scopes: ["view-order"],
@@ -495,7 +495,7 @@ isolated function testPasswordGrantType6() {
             "client": "ballerina"
         },
         refreshConfig: {
-            refreshUrl: "https://localhost:9090/oauth2/token/refresh",
+            refreshUrl: "https://localhost:9445/oauth2/token",
             scopes: ["view-order"],
             optionalParams: {
                 "client": "ballerina"
@@ -518,21 +518,9 @@ isolated function testPasswordGrantType6() {
             }
         }
     };
-    ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
-
-    // The access-token is valid only for 2 seconds. Wait 5 seconds and try again, so that the access-token will get
-    // tried to refresh. But hence the client-id and client-secret are not provided, it will be failed.
-    runtime:sleep(5.0);
-
-    response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Client-id or client-secret cannot be empty.");
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "{\"error\":\"invalid_client\", \"error_description\":\"Client authentication failed due to unknown client.\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -544,7 +532,7 @@ isolated function testPasswordGrantType6() {
 }
 isolated function testPasswordGrantType7() {
     PasswordGrantConfig config = {
-        tokenUrl: "https://localhost:9090/oauth2/token",
+        tokenUrl: "https://localhost:9445/oauth2/token",
         username: "admin",
         password: "admin",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
@@ -609,7 +597,7 @@ isolated function testRefreshTokenGrantType1() {
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "Persisted access token data not found");
+        assertContains(provider, "{\"error_description\":\"Persisted access token data not found\",\"error\":\"invalid_grant\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -621,8 +609,8 @@ isolated function testRefreshTokenGrantType1() {
 }
 isolated function testRefreshTokenGrantType2() {
     RefreshTokenGrantConfig config = {
-        refreshUrl: "https://localhost:9090/oauth2/token/refresh",
-        refreshToken: "tGzv3JOkF0XG5Qx2TlKWIA",
+        refreshUrl: "https://localhost:9445/oauth2/token",
+        refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
         scopes: ["view-order"],
@@ -675,7 +663,7 @@ isolated function testRefreshTokenGrantType2() {
 isolated function testRefreshTokenGrantType3() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
-        refreshToken: "tGzv3JOkF0XG5Qx2TlKWIA",
+        refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
         clientId: "",
         clientSecret: "",
         scopes: ["view-order"],
