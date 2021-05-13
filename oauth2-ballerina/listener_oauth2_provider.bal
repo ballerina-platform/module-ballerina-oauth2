@@ -23,7 +23,7 @@ import ballerina/time;
 # + url - URL of the introspection server
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
 # + optionalParams - Map of optional parameters used for the introspection endpoint
-# + cacheConfig - Configurations for the cache used to store the OAuth2 token and other related information
+# + cacheConfig - Configurations for the cache used to store the OAuth2 access token and other related information
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations which calls the introspection server
 public type IntrospectionConfig record {
@@ -78,8 +78,9 @@ const string AUD = "aud";
 const string ISS = "iss";
 const string JTI = "jti";
 
-# Represents the inbound OAuth2 provider, which calls the introspection server, validates the received credentials,
-# and performs authentication and authorization.
+# Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
+# authorization server configurations. This supports the client credentials grant type, password grant type, and the
+# refresh token grant type.
 # ```ballerina
 # oauth2:IntrospectionConfig config = {
 #     url: "https://localhost:9196/oauth2/token/introspect"
@@ -107,12 +108,12 @@ public class ListenerOAuth2Provider {
         }
     }
 
-    # Authenticates the provider OAuth2 tokens against the introspection endpoint.
+    # Authenticates the provided OAuth2 acess token against the introspection endpoint.
     # ```ballerina
-    # boolean|oauth2:Error result = provider.authenticate("<credential>");
+    # boolean result = check provider.authenticate("<credential>");
     # ```
     #
-    # + credential - OAuth2 token to be authenticated
+    # + credential - OAuth2 access token to be authenticated
     # + optionalParams - Map of optional parameters use for the introspection endpoint
     # + return - `oauth2:IntrospectionResponse` if authentication is successful, or else an `oauth2:Error` if an error occurred
     public isolated function authorize(string credential, map<string>? optionalParams = ()) returns IntrospectionResponse|Error {
@@ -140,7 +141,7 @@ public class ListenerOAuth2Provider {
     }
 }
 
-// Validates the provided OAuth2 token by calling the OAuth2 introspection endpoint.
+// Validates the provided OAuth2 access token by calling the OAuth2 introspection endpoint.
 isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
                            map<string>? optionalParams) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, refer to the
@@ -249,7 +250,7 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
         result = oauth2Cache.put(token, response, defaultTokenExpTime);
     }
     if (result is cache:Error) {
-        log:printError("Failed to add OAuth2 token to the cache.", 'error = result);
+        log:printError("Failed to add OAuth2 access token to the cache.", 'error = result);
         return;
     }
 }
@@ -272,7 +273,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         } else {
             cache:Error? result = oauth2Cache.invalidate(token);
             if (result is cache:Error) {
-                log:printError("Failed to invalidate OAuth2 token from the cache.", 'error = result);
+                log:printError("Failed to invalidate OAuth2 access token from the cache.", 'error = result);
             }
         }
     } else {
