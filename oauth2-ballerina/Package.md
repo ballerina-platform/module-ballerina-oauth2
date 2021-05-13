@@ -1,9 +1,21 @@
 ## Package Overview
 
-This package provides a listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint, and a client OAuth2 authentication provider, which can be used to authenticate against an external endpoint.
+The OAuth2 library is one of the standard library modules of the [Ballerina](https://ballerina.io/) language.
 
-For information on the operations, which you can perform with this package, see the below **Functions**. For examples on the usage of the operations, see the following.
-* [HTTP Service with OAuth2 Example](https://ballerina.io/learn/by-example/http-service-with-oauth2.html)
-* [HTTP Client with OAuth2 Client Credentials Grant Type](https://ballerina.io/learn/by-example/http-client-with-oauth2-client-credentials-grant-type.html)
-* [HTTP Client with OAuth2 Password Grant Type](https://ballerina.io/learn/by-example/http-client-with-oauth2-password-grant-type.html)
-* [HTTP Client with OAuth2 Direct Token Type](https://ballerina.io/learn/by-example/http-client-with-oauth2-direct-token-type.html)
+This module provides a framework for interacting with OAuth2 authorization servers as specified in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662).
+
+The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service, either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service, or by allowing the third-party application to obtain access on its own behalf.
+
+The Ballerina OAuth2 module facilitates auth providers that is to be used by the clients and listeners of different protocol connectors.
+
+For more information go to [The OAuth2 Module](https://docs.central.ballerina.io/ballerina/oauth2/latest).
+
+### Report Issues
+
+To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina
+[Standard Library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
+
+### Useful Links
+- Discuss the code changes of the Ballerina project in [ballerina-dev@googlegroups.com](mailto:ballerina-dev@googlegroups.com).
+- Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).
+- Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
