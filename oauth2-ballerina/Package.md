@@ -8,8 +8,6 @@ The OAuth 2.0 authorization framework enables a third-party application to obtai
 
 The Ballerina OAuth2 module facilitates auth providers that is to be used by the clients and listeners of different protocol connectors.
 
-For more information go to [The OAuth2 Module](https://docs.central.ballerina.io/ballerina/oauth2/latest).
-
 ### Report Issues
 
 To report bugs, request new features, start new discussions, view project boards, etc. please visit Ballerina
