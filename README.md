@@ -3,15 +3,19 @@ Ballerina OAuth2 Library
 
   [![Build](https://github.com/ballerina-platform/module-ballerina-oauth2/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-oauth2/actions/workflows/build-timestamped-master.yml)
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-oauth2.svg?label=Last%20Commit)](https://github.com/ballerina-platform/module-ballerina-oauth2/commits/master)
-  [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/oauth2.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Foauth2)
+  [![GitHub issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/oauth2.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Foauth2)
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
   [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-oauth2/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-oauth2)
 
-The OAuth2 library is one of the standard library modules of the <a target="_blank" href="https://ballerina.io/">Ballerina</a> language.
+The OAuth2 library is one of the standard library modules of the [Ballerina](https://ballerina.io/) language.
 
-It provides a listener OAuth2 authentication provider, which can be used to authenticate the provided credentials against an introspection endpoint, and a client OAuth2 authentication provider, which can be used to authenticate against an external endpoint.
+This module provides a framework for interacting with OAuth2 authorization servers as specified in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662).
 
-For more information go to [The OAuth2 Module](https://ballerina.io/learn/api-docs/ballerina/#/ballerina/oauth2/latest/oauth2/).
+The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service, either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service, or by allowing the third-party application to obtain access on its own behalf.
+
+The Ballerina OAuth2 module facilitates auth providers that is to be used by the clients and listeners of different protocol connectors.
+
+For more information go to [The OAuth2 Module](https://docs.central.ballerina.io/ballerina/oauth2/latest).
 
 For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
@@ -33,7 +37,7 @@ This repository only contains the source code for the module.
    
         > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
 
-2. Export Github Personal Access Token (PAT) with read package permissions as follows:
+2. Export GitHub Personal Access Token (PAT) with read package permissions as follows:
 
     ```
     export packageUser=<Username>
@@ -97,6 +101,6 @@ All contributors are encouraged to read the [Ballerina Code of Conduct](https://
 
 ## Useful Links
 
-* Discuss about code changes of the Ballerina project in [ballerina-dev@googlegroups.com](mailto:ballerina-dev@googlegroups.com).
+* Discuss the code changes of the Ballerina project in [ballerina-dev@googlegroups.com](mailto:ballerina-dev@googlegroups.com).
 * Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).
 * Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
