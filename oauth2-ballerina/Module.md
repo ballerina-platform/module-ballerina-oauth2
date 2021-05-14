@@ -12,4 +12,4 @@ Represents the listener OAuth2 provider, which is used to validate the received 
 
 ### Client OAuth2 Provider
 
-Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2 authorization server configurations. This supports the client credentials grant type, password grant type, and the refresh token grant type.
+Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2 authorization server configurations. This supports the client credentials grant type, password grant type, and refresh token grant type.
