@@ -22,9 +22,7 @@ import ballerina/lang.runtime as runtime;
 // ---------------- CLIENT CREDENTIALS GRANT TYPE ----------------
 
 // Test the client credentials grant type with valid credentials
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testClientCredentialsGrantType1() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -63,9 +61,7 @@ isolated function testClientCredentialsGrantType1() {
 }
 
 // Test the client credentials grant type with invalid client credentials
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testClientCredentialsGrantType2() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -102,9 +98,7 @@ isolated function testClientCredentialsGrantType2() {
 }
 
 // Test the client credentials grant type with valid client-id and invalid client-secret
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testClientCredentialsGrantType3() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -141,9 +135,7 @@ isolated function testClientCredentialsGrantType3() {
 }
 
 // Test the client credentials grant type with empty client-id and client-secret
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testClientCredentialsGrantType4() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -180,9 +172,7 @@ isolated function testClientCredentialsGrantType4() {
 }
 
 // Test the client credentials grant type with valid credentials
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testClientCredentialsGrantType5() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -234,9 +224,7 @@ isolated function testClientCredentialsGrantType5() {
 // ---------------- PASSWORD GRANT TYPE ----------------
 
 // Test the password grant type with valid credentials
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType1() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -277,9 +265,7 @@ isolated function testPasswordGrantType1() {
 }
 
 // Test the password grant type with valid credentials and a valid refresh config
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType2() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -346,9 +332,7 @@ isolated function testPasswordGrantType2() {
 }
 
 // Test the password grant type with an invalid username, password, and a valid refresh config
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType3() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -402,9 +386,7 @@ isolated function testPasswordGrantType3() {
 }
 
 // Test the password grant type with an valid username, password, and empty client-id and client-secret
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType4() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -443,9 +425,7 @@ isolated function testPasswordGrantType4() {
 }
 
 // Test the password grant type with an valid username, password, and without client-id and client-secret
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType5() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -482,9 +462,7 @@ isolated function testPasswordGrantType5() {
 }
 
 // Test the password grant type with an valid username, password, and without client-id and client-secret
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType6() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -527,9 +505,7 @@ isolated function testPasswordGrantType6() {
 }
 
 // Test the password grant type with valid credentials and without refresh config
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testPasswordGrantType7() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -573,9 +549,7 @@ isolated function testPasswordGrantType7() {
 // ---------------- REFRESH TOKEN GRANT TYPE ----------------
 
 // Test the refresh token grant type with an invalid refresh token
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testRefreshTokenGrantType1() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
@@ -604,9 +578,7 @@ isolated function testRefreshTokenGrantType1() {
 }
 
 // Test the refresh token grant type with an valid configurations
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testRefreshTokenGrantType2() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9445/oauth2/token",
@@ -657,9 +629,7 @@ isolated function testRefreshTokenGrantType2() {
 }
 
 // Test the refresh token grant type with empty client-id and client-secret
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testRefreshTokenGrantType3() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
