@@ -41,9 +41,7 @@ isolated function getAccessToken() returns string {
 }
 
 // Test the introspection request with successful token
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer1() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -75,9 +73,7 @@ isolated function testIntrospectionServer1() {
 }
 
 // Test the introspection request with successful token with cache configurations
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer2() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -131,9 +127,7 @@ isolated function testIntrospectionServer2() {
 }
 
 // Test the introspection request with invalid token
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer3() {
     string accessToken = "invalid_token";
     IntrospectionConfig config = {
@@ -158,9 +152,7 @@ isolated function testIntrospectionServer3() {
 }
 
 // Test the introspection request with empty token
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer4() {
     string accessToken = "";
     IntrospectionConfig config = {
@@ -185,9 +177,7 @@ isolated function testIntrospectionServer4() {
 }
 
 // Test the introspection request with successful token without authenticating the client
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer5() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -211,9 +201,7 @@ isolated function testIntrospectionServer5() {
 }
 
 // Test the introspection request with successful token with valid OAuth2 client credentials grant type
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer6() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -257,9 +245,7 @@ isolated function testIntrospectionServer6() {
 }
 
 // Test the introspection request with successful token with valid OAuth2 password grant type
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer7() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -306,9 +292,7 @@ isolated function testIntrospectionServer7() {
 }
 
 // Test the introspection request with successful token with invalid OAuth2 client credentials grant type
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer8() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -344,9 +328,7 @@ isolated function testIntrospectionServer8() {
 }
 
 // Test the introspection request with successful token with invalid OAuth2 password grant type
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer9() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
@@ -385,9 +367,7 @@ isolated function testIntrospectionServer9() {
 }
 
 // Test the introspection request with successful token and with all the configurations (keystore & truststore)
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer10() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -441,9 +421,7 @@ isolated function testIntrospectionServer10() {
 }
 
 // Test the introspection request with successful token and with all the configurations (private/public key)
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer11() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -495,9 +473,7 @@ isolated function testIntrospectionServer11() {
 }
 
 // Test the introspection request with successful token and with all the configurations (disable SSL)
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer12() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -544,9 +520,7 @@ isolated function testIntrospectionServer12() {
 }
 
 // Test the introspection request with successful token and with all the configurations (empty secure socket)
-@test:Config {
-    groups: ["provider"]
-}
+@test:Config {}
 isolated function testIntrospectionServer13() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
