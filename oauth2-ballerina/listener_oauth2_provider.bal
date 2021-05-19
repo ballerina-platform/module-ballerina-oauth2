@@ -25,7 +25,7 @@ import ballerina/time;
 # + optionalParams - Map of optional parameters used for the introspection endpoint
 # + cacheConfig - Configurations for the cache used to store the OAuth2 access token and other related information
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the introspection response does not contain an `exp` field
-# + clientConfig - HTTP client configurations which calls the introspection server
+# + clientConfig - HTTP client configurations, which call the introspection server
 public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
@@ -78,7 +78,7 @@ const string AUD = "aud";
 const string ISS = "iss";
 const string JTI = "jti";
 
-# Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
+# Represents the client OAuth2 provider, which is used to generate the OAuth2 access tokens using the configured OAuth2
 # authorization server configurations. This supports the client credentials grant type, password grant type, and
 # refresh token grant type.
 # ```ballerina
@@ -114,8 +114,8 @@ public class ListenerOAuth2Provider {
     # ```
     #
     # + credential - OAuth2 access token to be authenticated
-    # + optionalParams - Map of optional parameters use for the introspection endpoint
-    # + return - `oauth2:IntrospectionResponse` if authentication is successful, or else an `oauth2:Error` if an error occurred
+    # + optionalParams - Map of optional parameters used for the introspection endpoint
+    # + return - An `oauth2:IntrospectionResponse` if the authentication is successful or else an `oauth2:Error` if an error occurred
     public isolated function authorize(string credential, map<string>? optionalParams = ()) returns IntrospectionResponse|Error {
         if (credential == "") {
             return prepareError("Credential cannot be empty.");
@@ -144,7 +144,7 @@ public class ListenerOAuth2Provider {
 // Validates the provided OAuth2 access token by calling the OAuth2 introspection endpoint.
 isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
                            map<string>? optionalParams) returns IntrospectionResponse|Error {
-    // Builds the request to be sent to the introspection endpoint. For more information, refer to the
+    // Builds the request to be sent to the introspection endpoint. For more information, see the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
     string textPayload = "token=" + token;
     string? tokenTypeHint = config?.tokenTypeHint;

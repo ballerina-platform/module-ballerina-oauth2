@@ -330,8 +330,8 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     return accessToken;
 }
 
-// Refreshes an access token from the token endpoint using the provided refresh configurations of PASSWORD GRANT configurations.
-// Refer: https://tools.ietf.org/html/rfc6749#section-6
+// Refreshes an access token from the token endpoint using the provided refresh configurations of the PASSWORD GRANT configurations.
+// For information, see [Refreshing an Access Token](https://tools.ietf.org/html/rfc6749#section-6).
 isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrantConfig config, TokenCache tokenCache)
                                                                    returns string|Error {
     var refreshConfig = config?.refreshConfig;

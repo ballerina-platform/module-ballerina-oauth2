@@ -9,13 +9,13 @@ Ballerina OAuth2 Library
 
 The `oauth2` library is one of the standard library modules of the [Ballerina](https://ballerina.io/) language.
 
-This module provides a framework for interacting with OAuth2 authorization servers as specified in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662).
+This module provides a framework for interacting with OAuth2 authorization servers as specified in the [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662).
 
-The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service, either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service, or by allowing the third-party application to obtain access on its own behalf.
+The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service or by allowing the third-party application to obtain access on its own behalf.
 
 The Ballerina `oauth2` module facilitates auth providers that are to be used by the clients and listeners of different protocol connectors.
 
-For more information go to the [`oauth2` module](https://docs.central.ballerina.io/ballerina/oauth2/latest).
+For more information, go to the [`oauth2` module](https://docs.central.ballerina.io/ballerina/oauth2/latest).
 
 For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
@@ -35,9 +35,9 @@ This repository only contains the source code for the module.
    
    * [OpenJDK](https://adoptopenjdk.net)
    
-        > **Note:** Set the JAVA_HOME environment variable to the path name of the directory into which you installed JDK.
+        > **Note:** Set the `JAVA_HOME` environment variable to the path name of the directory into which you installed JDK.
 
-2. Export GitHub Personal Access Token (PAT) with 'read package' permission as follows:
+2. Export your GitHub Personal Access Token (PAT) with the 'read package' permission as follows:
 
     ```
     export packageUser=<Username>
