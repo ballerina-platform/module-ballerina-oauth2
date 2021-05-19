@@ -216,12 +216,17 @@ task stopBallerinaSTS() {
 
 updateTomlFiles.dependsOn copyStdlibs
 
-build.finalizedBy stopWso2IS
+test.finalizedBy stopWso2IS
+test.finalizedBy stopBallerinaSTS
 test.dependsOn startWso2IS
-build.finalizedBy stopBallerinaSTS
 test.dependsOn startBallerinaSTS
-build.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-native:build"
+
+build.finalizedBy stopWso2IS
+build.finalizedBy stopBallerinaSTS
+build.dependsOn startWso2IS
+build.dependsOn startBallerinaSTS
+build.dependsOn ":${packageName}-native:build"
 
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
