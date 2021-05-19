@@ -209,8 +209,8 @@ isolated function testClientCredentialsGrantType5() {
         test:assertFail(msg = "Test Failed! ");
     }
 
-    // The access-token is valid only for 2 seconds. Wait 5 seconds and try again, so that the access-token will be
-    // reissued by provided refresh configurations.
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
+    // reissued by the provided refresh configurations.
     runtime:sleep(5.0);
 
     response = provider.generateToken();
@@ -319,8 +319,8 @@ isolated function testPasswordGrantType2() {
         test:assertFail(msg = "Test Failed! ");
     }
 
-    // The access-token is valid only for 2 seconds. Wait 5 seconds and try again, so that the access-token will get
-    // refreshed by provided refresh configurations.
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will get
+    // refreshed by the provided refresh configurations.
     runtime:sleep(5.0);
 
     response = provider.generateToken();
@@ -534,13 +534,13 @@ isolated function testPasswordGrantType7() {
         test:assertFail(msg = "Test Failed! ");
     }
 
-    // The access-token is valid only for 2 seconds. Wait 5 seconds and try again, so that the access-token will get
-    // tried to refresh. But hence the refresh configurations are not provided, it will be failed.
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will get
+    // refreshed. However, if the refresh configurations are not provided, it will be failed.
     runtime:sleep(5.0);
 
     response = provider.generateToken();
     if (response is Error) {
-        assertContains(response, "Failed to refresh access-token since refresh configurations are not provided.");
+        assertContains(response, "Failed to refresh access token since refresh configurations are not provided.");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -616,8 +616,8 @@ isolated function testRefreshTokenGrantType2() {
         test:assertFail(msg = "Test Failed! ");
     }
 
-    // The access-token is valid only for 2 seconds. Wait 5 seconds and try again, so that the access-token will be
-    // refreshed again by provided refresh configurations.
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
+    // refreshed again by the provided refresh configurations.
     runtime:sleep(5.0);
 
     response = provider.generateToken();
