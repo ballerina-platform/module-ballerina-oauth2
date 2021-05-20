@@ -87,24 +87,28 @@ const string JTI = "jti";
 # };
 # oauth2:ListenerOAuth2Provider provider = new(config);
 # ```
-public class ListenerOAuth2Provider {
+public isolated class ListenerOAuth2Provider {
 
-    IntrospectionConfig introspectionConfig;
-    cache:Cache? oauth2Cache = ();
-    ClientOAuth2Provider? clientOAuth2Provider = ();
+    private final IntrospectionConfig & readonly introspectionConfig;
+    private final cache:Cache? oauth2Cache;
+    private final ClientOAuth2Provider? clientOAuth2Provider;
 
     # Provides authentication based on the provided introspection configurations.
     #
     # + introspectionConfig - OAuth2 introspection server configurations
     public isolated function init(IntrospectionConfig introspectionConfig) {
-        self.introspectionConfig = introspectionConfig;
+        self.introspectionConfig = introspectionConfig.cloneReadOnly();
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
         if (oauth2CacheConfig is cache:CacheConfig) {
             self.oauth2Cache = new(oauth2CacheConfig);
+        } else {
+            self.oauth2Cache = ();
         }
         ClientAuth? auth = introspectionConfig.clientConfig?.auth;
         if (auth is ClientAuth) {
             self.clientOAuth2Provider = new(auth);
+        } else {
+            self.clientOAuth2Provider = ();
         }
     }
 
