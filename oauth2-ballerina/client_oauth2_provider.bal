@@ -75,7 +75,7 @@ public type PasswordGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the data structure, which is used to configure OAuth2 refresh token grant type.
+# Represents the data structure, which is used to configure the OAuth2 refresh token grant type.
 #
 # + refreshUrl - Refresh token URL for the refresh token server
 # + refreshToken - Refresh token for the refresh token server
