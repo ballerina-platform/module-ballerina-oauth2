@@ -78,9 +78,8 @@ const string AUD = "aud";
 const string ISS = "iss";
 const string JTI = "jti";
 
-# Represents the client OAuth2 provider, which is used to generate the OAuth2 access tokens using the configured OAuth2
-# authorization server configurations. This supports the client credentials grant type, password grant type, and
-# refresh token grant type.
+# Represents the listener OAuth2 provider, which is used to validate the received credential (access token) by
+# calling the configured OAuth2 introspection server.
 # ```ballerina
 # oauth2:IntrospectionConfig config = {
 #     url: "https://localhost:9196/oauth2/token/introspect"
