@@ -165,19 +165,15 @@ isolated function validate(string token, IntrospectionConfig config, ClientOAuth
             textPayload = textPayload + "&" + key.trim() + "=" + value.trim();
         }
     }
+    map<string> customHeadersMap = {};
     ClientOAuth2Provider? oauth2Provider = clientOAuth2Provider;
     if (oauth2Provider is ClientOAuth2Provider) {
         string|Error accessToken = oauth2Provider.generateToken();
         if (accessToken is string) {
-            map<string>? customHeadersMap = config.clientConfig?.customHeaders;
-            if (customHeadersMap is map<string>) {
-                customHeadersMap["Authorization"] = "Bearer " + accessToken;
-            } else {
-                config.clientConfig.customHeaders = { "Authorization" : "Bearer " + accessToken };
-            }
+            customHeadersMap["Authorization"] = "Bearer " + accessToken;
         }
     }
-    string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);
+    string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, customHeadersMap, textPayload);
     if (stringResponse is string) {
         json|error jsonResponse = stringResponse.fromJsonString();
         if (jsonResponse is json) {
