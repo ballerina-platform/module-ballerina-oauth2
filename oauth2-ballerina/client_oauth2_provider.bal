@@ -100,14 +100,6 @@ public type RefreshTokenGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-// The data structure, which stores the values received from the authorization/token server to use them
-// for the latter requests without requesting tokens again.
-type TokenCache record {
-    string accessToken;
-    string refreshToken;
-    int expTime;
-};
-
 // The data structure, which stores the values needed to prepare the HTTP request, which are to be sent to the
 // authorization endpoint.
 type RequestConfig record {|
@@ -158,17 +150,17 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|Refresh
 #     scopes: ["token-scope1", "token-scope2"]
 # });
 # ```
-public class ClientOAuth2Provider {
+public isolated class ClientOAuth2Provider {
 
-    GrantConfig grantConfig;
-    TokenCache tokenCache;
+    private final GrantConfig & readonly grantConfig;
+    private final TokenCache tokenCache;
 
     # Provides authentication based on the provided OAuth2 configurations.
     #
     # + grantConfig - OAuth2 grant type configurations
     public isolated function init(GrantConfig grantConfig) {
-        self.grantConfig = grantConfig;
-        self.tokenCache = initTokenCache();
+        self.grantConfig = grantConfig.cloneReadOnly();
+        self.tokenCache = new;
         // This generates the token and keep it in the `TokenCache` to be used by the initial request.
         string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache);
         if (result is Error) {
@@ -206,16 +198,16 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenC
 // Processes the OAuth2 access token for the CLIENT CREDENTIALS GRANT type.
 isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantConfig,
                                                           TokenCache tokenCache) returns string|Error {
-    string cachedAccessToken = tokenCache.accessToken;
+    string cachedAccessToken = tokenCache.getAccessToken();
     if (cachedAccessToken == "") {
         return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
     } else {
-        if (isCachedTokenValid(tokenCache.expTime)) {
+        if (!tokenCache.isAccessTokenExpired()) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isCachedTokenValid(tokenCache.expTime)) {
-                    return tokenCache.accessToken;
+                if (!tokenCache.isAccessTokenExpired()) {
+                    return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
             }
@@ -226,16 +218,16 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
 // Processes the OAuth2 access token for the PASSWORD GRANT type.
 isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig, TokenCache tokenCache)
                                                  returns string|Error {
-    string cachedAccessToken = tokenCache.accessToken;
+    string cachedAccessToken = tokenCache.getAccessToken();
     if (cachedAccessToken == "") {
         return getAccessTokenFromTokenRequestForPasswordGrant(grantConfig, tokenCache);
     } else {
-        if (isCachedTokenValid(tokenCache.expTime)) {
+        if (!tokenCache.isAccessTokenExpired()) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isCachedTokenValid(tokenCache.expTime)) {
-                    return tokenCache.accessToken;
+                if (!tokenCache.isAccessTokenExpired()) {
+                    return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromRefreshRequestForPasswordGrant(grantConfig, tokenCache);
             }
@@ -246,16 +238,16 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
 // Processes the OAuth2 access token for the REFRESH TOKEN GRANT type.
 isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
                                                          TokenCache tokenCache) returns string|Error {
-    string cachedAccessToken = tokenCache.accessToken;
+    string cachedAccessToken = tokenCache.getAccessToken();
     if (cachedAccessToken == "") {
         return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
     } else {
-        if (isCachedTokenValid(tokenCache.expTime)) {
+        if (!tokenCache.isAccessTokenExpired()) {
             return cachedAccessToken;
         } else {
             lock {
-                if (isCachedTokenValid(tokenCache.expTime)) {
-                    return tokenCache.accessToken;
+                if (!tokenCache.isAccessTokenExpired()) {
+                    return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
             }
@@ -286,7 +278,7 @@ isolated function getAccessTokenFromTokenRequestForClientCredentialsGrant(Client
     json response = check sendRequest(requestConfig, tokenUrl, clientConfig);
     string accessToken = check extractAccessToken(response);
     int? expiresIn = extractExpiresIn(response);
-    updateTokenCache(tokenCache, accessToken, (), expiresIn, defaultTokenExpTime, clockSkew);
+    tokenCache.update(accessToken, (), expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
 }
 
@@ -326,7 +318,7 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     string accessToken = check extractAccessToken(response);
     string? refreshToken = extractRefreshToken(response);
     int? expiresIn = extractExpiresIn(response);
-    updateTokenCache(tokenCache, accessToken, refreshToken, expiresIn, defaultTokenExpTime, clockSkew);
+    tokenCache.update(accessToken, refreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
 }
 
@@ -344,13 +336,13 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
             // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
             // request, initially.
             string refreshUrl = refreshConfig.refreshUrl;
-            string refreshToken = tokenCache.refreshToken;
+            string refreshToken = tokenCache.getRefreshToken();
             if (refreshToken == "") {
                 // The subsequent requests should have a cached `refreshToken` to refresh the access token.
                 return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
             }
             RequestConfig requestConfig = {
-                payload: "grant_type=refresh_token&refresh_token=" + tokenCache.refreshToken,
+                payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
                 clientId: clientId,
                 clientSecret: clientSecret,
                 scopes: refreshConfig?.scopes,
@@ -365,7 +357,7 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
             string accessToken = check extractAccessToken(response);
             string? updatedRefreshToken = extractRefreshToken(response);
             int? expiresIn = extractExpiresIn(response);
-            updateTokenCache(tokenCache, accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
+            tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
             return accessToken;
         } else {
             return prepareError("Client-id or client-secret cannot be empty.");
@@ -385,7 +377,10 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     // a cached `refreshToken` since the authorization server does not update the `refreshToken`.
     // Hence, the `config.refreshToken` is used.
     // Refer: https://tools.ietf.org/html/rfc6749#page-48
-    string refreshToken = (tokenCache.refreshToken != "") ? (tokenCache.refreshToken) : (config.refreshToken);
+    string refreshToken = tokenCache.getRefreshToken();
+    if (refreshToken == "") {
+        refreshToken = config.refreshToken;
+    }
     RequestConfig requestConfig = {
         payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
         clientId: config.clientId,
@@ -402,7 +397,7 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     string accessToken = check extractAccessToken(response);
     string? updatedRefreshToken = extractRefreshToken(response);
     int? expiresIn = extractExpiresIn(response);
-    updateTokenCache(tokenCache, accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
+    tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
 }
 
@@ -496,37 +491,57 @@ isolated function extractExpiresIn(json response) returns int? {
     }
 }
 
-// Checks the validity of the cached access token.
-isolated function isCachedTokenValid(int expTime) returns boolean {
-    [int, decimal] currentTime = time:utcNow();
-    if (currentTime[0] < expTime) {
-        return true;
-    }
-    return false;
-}
+// This class stores the values received from the authorization/token server to use them for the latter requests
+// without requesting tokens again.
+isolated class TokenCache {
 
-// Updates the OAuth2 token cache with the received JSON payload of the response.
-isolated function updateTokenCache(TokenCache tokenCache, string accessToken, string? refreshToken, int? expiresIn,
-                                   decimal defaultTokenExpTime, decimal clockSkew) {
-    tokenCache.accessToken = accessToken;
-    [int, decimal] currentTime = time:utcNow();
-    int issueTime = currentTime[0];
-    if (expiresIn is int) {
-        tokenCache.expTime = issueTime + expiresIn - <int> clockSkew;
-    } else {
-        tokenCache.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
-    }
-    if (refreshToken is string) {
-        tokenCache.refreshToken = refreshToken.toJsonString();
-    }
-}
+    private string accessToken;
+    private string refreshToken;
+    private int expTime;
 
-// Initialize OAuth2 token cache with the default exp time and empty values.
-isolated function initTokenCache() returns TokenCache {
-    TokenCache tokenCache = {
-        accessToken: "",
-        refreshToken: "",
-        expTime: -1
-    };
-    return tokenCache;
+    isolated function init() {
+        self.accessToken = "";
+        self.refreshToken = "";
+        self.expTime = -1;
+    }
+
+    isolated function getAccessToken() returns string {
+        lock {
+            return self.accessToken;
+        }
+    }
+
+    isolated function getRefreshToken() returns string {
+        lock {
+            return self.refreshToken;
+        }
+    }
+
+    // Checks the validity of the cached access token by analyzing the expiry time.
+    isolated function isAccessTokenExpired() returns boolean {
+        lock {
+            [int, decimal] currentTime = time:utcNow();
+            if (currentTime[0] < self.expTime) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    // Updates the cache with the values received from JSON payload of the response.
+    isolated function update(string accessToken, string? refreshToken, int? expiresIn, decimal defaultTokenExpTime, decimal clockSkew) {
+        lock {
+            self.accessToken = accessToken;
+            [int, decimal] currentTime = time:utcNow();
+            int issueTime = currentTime[0];
+            if (expiresIn is int) {
+                self.expTime = issueTime + expiresIn - <int> clockSkew;
+            } else {
+                self.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
+            }
+            if (refreshToken is string) {
+                self.refreshToken = refreshToken.toJsonString();
+            }
+        }
+    }
 }

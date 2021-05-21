@@ -86,24 +86,28 @@ const string JTI = "jti";
 # };
 # oauth2:ListenerOAuth2Provider provider = new(config);
 # ```
-public class ListenerOAuth2Provider {
+public isolated class ListenerOAuth2Provider {
 
-    IntrospectionConfig introspectionConfig;
-    cache:Cache? oauth2Cache = ();
-    ClientOAuth2Provider? clientOAuth2Provider = ();
+    private final IntrospectionConfig & readonly introspectionConfig;
+    private final cache:Cache? oauth2Cache;
+    private final ClientOAuth2Provider? clientOAuth2Provider;
 
     # Provides authentication based on the provided introspection configurations.
     #
     # + introspectionConfig - OAuth2 introspection server configurations
     public isolated function init(IntrospectionConfig introspectionConfig) {
-        self.introspectionConfig = introspectionConfig;
+        self.introspectionConfig = introspectionConfig.cloneReadOnly();
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
         if (oauth2CacheConfig is cache:CacheConfig) {
             self.oauth2Cache = new(oauth2CacheConfig);
+        } else {
+            self.oauth2Cache = ();
         }
         ClientAuth? auth = introspectionConfig.clientConfig?.auth;
         if (auth is ClientAuth) {
             self.clientOAuth2Provider = new(auth);
+        } else {
+            self.clientOAuth2Provider = ();
         }
     }
 
@@ -161,19 +165,15 @@ isolated function validate(string token, IntrospectionConfig config, ClientOAuth
             textPayload = textPayload + "&" + key.trim() + "=" + value.trim();
         }
     }
+    map<string> customHeadersMap = {};
     ClientOAuth2Provider? oauth2Provider = clientOAuth2Provider;
     if (oauth2Provider is ClientOAuth2Provider) {
         string|Error accessToken = oauth2Provider.generateToken();
         if (accessToken is string) {
-            map<string>? customHeadersMap = config.clientConfig?.customHeaders;
-            if (customHeadersMap is map<string>) {
-                customHeadersMap["Authorization"] = "Bearer " + accessToken;
-            } else {
-                config.clientConfig.customHeaders = { "Authorization" : "Bearer " + accessToken };
-            }
+            customHeadersMap["Authorization"] = "Bearer " + accessToken;
         }
     }
-    string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, {}, textPayload);
+    string|Error stringResponse = doHttpRequest(config.url, config.clientConfig, customHeadersMap, textPayload);
     if (stringResponse is string) {
         json|error jsonResponse = stringResponse.fromJsonString();
         if (jsonResponse is json) {
