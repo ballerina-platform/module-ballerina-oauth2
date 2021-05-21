@@ -32,10 +32,10 @@ public type ClientConfiguration record {|
     SecureSocket secureSocket?;
 |};
 
-# Defines the authentication configuration types for the HTTP client used for token introspection.
+# Represents the the authentication configuration types for the HTTP client used for token introspection.
 public type ClientAuth ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig;
 
-# Represents HTTP versions.
+# Represents the HTTP versions.
 public enum HttpVersion {
     HTTP_1_1,
     HTTP_2
@@ -52,7 +52,7 @@ public type SecureSocket record {|
     crypto:KeyStore|CertKey key?;
 |};
 
-# Represents combination of certificate, private key and private key password if encrypted.
+# Represents the combination of the certificate file path, private key file path, and private key password if encrypted.
 #
 # + certFile - A file containing the certificate
 # + keyFile - A file containing the private key
@@ -63,7 +63,7 @@ public type CertKey record {|
    string keyPassword?;
 |};
 
-# Represents HTTP versions.
+# Represents the credential-bearing methods.
 public enum CredentialBearer {
     AUTH_HEADER_BEARER,
     POST_BODY_BEARER

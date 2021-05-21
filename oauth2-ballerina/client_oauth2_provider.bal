@@ -17,7 +17,7 @@
 import ballerina/log;
 import ballerina/time;
 
-# The data structure, which is used to configure the OAuth2 client credentials grant type.
+# Represents the data structure, which is used to configure the OAuth2 client credentials grant type.
 #
 # + tokenUrl - Token URL for the authorization endpoint
 # + clientId - Client ID for the client credentials grant authentication
@@ -40,7 +40,7 @@ public type ClientCredentialsGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# The data structure, which is used to configure the OAuth2 password grant type.
+# Represents the data structure, which is used to configure the OAuth2 password grant type.
 #
 # + tokenUrl - Token URL for the authorization endpoint
 # + username - Username for the password grant authentication
@@ -75,7 +75,7 @@ public type PasswordGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# The data structure, which can be used to configure OAuth2 refresh token grant type.
+# Represents the data structure, which is used to configure the OAuth2 refresh token grant type.
 #
 # + refreshUrl - Refresh token URL for the refresh token server
 # + refreshToken - Refresh token for the refresh token server
