@@ -466,17 +466,19 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
 
 isolated function extractAccessToken(json response) returns string|Error {
     json|error accessToken = response.access_token;
-    if (accessToken is json) {
-        return accessToken.toJsonString();
-    } else {
+    if (accessToken is string) {
+        return accessToken;
+    } else if (accessToken is error) {
         return prepareError("Failed to access 'access_token' property from the JSON.", accessToken);
+    } else {
+        return prepareError("Failed to extract 'access_token' property as a 'string' from the JSON.");
     }
 }
 
 isolated function extractRefreshToken(json response) returns string? {
     json|error refreshToken = response.refresh_token;
-    if (refreshToken is json) {
-        return refreshToken.toJsonString();
+    if (refreshToken is string) {
+        return refreshToken;
     } else {
         log:printDebug("Failed to access 'refresh_token' property from the JSON.");
     }
@@ -540,7 +542,7 @@ isolated class TokenCache {
                 self.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
             }
             if (refreshToken is string) {
-                self.refreshToken = refreshToken.toJsonString();
+                self.refreshToken = refreshToken;
             }
         }
     }

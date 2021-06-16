@@ -231,7 +231,7 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
                 introspectionResponse.jti = <string>payloadMap[key];
             }
             _ => {
-                introspectionResponse[key] = payloadMap[key].toJsonString();
+                introspectionResponse[key] = payloadMap[key];
             }
         }
     }
