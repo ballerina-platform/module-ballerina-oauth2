@@ -12,8 +12,14 @@ plugins {
 }
 
 rootProject.name = 'oauth2'
-include(':build-config:checkstyle')
-include ':oauth2-native', ':oauth2-ballerina'
+
+include ':checkstyle'
+include ':oauth2-native'
+include ':oauth2-ballerina'
+
+project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
+project(':oauth2-native').projectDir = file('native')
+project(':oauth2-ballerina').projectDir = file('ballerina')
 
 gradleEnterprise {
     buildScan {

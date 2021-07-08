@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.ballerinalang.stdlib.oauth2;
+package io.ballerina.stdlib.oauth2;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
