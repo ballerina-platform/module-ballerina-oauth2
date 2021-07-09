@@ -71,5 +71,5 @@ public enum CredentialBearer {
 
 isolated function doHttpRequest(string url, ClientConfiguration clientConfig, map<string> headers, string payload)
                                 returns string|Error = @java:Method {
-    'class: "org.ballerinalang.stdlib.oauth2.OAuth2Client"
+    'class: "io.ballerina.stdlib.oauth2.OAuth2Client"
 } external;

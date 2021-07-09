@@ -21,5 +21,5 @@ isolated function init() {
 }
 
 isolated function setModule() = @java:Method {
-    'class: "org.ballerinalang.stdlib.oauth2.ModuleUtils"
+    'class: "io.ballerina.stdlib.oauth2.ModuleUtils"
 } external;
