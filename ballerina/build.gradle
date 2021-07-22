@@ -222,6 +222,7 @@ test.dependsOn startWso2IS
 test.dependsOn startBallerinaSTS
 test.dependsOn ":${packageName}-native:build"
 
+build.dependsOn "generatePomFileForMavenPublication"
 build.finalizedBy stopWso2IS
 build.finalizedBy stopBallerinaSTS
 build.dependsOn startWso2IS
