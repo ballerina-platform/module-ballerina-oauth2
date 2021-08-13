@@ -19,15 +19,15 @@ import ballerina/time;
 
 # Represents the data structure, which is used to configure the OAuth2 client credentials grant type.
 #
-# + tokenUrl - Token URL for the authorization endpoint
-# + clientId - Client ID for the client credentials grant authentication
-# + clientSecret - Client secret for the client credentials grant authentication
+# + tokenUrl - Token URL of the token endpoint
+# + clientId - Client ID for the client authentication
+# + clientSecret - Client secret for the client authentication
 # + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the authorization server response does not contain an `expires_in` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the authorization endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
-# + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
+# + optionalParams - Map of optional parameters use for the token endpoint
+# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
+# + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type ClientCredentialsGrantConfig record {|
     string tokenUrl;
     string clientId;
@@ -42,18 +42,18 @@ public type ClientCredentialsGrantConfig record {|
 
 # Represents the data structure, which is used to configure the OAuth2 password grant type.
 #
-# + tokenUrl - Token URL for the authorization endpoint
-# + username - Username for the password grant authentication
-# + password - Password for the password grant authentication
-# + clientId - Client ID for the password grant authentication
-# + clientSecret - Client secret for the password grant authentication
+# + tokenUrl - Token URL of the token endpoint
+# + username - Username for the password grant type
+# + password - Password for the password grant type
+# + clientId - Client ID for the client authentication
+# + clientSecret - Client secret for the client authentication
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the authorization server response does not contain an `expires_in` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the authorization endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
-# + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
+# + optionalParams - Map of optional parameters use for the token endpoint
+# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
+# + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type PasswordGrantConfig record {|
     string tokenUrl;
     string username;
@@ -77,16 +77,16 @@ public type PasswordGrantConfig record {|
 
 # Represents the data structure, which is used to configure the OAuth2 refresh token grant type.
 #
-# + refreshUrl - Refresh token URL for the refresh token server
-# + refreshToken - Refresh token for the refresh token server
-# + clientId - Client ID for authentication with the authorization endpoint
-# + clientSecret - Client secret for authentication with the authorization endpoint
+# + refreshUrl - Refresh token URL of the token endpoint
+# + refreshToken - Refresh token for the token endpoint
+# + clientId - Client ID for the client authentication
+# + clientSecret - Client secret for the client authentication
 # + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the authorization server response does not contain an `expires_in` field
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the authorization endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the authorization endpoint
-# + clientConfig - HTTP client configurations, which are used to call the authorization endpoint
+# + optionalParams - Map of optional parameters use for the token endpoint
+# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
+# + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type RefreshTokenGrantConfig record {|
     string refreshUrl;
     string refreshToken;
@@ -101,7 +101,7 @@ public type RefreshTokenGrantConfig record {|
 |};
 
 // The data structure, which stores the values needed to prepare the HTTP request, which are to be sent to the
-// authorization endpoint.
+// token endpoint.
 type RequestConfig record {|
     string payload;
     string clientId?;
@@ -115,13 +115,13 @@ type RequestConfig record {|
 public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig;
 
 # Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
-# authorization server configurations. This supports the client credentials grant type, password grant type, and the
+# token endpoint configurations. This supports the client credentials grant type, password grant type, and the
 # refresh token grant type.
 #
 # 1. Client Credentials Grant Type
 # ```ballerina
 # oauth2:ClientOAuth2Provider provider = new({
-#     tokenUrl: "https://localhost:9196/oauth2/token",
+#     tokenUrl: "https://localhost:9445/oauth2/token",
 #     clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L",
 #     clientSecret: "9205371918321623741",
 #     scopes: ["token-scope1", "token-scope2"]
@@ -131,7 +131,7 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|Refresh
 # 2. Password Grant Type
 # ```ballerina
 # oauth2:ClientOAuth2Provider provider = new({
-#     tokenUrl: "https://localhost:9196/oauth2/token/authorize/header",
+#     tokenUrl: "https://localhost:9445/oauth2/token",
 #     username: "johndoe",
 #     password: "A3ddj3w",
 #     clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L",
@@ -143,7 +143,7 @@ public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|Refresh
 # 3. Refresh Token Grant Type
 # ```ballerina
 # oauth2:ClientOAuth2Provider provider = new({
-#     refreshUrl: "https://localhost:9196/oauth2/token/refresh",
+#     refreshUrl: "https://localhost:9445/oauth2/token",
 #     refreshToken: "XlfBs91yquexJqDaKEMzVg==",
 #     clientId: "3MVG9YDQS5WtC11paU2WcQjBB3L",
 #     clientSecret: "9205371918321623741",
@@ -155,7 +155,7 @@ public isolated class ClientOAuth2Provider {
     private final GrantConfig & readonly grantConfig;
     private final TokenCache tokenCache;
 
-    # Provides authentication based on the provided OAuth2 configurations.
+    # Provides authorization based on the provided OAuth2 configurations.
     #
     # + grantConfig - OAuth2 grant type configurations
     public isolated function init(GrantConfig grantConfig) {
@@ -168,7 +168,7 @@ public isolated class ClientOAuth2Provider {
         }
     }
 
-    # Get an OAuth2 access token from the authorization server.
+    # Get an OAuth2 access token from the token endpoint.
     # ```ballerina
     # string token = check provider.generateToken();
     # ```
@@ -374,7 +374,7 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     }
     string refreshUrl = config.refreshUrl;
     // The initial request does not have a cached `refreshToken`. Also, the subsequent requests also may not have
-    // a cached `refreshToken` since the authorization server does not update the `refreshToken`.
+    // a cached `refreshToken` since the token endpoint does not update the `refreshToken`.
     // Hence, the `config.refreshToken` is used.
     // Refer: https://tools.ietf.org/html/rfc6749#page-48
     string refreshToken = tokenCache.getRefreshToken();
@@ -493,7 +493,7 @@ isolated function extractExpiresIn(json response) returns int? {
     }
 }
 
-// This class stores the values received from the authorization/token server to use them for the latter requests
+// This class stores the values received from the token/introspection endpoint to use them for the latter requests
 // without requesting tokens again.
 isolated class TokenCache {
 

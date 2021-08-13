@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [Refactor OAuth2 client implementation with grant types](https://github.com/ballerina-platform/ballerina-standard-library/issues/1206)
 
 ### Fixed
-- [Improve the logic of extracting refresh_token from the authorization endpoint response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1206)
+- [Improve the logic of extracting refresh_token from the token endpoint response](https://github.com/ballerina-platform/ballerina-standard-library/issues/1206)
 
 ## [1.1.0-alpha8] - 2021-04-22
 

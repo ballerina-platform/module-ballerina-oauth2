@@ -18,14 +18,14 @@ import ballerina/cache;
 import ballerina/log;
 import ballerina/time;
 
-# Represents the introspection server configurations.
+# Represents the introspection endpoint configurations.
 #
-# + url - URL of the introspection server
+# + url - URL of the introspection endpoint
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
 # + optionalParams - Map of optional parameters used for the introspection endpoint
 # + cacheConfig - Configurations for the cache used to store the OAuth2 access token and other related information
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the introspection response does not contain an `exp` field
-# + clientConfig - HTTP client configurations, which call the introspection server
+# + clientConfig - HTTP client configurations, which call the introspection endpoint
 public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
@@ -35,7 +35,7 @@ public type IntrospectionConfig record {
     ClientConfiguration clientConfig = {};
 };
 
-# Represents the introspection server response.
+# Represents the introspection endpoint response.
 #
 # + active - Boolean indicator of whether or not the presented token is currently active
 # + scope - A JSON string containing a space-separated list of scopes associated with this token
@@ -79,7 +79,7 @@ const string ISS = "iss";
 const string JTI = "jti";
 
 # Represents the listener OAuth2 provider, which is used to validate the received credential (access token) by
-# calling the configured OAuth2 introspection server.
+# calling the configured introspection endpoint.
 # ```ballerina
 # oauth2:IntrospectionConfig config = {
 #     url: "https://localhost:9196/oauth2/token/introspect"
@@ -92,9 +92,9 @@ public isolated class ListenerOAuth2Provider {
     private final cache:Cache? oauth2Cache;
     private final ClientOAuth2Provider? clientOAuth2Provider;
 
-    # Provides authentication based on the provided introspection configurations.
+    # Provides authorization based on the provided introspection configurations.
     #
-    # + introspectionConfig - OAuth2 introspection server configurations
+    # + introspectionConfig - Introspection endpoint configurations
     public isolated function init(IntrospectionConfig introspectionConfig) {
         self.introspectionConfig = introspectionConfig.cloneReadOnly();
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
@@ -111,14 +111,14 @@ public isolated class ListenerOAuth2Provider {
         }
     }
 
-    # Authenticates the provided OAuth2 acess token against the introspection endpoint.
+    # Validates the provided OAuth2 acess token against the introspection endpoint.
     # ```ballerina
-    # boolean result = check provider.authenticate("<credential>");
+    # boolean result = check provider.authorize("<credential>");
     # ```
     #
-    # + credential - OAuth2 access token to be authenticated
+    # + credential - OAuth2 access token to be validated
     # + optionalParams - Map of optional parameters used for the introspection endpoint
-    # + return - An `oauth2:IntrospectionResponse` if the authentication is successful or else an `oauth2:Error` if an error occurred
+    # + return - An `oauth2:IntrospectionResponse` if the validation is successful or else an `oauth2:Error` if an error occurred
     public isolated function authorize(string credential, map<string>? optionalParams = ()) returns IntrospectionResponse|Error {
         if (credential == "") {
             return prepareError("Credential cannot be empty.");
@@ -144,7 +144,7 @@ public isolated class ListenerOAuth2Provider {
     }
 }
 
-// Validates the provided OAuth2 access token by calling the OAuth2 introspection endpoint.
+// Validates the provided OAuth2 access token by calling the introspection endpoint.
 isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
                            map<string>? optionalParams) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, see the
