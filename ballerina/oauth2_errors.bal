@@ -17,7 +17,7 @@
 import ballerina/log;
 
 # Represents the error type of the module. This will be returned if an error occurred while the listener OAuth2 provider
-# tries to authenticate the received credentials and the client OAuth2 provider tries to generate the token.
+# tries to validate the received credentials and the client OAuth2 provider tries to generate the token.
 public type Error distinct error;
 
 // Logs and prepares the `error` as an `oauth2:Error`.

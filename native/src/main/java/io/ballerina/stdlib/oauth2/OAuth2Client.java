@@ -47,7 +47,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * Extern function to call identity provider endpoints like authorization endpoint, introspection endpoint, using the
+ * Extern function to call identity provider endpoints like token endpoint, introspection endpoint, using the
  * JDK11 HttpClient and return the payload of the HTTP response.
  */
 public class OAuth2Client {
