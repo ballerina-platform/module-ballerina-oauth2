@@ -26,18 +26,15 @@ import ballerina/lang.runtime as runtime;
 isolated function testClientCredentialsGrantType1() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
-        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
         scopes: ["view-order"],
         optionalParams: {
             "client": "ballerina"
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -73,10 +70,7 @@ isolated function testClientCredentialsGrantType2() {
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -102,7 +96,7 @@ isolated function testClientCredentialsGrantType2() {
 isolated function testClientCredentialsGrantType3() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
-        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "invalid_client_secret",
         scopes: ["view-order"],
         optionalParams: {
@@ -110,16 +104,13 @@ isolated function testClientCredentialsGrantType3() {
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
+        assertContains(provider, "{\"error_description\":\"Client credentials are invalid.\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -128,7 +119,7 @@ isolated function testClientCredentialsGrantType3() {
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
+        assertContains(provider, "{\"error_description\":\"Client credentials are invalid.\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -147,10 +138,7 @@ isolated function testClientCredentialsGrantType4() {
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -230,18 +218,15 @@ isolated function testPasswordGrantType1() {
         tokenUrl: "https://localhost:9443/oauth2/token",
         username: "admin",
         password: "admin",
-        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
         scopes: ["view-order"],
         optionalParams: {
             "client": "ballerina"
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -338,8 +323,8 @@ isolated function testPasswordGrantType3() {
         tokenUrl: "https://localhost:9443/oauth2/token",
         username: "invalid_username",
         password: "invalid_password",
-        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
         scopes: ["view-order"],
         optionalParams: {
             "client": "ballerina"
@@ -352,19 +337,13 @@ isolated function testPasswordGrantType3() {
             },
             clientConfig: {
                 secureSocket: {
-                   cert: {
-                       path: WSO2_TRUSTSTORE_PATH,
-                       password: "wso2carbon"
-                   }
+                   cert: WSO2_PUBLIC_CERT_PATH
                 }
             }
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -400,10 +379,7 @@ isolated function testPasswordGrantType4() {
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -437,16 +413,13 @@ isolated function testPasswordGrantType5() {
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
+        assertContains(provider, "{\"error_description\":\"Unsupported Client Authentication Method!\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -455,7 +428,7 @@ isolated function testPasswordGrantType5() {
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
     if (provider is error) {
-        assertContains(provider, "{\"error_description\":\"Client Authentication failed.\",\"error\":\"invalid_client\"}");
+        assertContains(provider, "{\"error_description\":\"Unsupported Client Authentication Method!\",\"error\":\"invalid_client\"}");
     } else {
         test:assertFail(msg = "Test Failed! ");
     }
@@ -554,18 +527,15 @@ isolated function testRefreshTokenGrantType1() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
         refreshToken: "invalid_refresh_token",
-        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
         scopes: ["view-order"],
         optionalParams: {
             "client": "ballerina"
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -642,10 +612,7 @@ isolated function testRefreshTokenGrantType3() {
         },
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
