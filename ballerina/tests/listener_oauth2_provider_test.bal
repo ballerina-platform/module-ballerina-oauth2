@@ -22,8 +22,8 @@ import ballerina/cache;
 isolated function getAccessToken() returns string {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
-        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
         scopes: ["view-order"],
         clientConfig: {
             secureSocket: {
@@ -49,10 +49,7 @@ isolated function testTokenIntrospection1() {
         clientConfig: {
             customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -61,7 +58,7 @@ isolated function testTokenIntrospection1() {
     if (response is IntrospectionResponse) {
         test:assertTrue(response.active);
         test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "FlfJYKBD2c925h4lkycqNZlC2l4a");
+        test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
         test:assertEquals(response?.username, "admin@carbon.super");
         test:assertEquals(response?.tokenType, "Bearer");
         test:assertTrue(response?.exp is int);
@@ -88,10 +85,7 @@ isolated function testTokenIntrospection2() {
         clientConfig: {
             customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -100,7 +94,7 @@ isolated function testTokenIntrospection2() {
     if (response is IntrospectionResponse) {
         test:assertTrue(response.active);
         test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "FlfJYKBD2c925h4lkycqNZlC2l4a");
+        test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
         test:assertEquals(response?.username, "admin@carbon.super");
         test:assertEquals(response?.tokenType, "Bearer");
         test:assertTrue(response?.exp is int);
@@ -115,7 +109,7 @@ isolated function testTokenIntrospection2() {
     if (response is IntrospectionResponse) {
         test:assertTrue(response.active);
         test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "FlfJYKBD2c925h4lkycqNZlC2l4a");
+        test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
         test:assertEquals(response?.username, "admin@carbon.super");
         test:assertEquals(response?.tokenType, "Bearer");
         test:assertTrue(response?.exp is int);
@@ -135,10 +129,7 @@ isolated function testTokenIntrospection3() {
         clientConfig: {
             customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -160,10 +151,7 @@ isolated function testTokenIntrospection4() {
         clientConfig: {
             customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -184,10 +172,7 @@ isolated function testTokenIntrospection5() {
         url: "https://localhost:9443/oauth2/introspect",
         clientConfig: {
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -200,100 +185,9 @@ isolated function testTokenIntrospection5() {
     }
 }
 
-// Test the introspection request with successful token with valid OAuth2 client credentials grant type
-@test:Config {}
-isolated function testTokenIntrospection6() {
-    string accessToken = getAccessToken();
-    IntrospectionConfig config = {
-        url: "https://localhost:9443/oauth2/introspect",
-        clientConfig: {
-            auth: {
-                tokenUrl: "https://localhost:9443/oauth2/token",
-                clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-                clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-                clientConfig: {
-                    secureSocket: {
-                       cert: {
-                           path: WSO2_TRUSTSTORE_PATH,
-                           password: "wso2carbon"
-                       }
-                    }
-                }
-            },
-            secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
-            }
-        }
-    };
-    ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "FlfJYKBD2c925h4lkycqNZlC2l4a");
-        test:assertEquals(response?.username, "admin@carbon.super");
-        test:assertEquals(response?.tokenType, "Bearer");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
-}
-
-// Test the introspection request with successful token with valid OAuth2 password grant type
-@test:Config {}
-isolated function testTokenIntrospection7() {
-    string accessToken = getAccessToken();
-    IntrospectionConfig config = {
-        url: "https://localhost:9443/oauth2/introspect",
-        clientConfig: {
-            auth: {
-                tokenUrl: "https://localhost:9443/oauth2/token",
-                username: "admin",
-                password: "admin",
-                clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
-                clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-                scopes: ["view-order"],
-                clientConfig: {
-                    secureSocket: {
-                       cert: {
-                           path: WSO2_TRUSTSTORE_PATH,
-                           password: "wso2carbon"
-                       }
-                    }
-                }
-            },
-            secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
-            }
-        }
-    };
-    ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "FlfJYKBD2c925h4lkycqNZlC2l4a");
-        test:assertEquals(response?.username, "admin@carbon.super");
-        test:assertEquals(response?.tokenType, "Bearer");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
-}
-
 // Test the introspection request with successful token with invalid OAuth2 client credentials grant type
 @test:Config {}
-isolated function testTokenIntrospection8() {
+isolated function testTokenIntrospection6() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
@@ -304,18 +198,12 @@ isolated function testTokenIntrospection8() {
                 clientSecret: "invalid_client_secret",
                 clientConfig: {
                     secureSocket: {
-                       cert: {
-                           path: WSO2_TRUSTSTORE_PATH,
-                           password: "wso2carbon"
-                       }
+                       cert: WSO2_PUBLIC_CERT_PATH
                     }
                 }
             },
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -329,7 +217,7 @@ isolated function testTokenIntrospection8() {
 
 // Test the introspection request with successful token with invalid OAuth2 password grant type
 @test:Config {}
-isolated function testTokenIntrospection9() {
+isolated function testTokenIntrospection7() {
     string accessToken = getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
@@ -343,18 +231,12 @@ isolated function testTokenIntrospection9() {
                 scopes: ["view-order"],
                 clientConfig: {
                     secureSocket: {
-                       cert: {
-                           path: WSO2_TRUSTSTORE_PATH,
-                           password: "wso2carbon"
-                       }
+                       cert: WSO2_PUBLIC_CERT_PATH
                     }
                 }
             },
             secureSocket: {
-               cert: {
-                   path: WSO2_TRUSTSTORE_PATH,
-                   password: "wso2carbon"
-               }
+               cert: WSO2_PUBLIC_CERT_PATH
             }
         }
     };
@@ -368,7 +250,7 @@ isolated function testTokenIntrospection9() {
 
 // Test the introspection request with successful token and with all the configurations (keystore & truststore)
 @test:Config {}
-isolated function testTokenIntrospection10() {
+isolated function testTokenIntrospection8() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
@@ -422,7 +304,7 @@ isolated function testTokenIntrospection10() {
 
 // Test the introspection request with successful token and with all the configurations (private/public key)
 @test:Config {}
-isolated function testTokenIntrospection11() {
+isolated function testTokenIntrospection9() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
@@ -474,7 +356,7 @@ isolated function testTokenIntrospection11() {
 
 // Test the introspection request with successful token and with all the configurations (disable SSL)
 @test:Config {}
-isolated function testTokenIntrospection12() {
+isolated function testTokenIntrospection10() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
@@ -521,7 +403,7 @@ isolated function testTokenIntrospection12() {
 
 // Test the introspection request with successful token and with all the configurations (empty secure socket)
 @test:Config {}
-isolated function testTokenIntrospection13() {
+isolated function testTokenIntrospection11() {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
