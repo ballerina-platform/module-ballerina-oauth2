@@ -796,3 +796,58 @@ isolated function testJwtBearerGrantType5() {
         test:assertFail(msg = "Test Failed! ");
     }
 }
+
+// Test the JWT bearer grant type with an valid JWT
+@test:Config {}
+isolated function testJwtBearerGrantType6() {
+    string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
+                 "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
+                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
+                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
+                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
+                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+    JwtBearerGrantConfig config = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: jwt,
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider provider = new(config);
+    string|Error response = provider.generateToken();
+    if (response is string) {
+        assertToken(response);
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+
+    // Send the credentials in request body
+    config.credentialBearer = POST_BODY_BEARER;
+    provider = new(config);
+    response = provider.generateToken();
+    if (response is string) {
+        assertToken(response);
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
+    // reissued by the provided configurations.
+    runtime:sleep(5.0);
+
+    response = provider.generateToken();
+    if (response is string) {
+        assertToken(response);
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}

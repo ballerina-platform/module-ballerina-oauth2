@@ -296,7 +296,7 @@ isolated function getOAuth2TokenForJwtBearerGrantType(JwtBearerGrantConfig grant
                 if (!tokenCache.isAccessTokenExpired()) {
                     return tokenCache.getAccessToken();
                 }
-                return getAccessTokenFromTokenRequestForJwtBearerGrant(grantConfig, tokenCache);
+                return getAccessTokenFromRefreshRequestForJwtBearerGrant(grantConfig, tokenCache);
             }
         }
     }
@@ -403,8 +403,9 @@ isolated function getAccessTokenFromTokenRequestForJwtBearerGrant(JwtBearerGrant
 
     json response = check sendRequest(requestConfig, tokenUrl, clientConfig);
     string accessToken = check extractAccessToken(response);
+    string? refreshToken = extractRefreshToken(response);
     int? expiresIn = extractExpiresIn(response);
-    tokenCache.update(accessToken, (), expiresIn, defaultTokenExpTime, clockSkew);
+    tokenCache.update(accessToken, refreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
 }
 
@@ -485,6 +486,44 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     int? expiresIn = extractExpiresIn(response);
     tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
+}
+
+// Refreshes an access token from the token endpoint using the provided JWT BEARER GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc6749#section-6
+isolated function getAccessTokenFromRefreshRequestForJwtBearerGrant(JwtBearerGrantConfig config,
+                                                                    TokenCache tokenCache) returns string|Error {
+    string? clientId = config?.clientId;
+    string? clientSecret = config?.clientSecret;
+    if (clientId is string && clientSecret is string) {
+        // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
+        // request, initially.
+        string refreshUrl = config.tokenUrl;
+        string refreshToken = tokenCache.getRefreshToken();
+        if (refreshToken == "") {
+            // The subsequent requests should have a cached `refreshToken` to refresh the access token.
+            return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
+        }
+        RequestConfig requestConfig = {
+            payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
+            clientId: clientId,
+            clientSecret: clientSecret,
+            scopes: config?.scopes,
+            optionalParams: config?.optionalParams,
+            credentialBearer: config.credentialBearer
+        };
+        ClientConfiguration clientConfig = config.clientConfig;
+        decimal defaultTokenExpTime = config.defaultTokenExpTime;
+        decimal clockSkew = config.clockSkew;
+
+        json response = check sendRequest(requestConfig, refreshUrl, clientConfig);
+        string accessToken = check extractAccessToken(response);
+        string? updatedRefreshToken = extractRefreshToken(response);
+        int? expiresIn = extractExpiresIn(response);
+        tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
+        return accessToken;
+    } else {
+        return prepareError("Client-id or client-secret cannot be empty.");
+    }
 }
 
 isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig)
