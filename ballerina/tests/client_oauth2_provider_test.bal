@@ -623,3 +623,176 @@ isolated function testRefreshTokenGrantType3() {
         test:assertFail(msg = "Test Failed! ");
     }
 }
+
+// ---------------- JWT BEARER GRANT TYPE ----------------
+
+// Test the JWT bearer grant type with an valid JWT
+@test:Config {}
+isolated function testJwtBearerGrantType1() {
+    string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
+                 "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
+                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
+                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
+                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
+                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+    JwtBearerGrantConfig config = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: jwt,
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider provider = new(config);
+    string|Error response = provider.generateToken();
+    if (response is string) {
+        assertToken(response);
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+
+    // Send the credentials in request body
+    config.credentialBearer = POST_BODY_BEARER;
+    provider = new(config);
+    response = provider.generateToken();
+    if (response is string) {
+        assertToken(response);
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the JWT bearer grant type with an valid JWT (different issuer)
+@test:Config {}
+isolated function testJwtBearerGrantType2() {
+    string jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxN" +
+                 "TE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    JwtBearerGrantConfig config = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: jwt,
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "{\"error_description\":\"Internal Server Error.\",\"error\":\"server_error\"}");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the JWT bearer grant type with an invalid assertion
+@test:Config {}
+isolated function testJwtBearerGrantType3() {
+    JwtBearerGrantConfig config = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: "invalid-assertion",
+        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
+        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "{\"error_description\":\"Error while parsing the JWT.\",\"error\":\"invalid_grant\"}");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the JWT bearer grant type with empty client-id and client-secret
+@test:Config {}
+isolated function testJwtBearerGrantType4() {
+    string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
+                 "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
+                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
+                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
+                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
+                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+    JwtBearerGrantConfig config = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: jwt,
+        clientId: "",
+        clientSecret: "",
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Client-id or client-secret cannot be empty.");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+
+    // Send the credentials in request body
+    config.credentialBearer = POST_BODY_BEARER;
+    provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "Client-id or client-secret cannot be empty.");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
+
+// Test the JWT bearer grant type with an valid JWT, and without client-id and client-secret
+@test:Config {}
+isolated function testJwtBearerGrantType5() {
+    string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
+                 "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
+                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
+                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
+                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
+                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+    JwtBearerGrantConfig config = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: jwt,
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new(config);
+    if (provider is error) {
+        assertContains(provider, "{\"error_description\":\"Unsupported Client Authentication Method!\",\"error\":\"invalid_client\"}");
+    } else {
+        test:assertFail(msg = "Test Failed! ");
+    }
+}
