@@ -100,6 +100,31 @@ public type RefreshTokenGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
+# Represents the data structure, which is used to configure the OAuth2 JWT bearer grant type.
+#
+# + tokenUrl - Token URL of the token endpoint
+# + assertion - A single JWT for the JWT bearer grant type
+# + clientId - Client ID for the client authentication
+# + clientSecret - Client secret for the client authentication
+# + scopes - Scope(s) of the access request
+# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
+# + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
+# + optionalParams - Map of optional parameters use for the token endpoint
+# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
+# + clientConfig - HTTP client configurations, which are used to call the token endpoint
+public type JwtBearerGrantConfig record {|
+    string tokenUrl;
+    string assertion;
+    string clientId?;
+    string clientSecret?;
+    string[] scopes?;
+    decimal defaultTokenExpTime = 3600;
+    decimal clockSkew = 0;
+    map<string> optionalParams?;
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+    ClientConfiguration clientConfig = {};
+|};
+
 // The data structure, which stores the values needed to prepare the HTTP request, which are to be sent to the
 // token endpoint.
 type RequestConfig record {|
@@ -112,11 +137,11 @@ type RequestConfig record {|
 |};
 
 # Represents the grant type configurations supported for OAuth2.
-public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig;
+public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig|JwtBearerGrantConfig;
 
 # Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
-# token endpoint configurations. This supports the client credentials grant type, password grant type, and the
-# refresh token grant type.
+# token endpoint configurations. This supports the client credentials grant type, password grant type,
+# refresh token grant type, and the JWT bearer grant type.
 #
 # 1. Client Credentials Grant Type
 # ```ballerina
@@ -190,8 +215,10 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenC
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else if (grantConfig is PasswordGrantConfig) {
         return getOAuth2TokenForPasswordGrant(grantConfig, tokenCache);
-    } else {
+    } else if (grantConfig is RefreshTokenGrantConfig) {
         return getOAuth2TokenForRefreshTokenGrantType(grantConfig, tokenCache);
+    } else {
+        return getOAuth2TokenForJwtBearerGrantType(grantConfig, tokenCache);
     }
 }
 
@@ -255,6 +282,26 @@ isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig
     }
 }
 
+// Processes the OAuth2 access token for the JWT BEARER GRANT type.
+isolated function getOAuth2TokenForJwtBearerGrantType(JwtBearerGrantConfig grantConfig,
+                                                      TokenCache tokenCache) returns string|Error {
+    string cachedAccessToken = tokenCache.getAccessToken();
+    if (cachedAccessToken == "") {
+        return getAccessTokenFromTokenRequestForJwtBearerGrant(grantConfig, tokenCache);
+    } else {
+        if (!tokenCache.isAccessTokenExpired()) {
+            return cachedAccessToken;
+        } else {
+            lock {
+                if (!tokenCache.isAccessTokenExpired()) {
+                    return tokenCache.getAccessToken();
+                }
+                return getAccessTokenFromRefreshRequestForJwtBearerGrant(grantConfig, tokenCache);
+            }
+        }
+    }
+}
+
 // Requests an access token from the token endpoint using the provided CLIENT CREDENTIALS GRANT configurations.
 // Refer: https://tools.ietf.org/html/rfc6749#section-4.4
 isolated function getAccessTokenFromTokenRequestForClientCredentialsGrant(ClientCredentialsGrantConfig config,
@@ -305,6 +352,46 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     } else {
         requestConfig = {
             payload: "grant_type=password&username=" + config.username + "&password=" + config.password,
+            scopes: config?.scopes,
+            optionalParams: config?.optionalParams,
+            credentialBearer: config.credentialBearer
+        };
+    }
+    decimal defaultTokenExpTime = config.defaultTokenExpTime;
+    decimal clockSkew = config.clockSkew;
+    ClientConfiguration clientConfig = config.clientConfig;
+
+    json response = check sendRequest(requestConfig, tokenUrl, clientConfig);
+    string accessToken = check extractAccessToken(response);
+    string? refreshToken = extractRefreshToken(response);
+    int? expiresIn = extractExpiresIn(response);
+    tokenCache.update(accessToken, refreshToken, expiresIn, defaultTokenExpTime, clockSkew);
+    return accessToken;
+}
+
+// Requests an access token from the token endpoint using the provided JWT BEARER GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc7523#section-2.1
+isolated function getAccessTokenFromTokenRequestForJwtBearerGrant(JwtBearerGrantConfig config,
+                                                                  TokenCache tokenCache) returns string|Error {
+    string tokenUrl = config.tokenUrl;
+    string? clientId = config?.clientId;
+    string? clientSecret = config?.clientSecret;
+    RequestConfig requestConfig;
+    if (clientId is string && clientSecret is string) {
+        if (clientId == "" || clientSecret == "") {
+            return prepareError("Client-id or client-secret cannot be empty.");
+        }
+        requestConfig = {
+            payload: "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=" + config.assertion,
+            clientId: clientId,
+            clientSecret: clientSecret,
+            scopes: config?.scopes,
+            optionalParams: config?.optionalParams,
+            credentialBearer: config.credentialBearer
+        };
+    } else {
+        requestConfig = {
+            payload: "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=" + config.assertion,
             scopes: config?.scopes,
             optionalParams: config?.optionalParams,
             credentialBearer: config.credentialBearer
@@ -399,6 +486,44 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     int? expiresIn = extractExpiresIn(response);
     tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
+}
+
+// Refreshes an access token from the token endpoint using the provided JWT BEARER GRANT configurations.
+// Refer: https://tools.ietf.org/html/rfc6749#section-6
+isolated function getAccessTokenFromRefreshRequestForJwtBearerGrant(JwtBearerGrantConfig config,
+                                                                    TokenCache tokenCache) returns string|Error {
+    string? clientId = config?.clientId;
+    string? clientSecret = config?.clientSecret;
+    if (clientId is string && clientSecret is string) {
+        // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
+        // request, initially.
+        string refreshUrl = config.tokenUrl;
+        string refreshToken = tokenCache.getRefreshToken();
+        if (refreshToken == "") {
+            // The subsequent requests should have a cached `refreshToken` to refresh the access token.
+            return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
+        }
+        RequestConfig requestConfig = {
+            payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
+            clientId: clientId,
+            clientSecret: clientSecret,
+            scopes: config?.scopes,
+            optionalParams: config?.optionalParams,
+            credentialBearer: config.credentialBearer
+        };
+        ClientConfiguration clientConfig = config.clientConfig;
+        decimal defaultTokenExpTime = config.defaultTokenExpTime;
+        decimal clockSkew = config.clockSkew;
+
+        json response = check sendRequest(requestConfig, refreshUrl, clientConfig);
+        string accessToken = check extractAccessToken(response);
+        string? updatedRefreshToken = extractRefreshToken(response);
+        int? expiresIn = extractExpiresIn(response);
+        tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
+        return accessToken;
+    } else {
+        return prepareError("Client-id or client-secret cannot be empty.");
+    }
 }
 
 isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig)
