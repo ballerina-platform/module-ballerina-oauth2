@@ -20,12 +20,12 @@ import ballerina/time;
 # Represents the data structure, which is used to configure the OAuth2 client credentials grant type.
 #
 # + tokenUrl - Token URL of the token endpoint
-# + clientId - Client ID for the client authentication
-# + clientSecret - Client secret for the client authentication
+# + clientId - Client ID of the client authentication
+# + clientSecret - Client secret of the client authentication
 # + scopes - Scope(s) of the access request
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the token endpoint
+# + optionalParams - Map of the optional parameters used for the token endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
 # + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type ClientCredentialsGrantConfig record {|
@@ -45,13 +45,13 @@ public type ClientCredentialsGrantConfig record {|
 # + tokenUrl - Token URL of the token endpoint
 # + username - Username for the password grant type
 # + password - Password for the password grant type
-# + clientId - Client ID for the client authentication
-# + clientSecret - Client secret for the client authentication
+# + clientId - Client ID of the client authentication
+# + clientSecret - Client secret of the client authentication
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the token endpoint
+# + optionalParams - Map of the optional parameters used for the token endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
 # + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type PasswordGrantConfig record {|
@@ -79,12 +79,12 @@ public type PasswordGrantConfig record {|
 #
 # + refreshUrl - Refresh token URL of the token endpoint
 # + refreshToken - Refresh token for the token endpoint
-# + clientId - Client ID for the client authentication
-# + clientSecret - Client secret for the client authentication
+# + clientId - Client ID of the client authentication
+# + clientSecret - Client secret of the client authentication
 # + scopes - Scope(s) of the access request
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the token endpoint
+# + optionalParams - Map of the optional parameters used for the token endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
 # + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type RefreshTokenGrantConfig record {|
@@ -104,12 +104,12 @@ public type RefreshTokenGrantConfig record {|
 #
 # + tokenUrl - Token URL of the token endpoint
 # + assertion - A single JWT for the JWT bearer grant type
-# + clientId - Client ID for the client authentication
-# + clientSecret - Client secret for the client authentication
+# + clientId - Client ID of the client authentication
+# + clientSecret - Client secret of the client authentication
 # + scopes - Scope(s) of the access request
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of optional parameters use for the token endpoint
+# + optionalParams - Map of the optional parameters used for the token endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
 # + clientConfig - HTTP client configurations, which are used to call the token endpoint
 public type JwtBearerGrantConfig record {|

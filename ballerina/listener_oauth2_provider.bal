@@ -22,7 +22,7 @@ import ballerina/time;
 #
 # + url - URL of the introspection endpoint
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
-# + optionalParams - Map of optional parameters used for the introspection endpoint
+# + optionalParams - Map of the optional parameters used for the introspection endpoint
 # + cacheConfig - Configurations for the cache used to store the OAuth2 access token and other related information
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the introspection response does not contain an `exp` field
 # + clientConfig - HTTP client configurations, which call the introspection endpoint
@@ -117,7 +117,7 @@ public isolated class ListenerOAuth2Provider {
     # ```
     #
     # + credential - OAuth2 access token to be validated
-    # + optionalParams - Map of optional parameters used for the introspection endpoint
+    # + optionalParams - Map of the optional parameters used for the introspection endpoint
     # + return - An `oauth2:IntrospectionResponse` if the validation is successful or else an `oauth2:Error` if an error occurred
     public isolated function authorize(string credential, map<string>? optionalParams = ()) returns IntrospectionResponse|Error {
         if (credential == "") {
