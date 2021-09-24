@@ -35,8 +35,18 @@ modules = [
 
 [[package]]
 org = "ballerina"
+name = "io"
+version = "1.0.0"
+transitive = true
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"}
+]
+
+[[package]]
+org = "ballerina"
 name = "jballerina.java"
-version = "0.9.0"
+version = "0.0.0"
 transitive = false
 modules = [
 	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
@@ -45,7 +55,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "lang.__internal"
-version = "0.1.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = true
 dependencies = [
@@ -56,7 +66,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "lang.array"
-version = "1.1.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = true
 dependencies = [
@@ -67,14 +77,14 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "lang.object"
-version = "1.0.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = true
 
 [[package]]
 org = "ballerina"
 name = "lang.runtime"
-version = "0.0.1"
+version = "0.0.0"
 scope = "testOnly"
 transitive = false
 dependencies = [
@@ -89,8 +99,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "lang.value"
-version = "1.0.0"
-scope = "testOnly"
+version = "0.0.0"
 transitive = true
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
@@ -102,11 +111,31 @@ name = "log"
 version = "2.0.0"
 transitive = false
 dependencies = [
+	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "observe"}
 ]
 modules = [
 	{org = "ballerina", packageName = "log", moduleName = "log"}
+]
+
+[[package]]
+org = "ballerina"
+name = "oauth2"
+version = "2.0.0"
+transitive = false
+dependencies = [
+	{org = "ballerina", name = "cache"},
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.runtime"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "oauth2", moduleName = "oauth2"}
 ]
 
 [[package]]
@@ -144,7 +173,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "test"
-version = "0.8.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = false
 dependencies = [
