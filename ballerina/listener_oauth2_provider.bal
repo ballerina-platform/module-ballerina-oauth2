@@ -274,6 +274,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
             if (result is cache:Error) {
                 log:printError("Failed to invalidate OAuth2 access token from the cache.", 'error = result);
             }
+            return;
         }
     } else {
         log:printError("Failed to validate the token from the cache.", 'error = cachedEntry);

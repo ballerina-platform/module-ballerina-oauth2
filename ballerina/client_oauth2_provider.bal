@@ -606,6 +606,7 @@ isolated function extractRefreshToken(json response) returns string? {
         return refreshToken;
     } else {
         log:printDebug("Failed to access 'refresh_token' property from the JSON.");
+        return;
     }
 }
 
@@ -615,6 +616,7 @@ isolated function extractExpiresIn(json response) returns int? {
         return expiresIn;
     } else {
         log:printDebug("Failed to access 'expires_in' property from the JSON as an int.");
+        return;
     }
 }
 
