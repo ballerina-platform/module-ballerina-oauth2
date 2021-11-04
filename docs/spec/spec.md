@@ -1,9 +1,9 @@
 # Specification: Ballerina OAuth2 Library
 
-_Owners_: @ldclakmal @shafreenAnfar
-_Reviewers_: @shafreenAnfar
-_Created_: 2021/10/01
-_Updated_: 2021/10/27
+_Owners_: @ldclakmal @shafreenAnfar  
+_Reviewers_: @shafreenAnfar  
+_Created_: 2021/10/01  
+_Updated_: 2021/10/27  
 _Issue_: [#2209](https://github.com/ballerina-platform/ballerina-standard-library/issues/2209)
 
 # Introduction
@@ -24,8 +24,8 @@ that makes it easier to use, combine, and create network services.
 4. [Client Auth](#4-client-auth)
     * 4.1. [OAuth2 Provider](#41-oauth2-provider)
     * 4.2. [OAuth2 Handler](#42-oauth2-handler)
-        * 4.2.1 [Bearer Token](#421-bearer-token)
-        * 4.2.2 [Grant Types](#422-grant-types)
+        * 4.2.1. [Bearer Token](#421-bearer-token)
+        * 4.2.2. [Grant Types](#422-grant-types)
     * 4.3. [Declarative Approach](#43-declarative-approach)
     * 4.4. [Imperative Approach](#44-imperative-approach)
 5. [Samples](#5-samples)
