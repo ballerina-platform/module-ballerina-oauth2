@@ -188,7 +188,6 @@ isolated function testTokenIntrospection5() {
 // Test the introspection request with successful token with invalid OAuth2 client credentials grant type
 @test:Config {}
 isolated function testTokenIntrospection6() {
-    string accessToken = getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
         clientConfig: {
@@ -218,7 +217,6 @@ isolated function testTokenIntrospection6() {
 // Test the introspection request with successful token with invalid OAuth2 password grant type
 @test:Config {}
 isolated function testTokenIntrospection7() {
-    string accessToken = getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
         clientConfig: {
