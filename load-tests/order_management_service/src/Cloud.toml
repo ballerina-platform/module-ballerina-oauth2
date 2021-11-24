@@ -1,0 +1,14 @@
+[container.image]
+repository="ballerina"
+name="order_management_service"
+cmd="CMD java -Xdiag -Djdk.internal.httpclient.disableHostnameVerification -cp '${APP}:jars/*' 'oauth2/order_management_service/1/$_init'"
+
+[cloud.deployment]
+min_memory="256Mi"
+max_memory="512Mi"
+min_cpu="200m"
+max_cpu="1000m"
+
+[cloud.deployment.autoscaling]
+min_replicas=1
+max_replicas=1
