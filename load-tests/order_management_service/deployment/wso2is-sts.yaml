@@ -1,0 +1,32 @@
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: wso2is-sts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wso2is-sts
+  template:
+    metadata:
+      labels:
+        app: wso2is-sts
+        logs: "true"
+    spec:
+      containers:
+        - name: wso2is-container
+          image: ldclakmal/wso2is-sts:latest
+          ports:
+            - containerPort: 9443
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wso2is-sts-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9443
+  selector:
+    app: wso2is-sts

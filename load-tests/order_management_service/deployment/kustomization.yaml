@@ -1,0 +1,4 @@
+resources:
+  - order_management_service.yaml
+  - ingress.yaml
+  - wso2is-sts.yaml
