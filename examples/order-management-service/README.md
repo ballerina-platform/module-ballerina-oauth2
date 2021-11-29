@@ -86,7 +86,7 @@ environment. To complete the design diagram illustrated above, we have to run th
 ['OAuth Authorization Server'](https://hub.docker.com/repository/docker/ldclakmal/wso2is-sts) first.
 Open the terminal and execute the following command. This will take few seconds to start and run.
 ```shell
-$ docker run -d -p 9443:9443 ldclakmal/wso2is-sts
+$ docker run -d -p 9443:9443 ldclakmal/wso2is-sts:latest
 ```
 
 Now, navigate to [`examples/order-management-service/api_gateway`](./api_gateway) directory and execute the following command.
@@ -100,8 +100,6 @@ Compiling source
         oauth2/api_gateway:1.0.0
 
 Running executable
-
-[ballerina/http] started HTTPS/WSS listener 0.0.0.0:9090
 ```
 
 Now, navigate to [`examples/order-management-service/app_backend`](./app_backend) directory and execute the same command.
@@ -111,8 +109,6 @@ Compiling source
         oauth2/app_backend:1.0.0
 
 Running executable
-
-[ballerina/http] started HTTPS/WSS listener 0.0.0.0:8080
 ```
 
 Now, we can test authentication and authorization checks being enforced on different actions by sending HTTP requests. 
@@ -147,6 +143,17 @@ export ID_TOKEN="eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l
 curl -k -v "https://localhost:8080/order/mobile?orderId=100500&idToken=$ID_TOKEN"
 ```
 
+Output:
+```shell
+< HTTP/1.1 200 OK
+< content-type: application/json
+< content-length: 163
+< server: ballerina
+< date: Fri, 3 Sep 2021 10:35:37 +0530
+
+{"id":"100500", "name":"Sample order", "items":[{"category":"electronics", "code":"SOWH1000XM4", "qty":2}, {"category":"books", "code":"978-1617295959", "qty":1}]}
+```
+
 ## Deployment
 
 Once we are done with the development, we can deploy the service using any of the methods that are listed below.
@@ -156,7 +163,7 @@ Once we are done with the development, we can deploy the service using any of th
 As the first step, we have to run the 'OAuth Authorization Server' first. Open the terminal and execute the following 
 command. This will take few seconds to start and run.
 ```shell
-$ docker run -d -p 9443:9443 ldclakmal/wso2is-sts
+$ docker run -d -p 9443:9443 ldclakmal/wso2is-sts:latest
 ```
 
 Now, we can build Ballerina executable files (.jar) of the components that we developed above. Open the terminal and 
@@ -189,15 +196,6 @@ commands in order.
 ```shell
 $ bal run target/bin/api_gateway.jar
 $ bal run target/bin/app_backend.jar
-```
-
-The successful execution of the services will show us the following outputs in order.
-```shell
-[ballerina/http] started HTTPS/WSS listener 0.0.0.0:9090
-```
-
-```shell
-[ballerina/http] started HTTPS/WSS listener 0.0.0.0:8080
 ```
 
 ### Deploying Code to Cloud
