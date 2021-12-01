@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/cache;
 import ballerina/http;
 
 configurable string clientId = ?;
@@ -50,19 +49,6 @@ final http:Client webClient = check new ("https://localhost:9090",
 final http:Client mobileClient = check new ("https://localhost:9090",
     secureSocket = {
         cert: "./resources/public.crt"
-    },
-    auth = {
-        tokenUrl: "https://localhost:9443/oauth2/token",
-        assertion: idToken,
-        clientId: clientId,
-        clientSecret: clientSecret,
-        scopes: ["customer"],
-        clientConfig: {
-            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
-            secureSocket: {
-                cert: "./resources/sts-public.crt"
-            }
-        }
     }
 );
 
@@ -72,6 +58,19 @@ service /'order on appBackend {
     }
 
     resource function get mobile(string orderId, string idToken) returns json|error {
-        return mobileClient->get("/order/" + orderId);
+        http:ClientOAuth2Handler handler = new({
+            tokenUrl: "https://localhost:9443/oauth2/token",
+            assertion: idToken,
+            clientId: clientId,
+            clientSecret: clientSecret,
+            scopes: ["customer"],
+            clientConfig: {
+                customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+                secureSocket: {
+                    cert: "./resources/sts-public.crt"
+                }
+            }
+        });
+        return mobileClient->get("/order/" + orderId, check handler.getSecurityHeaders());
     }
 }
