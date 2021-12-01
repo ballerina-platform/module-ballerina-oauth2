@@ -36,6 +36,12 @@ listener http:Listener apiGateway = new (8080,
                     secureSocket: {
                         disable: true
                     }
+                },
+                cacheConfig: {
+                    capacity: 10,
+                    evictionFactor: 0.25,
+                    evictionPolicy: cache:LRU,
+                    defaultMaxAge: -1
                 }
             },
             scopes: ["customer"]

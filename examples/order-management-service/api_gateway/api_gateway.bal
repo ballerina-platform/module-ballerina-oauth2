@@ -36,6 +36,12 @@ listener http:Listener apiGateway = new (9090,
                     secureSocket: {
                         cert: "./resources/sts-public.crt"
                     }
+                },
+                cacheConfig: {
+                    capacity: 10,
+                    evictionFactor: 0.25,
+                    evictionPolicy: cache:LRU,
+                    defaultMaxAge: -1
                 }
             },
             scopes: ["customer"]

@@ -28,47 +28,49 @@ listener http:Listener appBackend = new (8080,
     }
 );
 
+final http:Client webClient = check new ("https://localhost:9090",
+    secureSocket = {
+        cert: "./resources/public.crt"
+    },
+    auth = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        clientId: clientId,
+        clientSecret: clientSecret,
+        scopes: ["customer"],
+        clientConfig: {
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+            secureSocket: {
+                cert: "./resources/sts-public.crt"
+            }
+        }
+    }
+);
+
+final http:Client mobileClient = check new ("https://localhost:9090",
+    secureSocket = {
+        cert: "./resources/public.crt"
+    },
+    auth = {
+        tokenUrl: "https://localhost:9443/oauth2/token",
+        assertion: idToken,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        scopes: ["customer"],
+        clientConfig: {
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+            secureSocket: {
+                cert: "./resources/sts-public.crt"
+            }
+        }
+    }
+);
+
 service /'order on appBackend {
     resource function get web(string orderId) returns json|error {
-        http:Client webClient = check new ("https://localhost:9090",
-            secureSocket = {
-                cert: "./resources/public.crt"
-            },
-            auth = {
-                tokenUrl: "https://localhost:9443/oauth2/token",
-                clientId: clientId,
-                clientSecret: clientSecret,
-                scopes: ["customer"],
-                clientConfig: {
-                    customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
-                    secureSocket: {
-                        cert: "./resources/sts-public.crt"
-                    }
-                }
-            }
-        );
         return webClient->get("/order/" + orderId);
     }
 
     resource function get mobile(string orderId, string idToken) returns json|error {
-        http:Client mobileClient = check new ("https://localhost:9090",
-            secureSocket = {
-                cert: "./resources/public.crt"
-            },
-            auth = {
-                tokenUrl: "https://localhost:9443/oauth2/token",
-                assertion: idToken,
-                clientId: clientId,
-                clientSecret: clientSecret,
-                scopes: ["customer"],
-                clientConfig: {
-                    customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
-                    secureSocket: {
-                        cert: "./resources/sts-public.crt"
-                    }
-                }
-            }
-        );
         return mobileClient->get("/order/" + orderId);
     }
 }
