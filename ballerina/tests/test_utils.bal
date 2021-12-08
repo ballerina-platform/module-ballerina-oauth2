@@ -38,7 +38,7 @@ isolated function assertToken(string token) {
 isolated function assertContains(error err, string text) {
     string message = err.message();
     error? cause = err.cause();
-    while (cause is error) {
+    while cause is error {
         message += " " + cause.message();
         cause = cause.cause();
     }

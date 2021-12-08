@@ -19,7 +19,7 @@
 import ballerina/test;
 import ballerina/cache;
 
-isolated function getAccessToken() returns string {
+isolated function getAccessToken() returns string|Error {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
@@ -32,18 +32,13 @@ isolated function getAccessToken() returns string {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error token = provider.generateToken();
-    if (token is string) {
-        return token;
-    } else {
-        panic token;
-    }
+    return provider.generateToken();
 }
 
 // Test the introspection request with successful token
 @test:Config {}
-isolated function testTokenIntrospection1() {
-    string accessToken = getAccessToken();
+isolated function testTokenIntrospection1() returns Error? {
+    string accessToken = check getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
         clientConfig: {
@@ -54,25 +49,21 @@ isolated function testTokenIntrospection1() {
         }
     };
     ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
-        test:assertEquals(response?.username, "admin@carbon.super");
-        test:assertEquals(response?.tokenType, "Bearer");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    IntrospectionResponse response = check provider.authorize(accessToken);
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "view-order");
+    test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
+    test:assertEquals(response?.username, "admin@carbon.super");
+    test:assertEquals(response?.tokenType, "Bearer");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
 }
 
 // Test the introspection request with successful token with cache configurations
 @test:Config {}
-isolated function testTokenIntrospection2() {
-    string accessToken = getAccessToken();
+isolated function testTokenIntrospection2() returns Error? {
+    string accessToken = check getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
         cacheConfig: {
@@ -90,39 +81,31 @@ isolated function testTokenIntrospection2() {
         }
     };
     ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
-        test:assertEquals(response?.username, "admin@carbon.super");
-        test:assertEquals(response?.tokenType, "Bearer");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    IntrospectionResponse response = check provider.authorize(accessToken);
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "view-order");
+    test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
+    test:assertEquals(response?.username, "admin@carbon.super");
+    test:assertEquals(response?.tokenType, "Bearer");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
 
     // Get the response using the cache
-    response = provider.authorize(accessToken);
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "view-order");
-        test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
-        test:assertEquals(response?.username, "admin@carbon.super");
-        test:assertEquals(response?.tokenType, "Bearer");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.authorize(accessToken);
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "view-order");
+    test:assertEquals(response?.clientId, "uDMwA4hKR9H3deeXxvNf4sSU0i4a");
+    test:assertEquals(response?.username, "admin@carbon.super");
+    test:assertEquals(response?.tokenType, "Bearer");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
 }
 
 // Test the introspection request with invalid token
 @test:Config {}
-isolated function testTokenIntrospection3() {
+isolated function testTokenIntrospection3() returns Error? {
     string accessToken = "invalid_token";
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
@@ -134,12 +117,8 @@ isolated function testTokenIntrospection3() {
         }
     };
     ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is IntrospectionResponse) {
-        test:assertFalse(response.active);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    IntrospectionResponse response = check provider.authorize(accessToken);
+    test:assertFalse(response.active);
 }
 
 // Test the introspection request with empty token
@@ -157,17 +136,17 @@ isolated function testTokenIntrospection4() {
     };
     ListenerOAuth2Provider provider = new(config);
     IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is Error) {
+    if response is Error {
         assertContains(response, "Credential cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
 // Test the introspection request with successful token without authenticating the client
 @test:Config {}
-isolated function testTokenIntrospection5() {
-    string accessToken = getAccessToken();
+isolated function testTokenIntrospection5() returns Error? {
+    string accessToken = check getAccessToken();
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
         clientConfig: {
@@ -178,10 +157,10 @@ isolated function testTokenIntrospection5() {
     };
     ListenerOAuth2Provider provider = new(config);
     IntrospectionResponse|Error response = provider.authorize(accessToken);
-    if (response is Error) {
+    if response is Error {
         assertContains(response, "Failed to call the introspection endpoint 'https://localhost:9443/oauth2/introspect'.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -207,10 +186,10 @@ isolated function testTokenIntrospection6() {
         }
     };
     ListenerOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -239,16 +218,16 @@ isolated function testTokenIntrospection7() {
         }
     };
     ListenerOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
 // Test the introspection request with successful token and with all the configurations (keystore & truststore)
 @test:Config {}
-isolated function testTokenIntrospection8() {
+isolated function testTokenIntrospection8() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
@@ -280,29 +259,25 @@ isolated function testTokenIntrospection8() {
         }
     };
     ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "read write dolphin");
-        test:assertEquals(response?.clientId, "l238j323ds-23ij4");
-        test:assertEquals(response?.username, "jdoe");
-        test:assertEquals(response?.tokenType, "token_type");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-        test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
-        test:assertEquals(response?.aud, "https://protected.example.net/resource");
-        test:assertEquals(response?.iss, "https://server.example.com/");
-        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
-        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
 
 // Test the introspection request with successful token and with all the configurations (private/public key)
 @test:Config {}
-isolated function testTokenIntrospection9() {
+isolated function testTokenIntrospection9() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
@@ -332,29 +307,25 @@ isolated function testTokenIntrospection9() {
         }
     };
     ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "read write dolphin");
-        test:assertEquals(response?.clientId, "l238j323ds-23ij4");
-        test:assertEquals(response?.username, "jdoe");
-        test:assertEquals(response?.tokenType, "token_type");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-        test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
-        test:assertEquals(response?.aud, "https://protected.example.net/resource");
-        test:assertEquals(response?.iss, "https://server.example.com/");
-        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
-        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
 
 // Test the introspection request with successful token and with all the configurations (disable SSL)
 @test:Config {}
-isolated function testTokenIntrospection10() {
+isolated function testTokenIntrospection10() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
         url: "https://localhost:9445/oauth2/introspect",
@@ -379,24 +350,20 @@ isolated function testTokenIntrospection10() {
         }
     };
     ListenerOAuth2Provider provider = new(config);
-    IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
-    if (response is IntrospectionResponse) {
-        test:assertTrue(response.active);
-        test:assertEquals(response?.scope, "read write dolphin");
-        test:assertEquals(response?.clientId, "l238j323ds-23ij4");
-        test:assertEquals(response?.username, "jdoe");
-        test:assertEquals(response?.tokenType, "token_type");
-        test:assertTrue(response?.exp is int);
-        test:assertTrue(response?.iat is int);
-        test:assertTrue(response?.nbf is int);
-        test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
-        test:assertEquals(response?.aud, "https://protected.example.net/resource");
-        test:assertEquals(response?.iss, "https://server.example.com/");
-        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
-        test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
 
 // Test the introspection request with successful token and with all the configurations (empty secure socket)
@@ -426,9 +393,9 @@ isolated function testTokenIntrospection11() {
     };
     ListenerOAuth2Provider provider = new(config);
     IntrospectionResponse|Error response = provider.authorize(accessToken, {"example_key": "example_value"});
-    if (response is Error) {
+    if response is Error {
         assertContains(response, "Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
