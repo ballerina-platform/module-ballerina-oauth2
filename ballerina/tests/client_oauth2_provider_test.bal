@@ -23,7 +23,7 @@ import ballerina/lang.runtime as runtime;
 
 // Test the client credentials grant type with valid credentials
 @test:Config {}
-isolated function testClientCredentialsGrantType1() {
+isolated function testClientCredentialsGrantType1() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
@@ -39,22 +39,14 @@ isolated function testClientCredentialsGrantType1() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }
 
 // Test the client credentials grant type with invalid client credentials
@@ -75,19 +67,19 @@ isolated function testClientCredentialsGrantType2() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -109,19 +101,19 @@ isolated function testClientCredentialsGrantType3() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Client credentials are invalid.\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Client credentials are invalid.\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -143,25 +135,25 @@ isolated function testClientCredentialsGrantType4() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
 // Test the client credentials grant type with valid credentials
 @test:Config {}
-isolated function testClientCredentialsGrantType5() {
+isolated function testClientCredentialsGrantType5() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
@@ -180,40 +172,28 @@ isolated function testClientCredentialsGrantType5() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 
     // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
     // reissued by the provided refresh configurations.
     runtime:sleep(5.0);
 
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }
 
 // ---------------- PASSWORD GRANT TYPE ----------------
 
 // Test the password grant type with valid credentials
 @test:Config {}
-isolated function testPasswordGrantType1() {
+isolated function testPasswordGrantType1() returns Error? {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         username: "admin",
@@ -231,27 +211,19 @@ isolated function testPasswordGrantType1() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }
 
 // Test the password grant type with valid credentials and a valid refresh config
 @test:Config {}
-isolated function testPasswordGrantType2() {
+isolated function testPasswordGrantType2() returns Error? {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
         username: "admin",
@@ -287,33 +259,21 @@ isolated function testPasswordGrantType2() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 
     // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will get
     // refreshed by the provided refresh configurations.
     runtime:sleep(5.0);
 
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }
 
 // Test the password grant type with an invalid username, password, and a valid refresh config
@@ -348,19 +308,19 @@ isolated function testPasswordGrantType3() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Authentication failed for invalid_username\",\"error\":\"invalid_grant\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Authentication failed for invalid_username\",\"error\":\"invalid_grant\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -384,19 +344,19 @@ isolated function testPasswordGrantType4() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -418,19 +378,19 @@ isolated function testPasswordGrantType5() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Unsupported Client Authentication Method!\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Unsupported Client Authentication Method!\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -470,16 +430,16 @@ isolated function testPasswordGrantType6() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error\":\"invalid_client\", \"error_description\":\"Client authentication failed due to unknown client.\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
 // Test the password grant type with valid credentials and without refresh config
 @test:Config {}
-isolated function testPasswordGrantType7() {
+isolated function testPasswordGrantType7() returns Error? {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
         username: "admin",
@@ -500,22 +460,18 @@ isolated function testPasswordGrantType7() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response1 = check provider.generateToken();
+    assertToken(response1);
 
     // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will get
     // refreshed. However, if the refresh configurations are not provided, it will be failed.
     runtime:sleep(5.0);
 
-    response = provider.generateToken();
-    if (response is Error) {
-        assertContains(response, "Failed to refresh access token since refresh configurations are not provided.");
+    string|Error response2 = provider.generateToken();
+    if response2 is Error {
+        assertContains(response2, "Failed to refresh access token since refresh configurations are not provided.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -540,16 +496,16 @@ isolated function testRefreshTokenGrantType1() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Persisted access token data not found\",\"error\":\"invalid_grant\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
 // Test the refresh token grant type with an valid configurations
 @test:Config {}
-isolated function testRefreshTokenGrantType2() {
+isolated function testRefreshTokenGrantType2() returns Error? {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9445/oauth2/token",
         refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
@@ -569,33 +525,21 @@ isolated function testRefreshTokenGrantType2() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 
     // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
     // refreshed again by the provided refresh configurations.
     runtime:sleep(5.0);
 
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }
 
 // Test the refresh token grant type with empty client-id and client-secret
@@ -617,10 +561,10 @@ isolated function testRefreshTokenGrantType3() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -628,7 +572,7 @@ isolated function testRefreshTokenGrantType3() {
 
 // Test the JWT bearer grant type with an valid JWT
 @test:Config {}
-isolated function testJwtBearerGrantType1() {
+isolated function testJwtBearerGrantType1() returns Error? {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
                  "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
@@ -652,22 +596,14 @@ isolated function testJwtBearerGrantType1() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }
 
 // Test the JWT bearer grant type with an valid JWT (different issuer)
@@ -691,10 +627,10 @@ isolated function testJwtBearerGrantType2() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Internal Server Error.\",\"error\":\"server_error\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -717,10 +653,10 @@ isolated function testJwtBearerGrantType3() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Error while parsing the JWT.\",\"error\":\"invalid_grant\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -750,19 +686,19 @@ isolated function testJwtBearerGrantType4() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "Client-id or client-secret cannot be empty.");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
@@ -790,16 +726,16 @@ isolated function testJwtBearerGrantType5() {
         }
     };
     ClientOAuth2Provider|error provider = trap new(config);
-    if (provider is error) {
+    if provider is error {
         assertContains(provider, "{\"error_description\":\"Unsupported Client Authentication Method!\",\"error\":\"invalid_client\"}");
     } else {
-        test:assertFail(msg = "Test Failed! ");
+        test:assertFail("Expected error not found.");
     }
 }
 
 // Test the JWT bearer grant type with an valid JWT
 @test:Config {}
-isolated function testJwtBearerGrantType6() {
+isolated function testJwtBearerGrantType6() returns Error? {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
                  "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
@@ -823,31 +759,19 @@ isolated function testJwtBearerGrantType6() {
         }
     };
     ClientOAuth2Provider provider = new(config);
-    string|Error response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    string response = check provider.generateToken();
+    assertToken(response);
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 
     // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
     // reissued by the provided configurations.
     runtime:sleep(5.0);
 
-    response = provider.generateToken();
-    if (response is string) {
-        assertToken(response);
-    } else {
-        test:assertFail(msg = "Test Failed! ");
-    }
+    response = check provider.generateToken();
+    assertToken(response);
 }

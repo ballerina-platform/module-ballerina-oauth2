@@ -188,7 +188,7 @@ public isolated class ClientOAuth2Provider {
         self.tokenCache = new;
         // This generates the token and keep it in the `TokenCache` to be used by the initial request.
         string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache);
-        if (result is Error) {
+        if result is Error {
             panic result;
         }
     }
@@ -201,7 +201,7 @@ public isolated class ClientOAuth2Provider {
     # + return - Received OAuth2 access token or else an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
         string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
-        if (authToken is string) {
+        if authToken is string {
             return authToken;
         } else {
             return prepareError("Failed to generate OAuth2 token.", authToken);
@@ -211,11 +211,11 @@ public isolated class ClientOAuth2Provider {
 
 // Generates the OAuth2 access token.
 isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache) returns string|Error {
-    if (grantConfig is ClientCredentialsGrantConfig) {
+    if grantConfig is ClientCredentialsGrantConfig {
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
-    } else if (grantConfig is PasswordGrantConfig) {
+    } else if grantConfig is PasswordGrantConfig {
         return getOAuth2TokenForPasswordGrant(grantConfig, tokenCache);
-    } else if (grantConfig is RefreshTokenGrantConfig) {
+    } else if grantConfig is RefreshTokenGrantConfig {
         return getOAuth2TokenForRefreshTokenGrantType(grantConfig, tokenCache);
     } else {
         return getOAuth2TokenForJwtBearerGrantType(grantConfig, tokenCache);
@@ -226,14 +226,14 @@ isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenC
 isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrantConfig grantConfig,
                                                           TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.getAccessToken();
-    if (cachedAccessToken == "") {
+    if cachedAccessToken == "" {
         return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
     } else {
-        if (!tokenCache.isAccessTokenExpired()) {
+        if !tokenCache.isAccessTokenExpired() {
             return cachedAccessToken;
         } else {
             lock {
-                if (!tokenCache.isAccessTokenExpired()) {
+                if !tokenCache.isAccessTokenExpired() {
                     return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
@@ -246,14 +246,14 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
 isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig, TokenCache tokenCache)
                                                  returns string|Error {
     string cachedAccessToken = tokenCache.getAccessToken();
-    if (cachedAccessToken == "") {
+    if cachedAccessToken == "" {
         return getAccessTokenFromTokenRequestForPasswordGrant(grantConfig, tokenCache);
     } else {
-        if (!tokenCache.isAccessTokenExpired()) {
+        if !tokenCache.isAccessTokenExpired() {
             return cachedAccessToken;
         } else {
             lock {
-                if (!tokenCache.isAccessTokenExpired()) {
+                if !tokenCache.isAccessTokenExpired() {
                     return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromRefreshRequestForPasswordGrant(grantConfig, tokenCache);
@@ -266,14 +266,14 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
 isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
                                                          TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.getAccessToken();
-    if (cachedAccessToken == "") {
+    if cachedAccessToken == "" {
         return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
     } else {
-        if (!tokenCache.isAccessTokenExpired()) {
+        if !tokenCache.isAccessTokenExpired() {
             return cachedAccessToken;
         } else {
             lock {
-                if (!tokenCache.isAccessTokenExpired()) {
+                if !tokenCache.isAccessTokenExpired() {
                     return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
@@ -286,14 +286,14 @@ isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig
 isolated function getOAuth2TokenForJwtBearerGrantType(JwtBearerGrantConfig grantConfig,
                                                       TokenCache tokenCache) returns string|Error {
     string cachedAccessToken = tokenCache.getAccessToken();
-    if (cachedAccessToken == "") {
+    if cachedAccessToken == "" {
         return getAccessTokenFromTokenRequestForJwtBearerGrant(grantConfig, tokenCache);
     } else {
-        if (!tokenCache.isAccessTokenExpired()) {
+        if !tokenCache.isAccessTokenExpired() {
             return cachedAccessToken;
         } else {
             lock {
-                if (!tokenCache.isAccessTokenExpired()) {
+                if !tokenCache.isAccessTokenExpired() {
                     return tokenCache.getAccessToken();
                 }
                 return getAccessTokenFromRefreshRequestForJwtBearerGrant(grantConfig, tokenCache);
@@ -306,7 +306,7 @@ isolated function getOAuth2TokenForJwtBearerGrantType(JwtBearerGrantConfig grant
 // Refer: https://tools.ietf.org/html/rfc6749#section-4.4
 isolated function getAccessTokenFromTokenRequestForClientCredentialsGrant(ClientCredentialsGrantConfig config,
                                                                           TokenCache tokenCache) returns string|Error {
-    if (config.clientId == "" || config.clientSecret == "") {
+    if config.clientId == "" || config.clientSecret == "" {
         return prepareError("Client-id or client-secret cannot be empty.");
     }
     string tokenUrl = config.tokenUrl;
@@ -337,8 +337,8 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     string? clientId = config?.clientId;
     string? clientSecret = config?.clientSecret;
     RequestConfig requestConfig;
-    if (clientId is string && clientSecret is string) {
-        if (clientId == "" || clientSecret == "") {
+    if clientId is string && clientSecret is string {
+        if clientId == "" || clientSecret == "" {
             return prepareError("Client-id or client-secret cannot be empty.");
         }
         requestConfig = {
@@ -377,8 +377,8 @@ isolated function getAccessTokenFromTokenRequestForJwtBearerGrant(JwtBearerGrant
     string? clientId = config?.clientId;
     string? clientSecret = config?.clientSecret;
     RequestConfig requestConfig;
-    if (clientId is string && clientSecret is string) {
-        if (clientId == "" || clientSecret == "") {
+    if clientId is string && clientSecret is string {
+        if clientId == "" || clientSecret == "" {
             return prepareError("Client-id or client-secret cannot be empty.");
         }
         requestConfig = {
@@ -414,17 +414,17 @@ isolated function getAccessTokenFromTokenRequestForJwtBearerGrant(JwtBearerGrant
 isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrantConfig config, TokenCache tokenCache)
                                                                    returns string|Error {
     var refreshConfig = config?.refreshConfig;
-    if (refreshConfig is ()) {
+    if refreshConfig is () {
         return prepareError("Failed to refresh access token since refresh configurations are not provided.");
     } else {
         string? clientId = config?.clientId;
         string? clientSecret = config?.clientSecret;
-        if (clientId is string && clientSecret is string) {
+        if clientId is string && clientSecret is string {
             // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
             // request, initially.
             string refreshUrl = refreshConfig.refreshUrl;
             string refreshToken = tokenCache.getRefreshToken();
-            if (refreshToken == "") {
+            if refreshToken == "" {
                 // The subsequent requests should have a cached `refreshToken` to refresh the access token.
                 return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
             }
@@ -446,9 +446,8 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
             int? expiresIn = extractExpiresIn(response);
             tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
             return accessToken;
-        } else {
-            return prepareError("Client-id or client-secret cannot be empty.");
         }
+        return prepareError("Client-id or client-secret cannot be empty.");
     }
 }
 
@@ -456,7 +455,7 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
 // Refer: https://tools.ietf.org/html/rfc6749#section-6
 isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTokenGrantConfig config,
                                                                        TokenCache tokenCache) returns string|Error {
-    if (config.clientId == "" || config.clientSecret == "") {
+    if config.clientId == "" || config.clientSecret == "" {
         return prepareError("Client-id or client-secret cannot be empty.");
     }
     string refreshUrl = config.refreshUrl;
@@ -465,7 +464,7 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     // Hence, the `config.refreshToken` is used.
     // Refer: https://tools.ietf.org/html/rfc6749#page-48
     string refreshToken = tokenCache.getRefreshToken();
-    if (refreshToken == "") {
+    if refreshToken == "" {
         refreshToken = config.refreshToken;
     }
     RequestConfig requestConfig = {
@@ -494,12 +493,12 @@ isolated function getAccessTokenFromRefreshRequestForJwtBearerGrant(JwtBearerGra
                                                                     TokenCache tokenCache) returns string|Error {
     string? clientId = config?.clientId;
     string? clientSecret = config?.clientSecret;
-    if (clientId is string && clientSecret is string) {
+    if clientId is string && clientSecret is string {
         // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
         // request, initially.
         string refreshUrl = config.tokenUrl;
         string refreshToken = tokenCache.getRefreshToken();
-        if (refreshToken == "") {
+        if refreshToken == "" {
             // The subsequent requests should have a cached `refreshToken` to refresh the access token.
             return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
         }
@@ -521,9 +520,8 @@ isolated function getAccessTokenFromRefreshRequestForJwtBearerGrant(JwtBearerGra
         int? expiresIn = extractExpiresIn(response);
         tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
         return accessToken;
-    } else {
-        return prepareError("Client-id or client-secret cannot be empty.");
     }
+    return prepareError("Client-id or client-secret cannot be empty.");
 }
 
 isolated function sendRequest(RequestConfig requestConfig, string url, ClientConfiguration clientConfig)
@@ -531,9 +529,9 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
     map<string> headers = check prepareHeaders(requestConfig);
     string payload = check preparePayload(requestConfig);
     string|Error stringResponse = doHttpRequest(url, clientConfig, headers, payload);
-    if (stringResponse is string) {
+    if stringResponse is string {
         json|error jsonResponse = stringResponse.fromJsonString();
-        if (jsonResponse is json) {
+        if jsonResponse is json {
             return jsonResponse;
         } else {
             return prepareError("Failed to get JSON from the response payload.", jsonResponse);
@@ -545,10 +543,10 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
 
 isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
     map<string> headers = {};
-    if (config.credentialBearer == AUTH_HEADER_BEARER) {
+    if config.credentialBearer == AUTH_HEADER_BEARER {
         string? clientId = config?.clientId;
         string? clientSecret = config?.clientSecret;
-        if (clientId is string && clientSecret is string) {
+        if clientId is string && clientSecret is string {
             string clientIdSecret = clientId + ":" + clientSecret;
             headers["Authorization"] = "Basic " + clientIdSecret.toBytes().toBase64();
         }
@@ -560,29 +558,29 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
     string textPayload = config.payload;
     string scopeString = "";
     string[]? scopes = config.scopes;
-    if (scopes is string[]) {
+    if scopes is string[] {
         foreach string requestScope in scopes {
             string trimmedRequestScope = requestScope.trim();
-            if (trimmedRequestScope != "") {
+            if trimmedRequestScope != "" {
                 scopeString = scopeString + " " + trimmedRequestScope;
             }
         }
     }
-    if (scopeString != "") {
+    if scopeString != "" {
         textPayload = textPayload + "&scope=" + scopeString.trim();
     }
 
     map<string>? optionalParams = config.optionalParams;
-    if (optionalParams is map<string>) {
+    if optionalParams is map<string> {
         foreach [string, string] [key, value] in optionalParams.entries() {
             textPayload = textPayload + "&" + key.trim() + "=" + value.trim();
         }
     }
 
-    if (config.credentialBearer == POST_BODY_BEARER) {
+    if config.credentialBearer == POST_BODY_BEARER {
         string? clientId = config?.clientId;
         string? clientSecret = config?.clientSecret;
-        if (clientId is string && clientSecret is string) {
+        if clientId is string && clientSecret is string {
             textPayload = textPayload + "&client_id=" + clientId + "&client_secret=" + clientSecret;
         }
     }
@@ -591,33 +589,30 @@ isolated function preparePayload(RequestConfig config) returns string|Error {
 
 isolated function extractAccessToken(json response) returns string|Error {
     json|error accessToken = response.access_token;
-    if (accessToken is string) {
+    if accessToken is string {
         return accessToken;
-    } else if (accessToken is error) {
+    } else if accessToken is error {
         return prepareError("Failed to access 'access_token' property from the JSON.", accessToken);
-    } else {
-        return prepareError("Failed to extract 'access_token' property as a 'string' from the JSON.");
     }
+    return prepareError("Failed to extract 'access_token' property as a 'string' from the JSON.");
 }
 
 isolated function extractRefreshToken(json response) returns string? {
     json|error refreshToken = response.refresh_token;
-    if (refreshToken is string) {
+    if refreshToken is string {
         return refreshToken;
-    } else {
-        log:printDebug("Failed to access 'refresh_token' property from the JSON.");
-        return;
     }
+    log:printDebug("Failed to access 'refresh_token' property from the JSON.");
+    return;
 }
 
 isolated function extractExpiresIn(json response) returns int? {
     json|error expiresIn = response.expires_in;
-    if (expiresIn is int) {
+    if expiresIn is int {
         return expiresIn;
-    } else {
-        log:printDebug("Failed to access 'expires_in' property from the JSON as an int.");
-        return;
     }
+    log:printDebug("Failed to access 'expires_in' property from the JSON as an int.");
+    return;
 }
 
 // This class stores the values received from the token/introspection endpoint to use them for the latter requests
@@ -650,7 +645,7 @@ isolated class TokenCache {
     isolated function isAccessTokenExpired() returns boolean {
         lock {
             [int, decimal] currentTime = time:utcNow();
-            if (currentTime[0] < self.expTime) {
+            if currentTime[0] < self.expTime {
                 return false;
             }
             return true;
@@ -663,12 +658,12 @@ isolated class TokenCache {
             self.accessToken = accessToken;
             [int, decimal] currentTime = time:utcNow();
             int issueTime = currentTime[0];
-            if (expiresIn is int) {
+            if expiresIn is int {
                 self.expTime = issueTime + expiresIn - <int> clockSkew;
             } else {
                 self.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
             }
-            if (refreshToken is string) {
+            if refreshToken is string {
                 self.refreshToken = refreshToken;
             }
         }
