@@ -5,6 +5,7 @@ version = "@toml.version@"
 authors = ["Ballerina"]
 keywords = ["security", "authorization", "introspection"]
 repository = "https://github.com/ballerina-platform/module-ballerina-oauth2"
+icon = "icon.png"
 license = ["Apache-2.0"]
 distribution = "2201.0.0"
 
