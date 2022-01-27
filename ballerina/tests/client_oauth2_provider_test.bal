@@ -575,11 +575,11 @@ isolated function testRefreshTokenGrantType3() {
 isolated function testJwtBearerGrantType1() returns Error? {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
-                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
-                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
-                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
-                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
-                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NTg2MTIwMjksICJuYm" +
+                 "YiOjE2NDMyNTIwMjksICJpYXQiOjE2NDMyNTIwMjl9.MBjE6L8xu3QyuN9bjJfcg-yCAbmuPrqidWRRp0Gcu120_wIis7nmg7x" +
+                 "Or8BW-6h8CQEswjIXyW5ULYk_y9d61zPNJlPbcTgJSHc2roPuBGoa3szHjd1G2eZE14SLsLUsbmz5_g1ZeOrqJxtKAholUENvN" +
+                 "1xZtSw8jZwc_RMRA3xXaLvfoys0I6D-iQqrqjQ2CmCoZTkqTPDkoV8xRS4U4AGJgXJtRqfQeEPjJsnTSQpidMuElEnUnV_u6MZ" +
+                 "hwhZVSNBbLZZpu8SPsyL-FHftd_VVGI6abrOFP4XZaRwVomyClme2q7zTH_H66Pkh_85J9_tj14cODY81J8Tbmloj7g";
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         assertion: jwt,
@@ -665,11 +665,11 @@ isolated function testJwtBearerGrantType3() {
 isolated function testJwtBearerGrantType4() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
-                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
-                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
-                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
-                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
-                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NTg2MTIwMjksICJuYm" +
+                 "YiOjE2NDMyNTIwMjksICJpYXQiOjE2NDMyNTIwMjl9.MBjE6L8xu3QyuN9bjJfcg-yCAbmuPrqidWRRp0Gcu120_wIis7nmg7x" +
+                 "Or8BW-6h8CQEswjIXyW5ULYk_y9d61zPNJlPbcTgJSHc2roPuBGoa3szHjd1G2eZE14SLsLUsbmz5_g1ZeOrqJxtKAholUENvN" +
+                 "1xZtSw8jZwc_RMRA3xXaLvfoys0I6D-iQqrqjQ2CmCoZTkqTPDkoV8xRS4U4AGJgXJtRqfQeEPjJsnTSQpidMuElEnUnV_u6MZ" +
+                 "hwhZVSNBbLZZpu8SPsyL-FHftd_VVGI6abrOFP4XZaRwVomyClme2q7zTH_H66Pkh_85J9_tj14cODY81J8Tbmloj7g";
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         assertion: jwt,
@@ -707,11 +707,11 @@ isolated function testJwtBearerGrantType4() {
 isolated function testJwtBearerGrantType5() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
-                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
-                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
-                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
-                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
-                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NTg2MTIwMjksICJuYm" +
+                 "YiOjE2NDMyNTIwMjksICJpYXQiOjE2NDMyNTIwMjl9.MBjE6L8xu3QyuN9bjJfcg-yCAbmuPrqidWRRp0Gcu120_wIis7nmg7x" +
+                 "Or8BW-6h8CQEswjIXyW5ULYk_y9d61zPNJlPbcTgJSHc2roPuBGoa3szHjd1G2eZE14SLsLUsbmz5_g1ZeOrqJxtKAholUENvN" +
+                 "1xZtSw8jZwc_RMRA3xXaLvfoys0I6D-iQqrqjQ2CmCoZTkqTPDkoV8xRS4U4AGJgXJtRqfQeEPjJsnTSQpidMuElEnUnV_u6MZ" +
+                 "hwhZVSNBbLZZpu8SPsyL-FHftd_VVGI6abrOFP4XZaRwVomyClme2q7zTH_H66Pkh_85J9_tj14cODY81J8Tbmloj7g";
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         assertion: jwt,
@@ -738,11 +738,11 @@ isolated function testJwtBearerGrantType5() {
 isolated function testJwtBearerGrantType6() returns Error? {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
-                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NDQ0NzI2MjksICJuYm" +
-                 "YiOjE2MjkxMTI2MjksICJpYXQiOjE2MjkxMTI2Mjl9.Qbi5kElPZlyViUUuYW9Ik4nXSeTIroacEDs4BoI0rAGAOBXfyWLW4Yx" +
-                 "m6hAlb4GXtkPZ4YMO8c0mUgdXgvPVFqFYJuINNPu6Y_nExahAVD0VxCYRE59lEjRv7t_gqn5OxSu_jTGcgcHH8_j-tvL_-AHaq" +
-                 "gflr5UljbTPtnQyXtLaPNeu3r7FoWs-LrewMPIm1aw5qc2gI2iYwI1jfIdpNlEjU6r_Mg6ou2D2AGqJa0QYN1FMqi4YJt2jHr6" +
-                 "0tQMQIWJ7zhKU4ShZESxYOVKK_cBOeL6K-A07pNEZYaSxtCU3609MIZ8EOUJuQUJb7zHHxG4QziHM8eBwFo26yovBFw";
+                 "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NTg2MTIwMjksICJuYm" +
+                 "YiOjE2NDMyNTIwMjksICJpYXQiOjE2NDMyNTIwMjl9.MBjE6L8xu3QyuN9bjJfcg-yCAbmuPrqidWRRp0Gcu120_wIis7nmg7x" +
+                 "Or8BW-6h8CQEswjIXyW5ULYk_y9d61zPNJlPbcTgJSHc2roPuBGoa3szHjd1G2eZE14SLsLUsbmz5_g1ZeOrqJxtKAholUENvN" +
+                 "1xZtSw8jZwc_RMRA3xXaLvfoys0I6D-iQqrqjQ2CmCoZTkqTPDkoV8xRS4U4AGJgXJtRqfQeEPjJsnTSQpidMuElEnUnV_u6MZ" +
+                 "hwhZVSNBbLZZpu8SPsyL-FHftd_VVGI6abrOFP4XZaRwVomyClme2q7zTH_H66Pkh_85J9_tj14cODY81J8Tbmloj7g";
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         assertion: jwt,
