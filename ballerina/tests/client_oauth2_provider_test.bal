@@ -568,6 +568,32 @@ isolated function testRefreshTokenGrantType3() {
     }
 }
 
+// Test the refresh token grant type with invalid client-id and client-secret
+@test:Config {}
+isolated function testRefreshTokenGrantType4() {
+    RefreshTokenGrantConfig config = {
+        refreshUrl: "https://localhost:9443/oauth2/token",
+        refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
+        clientId: "invalid_client_id",
+        clientSecret: "invalid_client_secret",
+        scopes: ["view-order"],
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: WSO2_PUBLIC_CERT_PATH
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new(config);
+    if provider is error {
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
+    } else {
+        test:assertFail("Expected error not found.");
+    }
+}
+
 // ---------------- JWT BEARER GRANT TYPE ----------------
 
 // Test the JWT bearer grant type with an valid JWT
@@ -602,6 +628,13 @@ isolated function testJwtBearerGrantType1() returns Error? {
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
     provider = new(config);
+    response = check provider.generateToken();
+    assertToken(response);
+
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
+    // reissued by the provided configurations.
+    runtime:sleep(5.0);
+
     response = check provider.generateToken();
     assertToken(response);
 }
@@ -733,9 +766,9 @@ isolated function testJwtBearerGrantType5() {
     }
 }
 
-// Test the JWT bearer grant type with an valid JWT
+// Test the JWT bearer grant type with invalid client-id and client-secret
 @test:Config {}
-isolated function testJwtBearerGrantType6() returns Error? {
+isolated function testJwtBearerGrantType6() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
                  "ZG1pbiIsICJhdWQiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJleHAiOjE5NTg2MTIwMjksICJuYm" +
@@ -746,8 +779,8 @@ isolated function testJwtBearerGrantType6() returns Error? {
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         assertion: jwt,
-        clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
-        clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
+        clientId: "invalid_client_id",
+        clientSecret: "invalid_client_secret",
         scopes: ["view-order"],
         optionalParams: {
             "client": "ballerina"
@@ -758,20 +791,19 @@ isolated function testJwtBearerGrantType6() returns Error? {
             }
         }
     };
-    ClientOAuth2Provider provider = new(config);
-    string response = check provider.generateToken();
-    assertToken(response);
+    ClientOAuth2Provider|error provider = trap new(config);
+    if provider is error {
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
+    } else {
+        test:assertFail("Expected error not found.");
+    }
 
     // Send the credentials in request body
     config.credentialBearer = POST_BODY_BEARER;
-    provider = new(config);
-    response = check provider.generateToken();
-    assertToken(response);
-
-    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will be
-    // reissued by the provided configurations.
-    runtime:sleep(5.0);
-
-    response = check provider.generateToken();
-    assertToken(response);
+    provider = trap new(config);
+    if provider is error {
+        assertContains(provider, "{\"error_description\":\"A valid OAuth client could not be found for client_id: invalid_client_id\",\"error\":\"invalid_client\"}");
+    } else {
+        test:assertFail("Expected error not found.");
+    }
 }
