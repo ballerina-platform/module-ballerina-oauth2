@@ -13,23 +13,23 @@ The OAuth 2.0 authorization framework enables a third-party application to obtai
 
 The Ballerina `oauth2` library facilitates auth providers that are to be used by the clients and listeners of different protocol connectors.
 
-### Listener OAuth2 Provider
+### Listener OAuth2 provider
 
 Represents the listener OAuth2 provider, which is used to validate the received credential (access token) by calling the configured OAuth2 introspection endpoint.
 
-### Client OAuth2 Provider
+### Client OAuth2 provider
 
 Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2 token endpoint configurations. This supports the client credentials grant type, password grant type, and refresh token grant type.
 
-## Issues and Projects
+## Issues and projects
 
 Issues and Projects tabs are disabled for this repository as this is part of the Ballerina Standard Library. To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina Standard Library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
 
 This repository only contains the source code for the module.
 
-## Building from the Source
+## Build from the source
 
-### Setting Up the Prerequisites
+### Set up the prerequisites
 
 1. Download and install Java SE Development Kit (JDK) version 11 (from one of the following locations).
 
@@ -48,7 +48,7 @@ This repository only contains the source code for the module.
 
 3. Download and install [Docker](https://www.docker.com/).
 
-### Building the Source
+### Build the source
 
 Execute the commands below to build from the source.
 
@@ -91,17 +91,17 @@ Execute the commands below to build from the source.
     ./gradlew clean build -PpublishToCentral=true
     ```
 
-## Contributing to Ballerina
+## Contribute to Ballerina
 
 As an open source project, Ballerina welcomes contributions from the community.
 
 For more information, go to the [contribution guidelines](https://github.com/ballerina-platform/ballerina-lang/blob/master/CONTRIBUTING.md).
 
-## Code of Conduct
+## Code of conduct
 
 All contributors are encouraged to read the [Ballerina Code of Conduct](https://ballerina.io/code-of-conduct).
 
-## Useful Links
+## Useful links
 
 * For more information go to the [`oauth2` library](https://lib.ballerina.io/ballerina/oauth2/latest).
 * For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).

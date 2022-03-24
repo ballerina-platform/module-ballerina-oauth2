@@ -6,10 +6,10 @@ The OAuth 2.0 authorization framework enables a third-party application to obtai
 
 The Ballerina `oauth2` module facilitates auth providers that are to be used by the clients and listeners of different protocol connectors.
 
-### Listener OAuth2 Provider
+### Listener OAuth2 provider
 
 Represents the listener OAuth2 provider, which is used to validate the received credential (access token) by calling the configured OAuth2 introspection endpoint.
 
-### Client OAuth2 Provider
+### Client OAuth2 provider
 
 Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2 token endpoint configurations. This supports the client credentials grant type, password grant type, and refresh token grant type.
