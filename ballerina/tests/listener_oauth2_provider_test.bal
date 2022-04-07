@@ -399,3 +399,123 @@ isolated function testTokenIntrospection11() {
         test:assertFail("Expected error not found.");
     }
 }
+
+@test:Config {}
+isolated function testTokenIntrospectionRequestWithoutUrlScheme() returns Error? {
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
+    IntrospectionConfig config = {
+        url: "localhost:9444/oauth2/introspect",
+        tokenTypeHint: "access_token",
+        clientConfig: {
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="}
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+}
+
+@test:Config {}
+isolated function testTokenIntrospectionRequestWithHttpUrlScheme() returns Error? {
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
+    IntrospectionConfig config = {
+        url: "http://localhost:9444/oauth2/introspect",
+        tokenTypeHint: "access_token",
+        clientConfig: {
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="}
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+}
+
+@test:Config {}
+isolated function testTokenIntrospectionRequestWithSecureSocketAndWithoutUrlScheme() returns Error? {
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
+    IntrospectionConfig config = {
+        url: "localhost:9445/oauth2/introspect",
+        tokenTypeHint: "access_token",
+        clientConfig: {
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+            secureSocket: {
+                cert: {
+                    path: TRUSTSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+}
+
+@test:Config {}
+isolated function testTokenIntrospectionRequestWithSecureSocketAndWithHttpUrlScheme() returns Error? {
+    string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
+    IntrospectionConfig config = {
+        url: "http://localhost:9444/oauth2/introspect",
+        tokenTypeHint: "access_token",
+        clientConfig: {
+            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+            secureSocket: {
+                cert: {
+                    path: TRUSTSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ListenerOAuth2Provider provider = new(config);
+    IntrospectionResponse response = check provider.authorize(accessToken, {"example_key": "example_value"});
+    test:assertTrue(response.active);
+    test:assertEquals(response?.scope, "read write dolphin");
+    test:assertEquals(response?.clientId, "l238j323ds-23ij4");
+    test:assertEquals(response?.username, "jdoe");
+    test:assertEquals(response?.tokenType, "token_type");
+    test:assertTrue(response?.exp is int);
+    test:assertTrue(response?.iat is int);
+    test:assertTrue(response?.nbf is int);
+    test:assertEquals(response?.sub, "Z5O3upPC88QrAjx00dis");
+    test:assertEquals(response?.aud, "https://protected.example.net/resource");
+    test:assertEquals(response?.iss, "https://server.example.com/");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+    test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
+}
