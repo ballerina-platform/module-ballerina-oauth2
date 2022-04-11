@@ -106,11 +106,8 @@ public class OAuth2Client {
     private static URI buildUri(String url, BMap<BString, ?> secureSocket) {
         String[] urlParts = url.split(OAuth2Constants.SCHEME_SEPARATOR, 2);
         if (urlParts.length == 1) {
-            if (secureSocket != null) {
-                urlParts = new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]};
-            } else {
-                urlParts = new String[]{OAuth2Constants.HTTP_SCHEME, urlParts[0]};
-            }
+            urlParts = secureSocket != null ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
+                    new String[]{OAuth2Constants.HTTP_SCHEME, urlParts[0]};
         } else {
             if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null) {
                 err.println(OAuth2Constants.RUNTIME_WARNING_PREFIX + OAuth2Constants.HTTPS_RECOMMENDATION_ERROR);
