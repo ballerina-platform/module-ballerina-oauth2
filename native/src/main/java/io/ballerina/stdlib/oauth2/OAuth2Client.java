@@ -46,6 +46,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import static java.lang.System.err;
+
 /**
  * Extern function to call identity provider endpoints like token endpoint, introspection endpoint, using the
  * JDK11 HttpClient and return the payload of the HTTP response.
@@ -76,16 +78,18 @@ public class OAuth2Client {
             }
         }
 
-        HttpRequest request;
-        if (headersList.isEmpty()) {
-            request = buildHttpRequest(url.getValue(), textPayload);
-        } else {
-            String[] flatHeaders = headersList.toArray(String[]::new);
-            request = buildHttpRequest(url.getValue(), flatHeaders, textPayload);
-        }
-
         String httpVersion = getBStringValueIfPresent(clientConfig, OAuth2Constants.HTTP_VERSION).getValue();
         BMap<BString, ?> secureSocket = getBMapValueIfPresent(clientConfig, OAuth2Constants.SECURE_SOCKET);
+
+        HttpRequest request;
+        URI uri = buildUri(url.getValue(), secureSocket);
+        if (headersList.isEmpty()) {
+            request = buildHttpRequest(uri, textPayload);
+        } else {
+            String[] flatHeaders = headersList.toArray(String[]::new);
+            request = buildHttpRequest(uri, flatHeaders, textPayload);
+        }
+
         if (secureSocket != null) {
             try {
                 SSLContext sslContext = getSslContext(secureSocket);
@@ -97,6 +101,21 @@ public class OAuth2Client {
         }
         HttpClient client = buildHttpClient(httpVersion);
         return callEndpoint(client, request);
+    }
+
+    private static URI buildUri(String url, BMap<BString, ?> secureSocket) {
+        String[] urlParts = url.split(OAuth2Constants.SCHEME_SEPARATOR, 2);
+        if (urlParts.length == 1) {
+            urlParts = secureSocket != null ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
+                    new String[]{OAuth2Constants.HTTP_SCHEME, urlParts[0]};
+        } else {
+            if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null) {
+                err.println(OAuth2Constants.RUNTIME_WARNING_PREFIX + OAuth2Constants.HTTPS_RECOMMENDATION_ERROR);
+            }
+        }
+        urlParts[1] = urlParts[1].replaceAll(OAuth2Constants.DOUBLE_SLASH, OAuth2Constants.SINGLE_SLASH);
+        url = urlParts[0] + OAuth2Constants.SCHEME_SEPARATOR + urlParts[1];
+        return URI.create(url);
     }
 
     private static SSLContext getSslContext(BMap<BString, ?> secureSocket) throws Exception {
@@ -258,17 +277,17 @@ public class OAuth2Client {
         return HttpClient.newBuilder().version(getHttpVersion(httpVersion)).sslContext(sslContext).build();
     }
 
-    private static HttpRequest buildHttpRequest(String url, String payload) {
+    private static HttpRequest buildHttpRequest(URI uri, String payload) {
         return HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(uri)
                 .setHeader(OAuth2Constants.CONTENT_TYPE, OAuth2Constants.APPLICATION_FORM_URLENCODED)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
     }
 
-    private static HttpRequest buildHttpRequest(String url, String[] headers, String payload) {
+    private static HttpRequest buildHttpRequest(URI uri, String[] headers, String payload) {
         return HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(uri)
                 .headers(headers)
                 .setHeader(OAuth2Constants.CONTENT_TYPE, OAuth2Constants.APPLICATION_FORM_URLENCODED)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))

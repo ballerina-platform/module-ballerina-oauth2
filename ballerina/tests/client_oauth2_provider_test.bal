@@ -807,3 +807,71 @@ isolated function testJwtBearerGrantType6() {
         test:assertFail("Expected error not found.");
     }
 }
+
+@test:Config {}
+isolated function testAccessTokenRequestWithoutUrlScheme() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "localhost:9444/oauth2/token",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"]
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response = check provider.generateToken();
+    assertToken(response);
+}
+
+@test:Config {}
+isolated function testAccessTokenRequestWithHttpUrlScheme() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "http://localhost:9444/oauth2/token",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"]
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response = check provider.generateToken();
+    assertToken(response);
+}
+
+@test:Config {}
+isolated function testAccessTokenRequestWithSecureSocketAndWithoutUrlScheme() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "localhost:9445/oauth2/token",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"],
+        clientConfig: {
+            secureSocket: {
+                cert: {
+                    path: TRUSTSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response = check provider.generateToken();
+    assertToken(response);
+}
+
+@test:Config {}
+isolated function testAccessTokenRequestWithSecureSocketAndWithHttpUrlScheme() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "http://localhost:9444/oauth2/token",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"],
+        clientConfig: {
+            secureSocket: {
+                cert: {
+                    path: TRUSTSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response = check provider.generateToken();
+    assertToken(response);
+}
