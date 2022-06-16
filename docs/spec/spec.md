@@ -5,7 +5,6 @@ _Reviewers_: @shafreenAnfar
 _Created_: 2021/10/01  
 _Updated_: 2022/02/17  
 _Edition_: Swan Lake  
-_Issue_: [#2209](https://github.com/ballerina-platform/ballerina-standard-library/issues/2209)
 
 # Introduction
 This is the specification for the OAuth2 standard library of [Ballerina language](https://ballerina.io/), which is used for authorization of listeners and clients (HTTP, gRPC, GraphQL, WebSocket, WebSub, etc.).
