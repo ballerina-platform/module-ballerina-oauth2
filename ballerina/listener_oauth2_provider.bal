@@ -249,7 +249,7 @@ isolated function addToCache(cache:Cache oauth2Cache, string token, Introspectio
         result = oauth2Cache.put(token, response, defaultTokenExpTime);
     }
     if result is cache:Error {
-        log:printError("Failed to add OAuth2 access token to the cache.", 'error = result);
+        log:printDebug("Failed to add OAuth2 access token to the cache.", 'error = result);
     }
 }
 
@@ -271,10 +271,10 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         }
         cache:Error? result = oauth2Cache.invalidate(token);
         if result is cache:Error {
-            log:printError("Failed to invalidate OAuth2 access token from the cache.", 'error = result);
+            log:printDebug("Failed to invalidate OAuth2 access token from the cache.", 'error = result);
         }
     } else {
-        log:printError("Failed to validate the token from the cache.", 'error = cachedEntry);
+        log:printDebug("Failed to validate the token from the cache.", 'error = cachedEntry);
     }
     return;
 }
