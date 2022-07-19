@@ -94,7 +94,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "oauth2"
-version = "2.3.2"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},

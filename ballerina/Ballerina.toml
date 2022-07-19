@@ -1,7 +1,7 @@
 [package]
 org = "ballerina"
 name = "oauth2"
-version = "2.3.2"
+version = "2.4.0"
 authors = ["Ballerina"]
 keywords = ["security", "authorization", "introspection"]
 repository = "https://github.com/ballerina-platform/module-ballerina-oauth2"
@@ -10,4 +10,4 @@ license = ["Apache-2.0"]
 distribution = "2201.2.0"
 
 [[platform.java11.dependency]]
-path = "../native/build/libs/oauth2-native-2.3.2-SNAPSHOT.jar"
+path = "../native/build/libs/oauth2-native-2.4.0-SNAPSHOT.jar"
