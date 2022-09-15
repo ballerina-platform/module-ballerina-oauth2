@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [Oauth2 client treats 201-Created response as a failure](https://github.com/ballerina-platform/ballerina-standard-library/issues/3334)
+
 ### Changed
 - [Append the scheme of the HTTP client URL (token/introspection) based on the client configurations](https://github.com/ballerina-platform/ballerina-standard-library/issues/2816)
 
