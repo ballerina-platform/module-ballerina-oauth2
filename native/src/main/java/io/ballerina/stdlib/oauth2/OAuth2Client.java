@@ -322,7 +322,7 @@ public class OAuth2Client {
     }
 
     private static BError createError(String errMsg) {
-        return ErrorCreator.createDistinctError(OAuth2Constants.OAUTH2_ERROR_TYPE, ModuleUtils.getModule(),
-                                                StringUtils.fromString(errMsg));
+        return ErrorCreator.createError(ModuleUtils.getModule(), OAuth2Constants.OAUTH2_ERROR_TYPE,
+                                        StringUtils.fromString(errMsg), null, null);
     }
 }
