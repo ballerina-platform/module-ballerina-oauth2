@@ -82,7 +82,13 @@ public class OAuth2Client {
         BMap<BString, ?> secureSocket = getBMapValueIfPresent(clientConfig, OAuth2Constants.SECURE_SOCKET);
 
         HttpRequest request;
-        URI uri = buildUri(url.getValue(), secureSocket);
+        URI uri;
+        try {
+            uri = buildUri(url.getValue(), secureSocket);
+        } catch (IllegalArgumentException e) {
+            return createError("Failed to create URI for the provided value \"" + url + "\".");
+        }
+
         if (headersList.isEmpty()) {
             request = buildHttpRequest(uri, textPayload);
         } else {
@@ -103,7 +109,7 @@ public class OAuth2Client {
         return callEndpoint(client, request);
     }
 
-    private static URI buildUri(String url, BMap<BString, ?> secureSocket) {
+    private static URI buildUri(String url, BMap<BString, ?> secureSocket) throws IllegalArgumentException {
         String[] urlParts = url.split(OAuth2Constants.SCHEME_SEPARATOR, 2);
         if (urlParts.length == 1) {
             urlParts = secureSocket != null ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :

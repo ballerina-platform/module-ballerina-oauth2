@@ -875,3 +875,57 @@ isolated function testAccessTokenRequestWithSecureSocketAndWithHttpUrlScheme() r
     string response = check provider.generateToken();
     assertToken(response);
 }
+
+@test:Config {}
+isolated function testInvalidTokenUrl() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"],
+        clientConfig: {
+            secureSocket: {
+                cert: {
+                    path: TRUSTSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new (config);
+    if (provider is Error) {
+        test:assertEquals(provider.message(), "Failed to call the token endpoint ''.");
+        test:assertTrue(provider.cause() is Error);
+        Error cause = <Error>provider.cause();
+        test:assertEquals(cause.message(), "Failed to create URI for the provided value \"\".");
+    } else {
+        test:assertFail("The provider should be an oauth2:Error");
+    }
+}
+
+@test:Config {}
+isolated function testInvalidTokenUrl2() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "https://abc d.com",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"],
+        clientConfig: {
+            secureSocket: {
+                cert: {
+                    path: TRUSTSTORE_PATH,
+                    password: "ballerina"
+                }
+            }
+        }
+    };
+    ClientOAuth2Provider|error provider = trap new (config);
+    if (provider is Error) {
+        test:assertEquals(provider.message(), "Failed to call the token endpoint 'https://abc d.com'.");
+        test:assertTrue(provider.cause() is Error);
+        Error cause = <Error>provider.cause();
+        test:assertEquals(cause.message(), "Failed to create URI for the provided value \"https://abc d.com\".");
+    } else {
+        test:assertFail("The provider should be an oauth2:Error");
+    }
+}
