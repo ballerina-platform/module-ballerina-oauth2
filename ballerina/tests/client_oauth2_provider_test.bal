@@ -893,7 +893,7 @@ isolated function testInvalidTokenUrl() returns Error? {
         }
     };
     ClientOAuth2Provider|error provider = trap new (config);
-    if (provider is Error) {
+    if provider is Error {
         test:assertEquals(provider.message(), "Failed to call the token endpoint ''.");
         test:assertTrue(provider.cause() is Error);
         Error cause = <Error>provider.cause();
@@ -920,7 +920,7 @@ isolated function testInvalidTokenUrl2() returns Error? {
         }
     };
     ClientOAuth2Provider|error provider = trap new (config);
-    if (provider is Error) {
+    if provider is Error {
         test:assertEquals(provider.message(), "Failed to call the token endpoint 'https://abc d.com'.");
         test:assertTrue(provider.cause() is Error);
         Error cause = <Error>provider.cause();
