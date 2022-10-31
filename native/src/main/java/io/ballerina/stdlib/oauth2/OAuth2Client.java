@@ -303,7 +303,7 @@ public class OAuth2Client {
     private static Object callEndpoint(HttpClient client, HttpRequest request) {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return StringUtils.fromString(response.body());
             }
             return createError("Failed to get a success response from the endpoint. Response code: '" +

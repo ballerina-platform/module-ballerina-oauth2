@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [Java exception when tokenUrl set to empty string in OAuth2GrantConfig](https://github.com/ballerina-platform/ballerina-standard-library/issues/3402)
+- [Fix Oauth2 Client Treats 201-Created Response as a Failure](https://github.com/ballerina-platform/ballerina-standard-library/issues/3334)
 
 ## [2.3.0] - 2022-04-30
 
