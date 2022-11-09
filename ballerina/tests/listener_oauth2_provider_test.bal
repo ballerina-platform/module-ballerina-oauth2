@@ -36,7 +36,9 @@ isolated function getAccessToken() returns string|Error {
 }
 
 // Test the introspection request with successful token
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection1() returns Error? {
     string accessToken = check getAccessToken();
     IntrospectionConfig config = {
@@ -61,7 +63,9 @@ isolated function testTokenIntrospection1() returns Error? {
 }
 
 // Test the introspection request with successful token with cache configurations
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection2() returns Error? {
     string accessToken = check getAccessToken();
     IntrospectionConfig config = {
@@ -104,7 +108,9 @@ isolated function testTokenIntrospection2() returns Error? {
 }
 
 // Test the introspection request with invalid token
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection3() returns Error? {
     string accessToken = "invalid_token";
     IntrospectionConfig config = {
@@ -144,7 +150,9 @@ isolated function testTokenIntrospection4() {
 }
 
 // Test the introspection request with successful token without authenticating the client
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection5() returns Error? {
     string accessToken = check getAccessToken();
     IntrospectionConfig config = {
@@ -165,7 +173,9 @@ isolated function testTokenIntrospection5() returns Error? {
 }
 
 // Test the introspection request with successful token with invalid OAuth2 client credentials grant type
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection6() {
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
@@ -194,7 +204,9 @@ isolated function testTokenIntrospection6() {
 }
 
 // Test the introspection request with successful token with invalid OAuth2 password grant type
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection7() {
     IntrospectionConfig config = {
         url: "https://localhost:9443/oauth2/introspect",
@@ -226,7 +238,9 @@ isolated function testTokenIntrospection7() {
 }
 
 // Test the introspection request with successful token and with all the configurations (keystore & truststore)
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection8() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -276,7 +290,9 @@ isolated function testTokenIntrospection8() returns Error? {
 }
 
 // Test the introspection request with successful token and with all the configurations (private/public key)
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection9() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -324,7 +340,9 @@ isolated function testTokenIntrospection9() returns Error? {
 }
 
 // Test the introspection request with successful token and with all the configurations (disable SSL)
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospection10() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -400,7 +418,9 @@ isolated function testTokenIntrospection11() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospectionRequestWithoutUrlScheme() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -427,7 +447,9 @@ isolated function testTokenIntrospectionRequestWithoutUrlScheme() returns Error?
     test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospectionRequestWithHttpUrlScheme() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -454,7 +476,9 @@ isolated function testTokenIntrospectionRequestWithHttpUrlScheme() returns Error
     test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospectionRequestWithSecureSocketAndWithoutUrlScheme() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
@@ -487,7 +511,9 @@ isolated function testTokenIntrospectionRequestWithSecureSocketAndWithoutUrlSche
     test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testTokenIntrospectionRequestWithSecureSocketAndWithHttpUrlScheme() returns Error? {
     string accessToken = "56ede317-4511-44b4-8579-a08f094ee8c5";
     IntrospectionConfig config = {
