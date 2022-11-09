@@ -22,7 +22,9 @@ import ballerina/lang.runtime as runtime;
 // ---------------- CLIENT CREDENTIALS GRANT TYPE ----------------
 
 // Test the client credentials grant type with valid credentials
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testClientCredentialsGrantType1() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -50,7 +52,9 @@ isolated function testClientCredentialsGrantType1() returns Error? {
 }
 
 // Test the client credentials grant type with invalid client credentials
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testClientCredentialsGrantType2() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -84,7 +88,9 @@ isolated function testClientCredentialsGrantType2() {
 }
 
 // Test the client credentials grant type with valid client-id and invalid client-secret
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testClientCredentialsGrantType3() {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -152,7 +158,9 @@ isolated function testClientCredentialsGrantType4() {
 }
 
 // Test the client credentials grant type with valid credentials
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testClientCredentialsGrantType5() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -192,7 +200,9 @@ isolated function testClientCredentialsGrantType5() returns Error? {
 // ---------------- PASSWORD GRANT TYPE ----------------
 
 // Test the password grant type with valid credentials
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testPasswordGrantType1() returns Error? {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -222,7 +232,9 @@ isolated function testPasswordGrantType1() returns Error? {
 }
 
 // Test the password grant type with valid credentials and a valid refresh config
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testPasswordGrantType2() returns Error? {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -277,7 +289,9 @@ isolated function testPasswordGrantType2() returns Error? {
 }
 
 // Test the password grant type with an invalid username, password, and a valid refresh config
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testPasswordGrantType3() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -361,7 +375,9 @@ isolated function testPasswordGrantType4() {
 }
 
 // Test the password grant type with an valid username, password, and without client-id and client-secret
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testPasswordGrantType5() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -395,7 +411,9 @@ isolated function testPasswordGrantType5() {
 }
 
 // Test the password grant type with an valid username, password, and without client-id and client-secret
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testPasswordGrantType6() {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -438,7 +456,9 @@ isolated function testPasswordGrantType6() {
 }
 
 // Test the password grant type with valid credentials and without refresh config
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testPasswordGrantType7() returns Error? {
     PasswordGrantConfig config = {
         tokenUrl: "https://localhost:9445/oauth2/token",
@@ -478,7 +498,9 @@ isolated function testPasswordGrantType7() returns Error? {
 // ---------------- REFRESH TOKEN GRANT TYPE ----------------
 
 // Test the refresh token grant type with an invalid refresh token
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testRefreshTokenGrantType1() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
@@ -504,7 +526,9 @@ isolated function testRefreshTokenGrantType1() {
 }
 
 // Test the refresh token grant type with an valid configurations
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testRefreshTokenGrantType2() returns Error? {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9445/oauth2/token",
@@ -569,7 +593,9 @@ isolated function testRefreshTokenGrantType3() {
 }
 
 // Test the refresh token grant type with invalid client-id and client-secret
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testRefreshTokenGrantType4() {
     RefreshTokenGrantConfig config = {
         refreshUrl: "https://localhost:9443/oauth2/token",
@@ -597,7 +623,9 @@ isolated function testRefreshTokenGrantType4() {
 // ---------------- JWT BEARER GRANT TYPE ----------------
 
 // Test the JWT bearer grant type with an valid JWT
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testJwtBearerGrantType1() returns Error? {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
@@ -640,7 +668,9 @@ isolated function testJwtBearerGrantType1() returns Error? {
 }
 
 // Test the JWT bearer grant type with an valid JWT (different issuer)
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testJwtBearerGrantType2() {
     string jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxN" +
                  "TE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
@@ -668,7 +698,9 @@ isolated function testJwtBearerGrantType2() {
 }
 
 // Test the JWT bearer grant type with an invalid assertion
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testJwtBearerGrantType3() {
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
@@ -736,7 +768,9 @@ isolated function testJwtBearerGrantType4() {
 }
 
 // Test the JWT bearer grant type with an valid JWT, and without client-id and client-secret
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testJwtBearerGrantType5() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
@@ -767,7 +801,9 @@ isolated function testJwtBearerGrantType5() {
 }
 
 // Test the JWT bearer grant type with invalid client-id and client-secret
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testJwtBearerGrantType6() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
                  "dJMk5EQXpaR1F6TkdNMFpHIn0.eyJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo5NDQzL29hdXRoMi90b2tlbiIsICJzdWIiOiJh" +
@@ -808,7 +844,9 @@ isolated function testJwtBearerGrantType6() {
     }
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testAccessTokenRequestWithoutUrlScheme() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "localhost:9444/oauth2/token",
@@ -821,7 +859,9 @@ isolated function testAccessTokenRequestWithoutUrlScheme() returns Error? {
     assertToken(response);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testAccessTokenRequestWithHttpUrlScheme() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "http://localhost:9444/oauth2/token",
@@ -834,7 +874,9 @@ isolated function testAccessTokenRequestWithHttpUrlScheme() returns Error? {
     assertToken(response);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testAccessTokenRequestWithSecureSocketAndWithoutUrlScheme() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "localhost:9445/oauth2/token",
@@ -855,7 +897,9 @@ isolated function testAccessTokenRequestWithSecureSocketAndWithoutUrlScheme() re
     assertToken(response);
 }
 
-@test:Config {}
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testAccessTokenRequestWithSecureSocketAndWithHttpUrlScheme() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "http://localhost:9444/oauth2/token",
