@@ -457,7 +457,7 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
 }
 
 isolated function getRefreshConfig(PasswordGrantConfig config) returns RefreshConfig|Error {
-    var refreshConfig = config?.refreshConfig;
+    RefreshConfig|INFER_REFRESH_CONFIG? refreshConfig = config?.refreshConfig;
     if refreshConfig is () {
         return prepareError("Failed to refresh access token since refresh configurations are not provided.");
     }
