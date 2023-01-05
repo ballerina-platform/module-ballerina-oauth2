@@ -32,7 +32,7 @@ public type ClientCredentialsGrantConfig record {|
     string tokenUrl;
     string clientId;
     string clientSecret;
-    string[] scopes?;
+    string|string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -52,7 +52,7 @@ public const INFER_REFRESH_CONFIG = "INFER_REFRESH_CONFIG";
 # + clientConfig - HTTP client configuration, which is used to call the refresh token endpoint
 public type RefreshConfig record {|
     string refreshUrl;
-    string[] scopes?;
+    string|string[] scopes?;
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
@@ -78,7 +78,7 @@ public type PasswordGrantConfig record {|
     string password;
     string clientId?;
     string clientSecret?;
-    string[] scopes?;
+    string|string[] scopes?;
     RefreshConfig|INFER_REFRESH_CONFIG refreshConfig?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
@@ -104,7 +104,7 @@ public type RefreshTokenGrantConfig record {|
     string refreshToken;
     string clientId;
     string clientSecret;
-    string[] scopes?;
+    string|string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -129,7 +129,7 @@ public type JwtBearerGrantConfig record {|
     string assertion;
     string clientId?;
     string clientSecret?;
-    string[] scopes?;
+    string|string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -143,7 +143,7 @@ type RequestConfig record {|
     string payload;
     string clientId?;
     string clientSecret?;
-    string[]? scopes;
+    string|string[]? scopes;
     map<string>? optionalParams;
     CredentialBearer credentialBearer;
 |};
@@ -581,9 +581,12 @@ isolated function prepareHeaders(RequestConfig config) returns map<string>|Error
 
 isolated function preparePayload(RequestConfig config) returns string|Error {
     string textPayload = config.payload;
+    
     string scopeString = "";
-    string[]? scopes = config.scopes;
-    if scopes is string[] {
+    string|string[]? scopes = config.scopes;
+    if scopes is string {
+        scopeString += scopes.trim();
+    } else if scopes is string[] {
         foreach string requestScope in scopes {
             string trimmedRequestScope = requestScope.trim();
             if trimmedRequestScope != "" {
