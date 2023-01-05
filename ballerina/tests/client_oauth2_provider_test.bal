@@ -495,6 +495,43 @@ isolated function testPasswordGrantType7() returns Error? {
     }
 }
 
+// Test the password grant type with valid credentials and refresh config
+@test:Config {
+    groups: ["skipOnWindows"]
+}
+isolated function testPasswordGrantType8() returns Error? {
+    PasswordGrantConfig config = {
+        tokenUrl: "https://localhost:9445/oauth2/token",
+        username: "admin",
+        password: "admin",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: ["view-order"],
+        refreshConfig: INFER_REFRESH_CONFIG,
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: {
+                   path: TRUSTSTORE_PATH,
+                   password: "ballerina"
+               }
+            }
+        }
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response1 = check provider.generateToken();
+    assertToken(response1);
+
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will get
+    // refreshed.
+    runtime:sleep(5.0);
+
+    string|Error response2 = check provider.generateToken();
+    test:assertTrue(response2 is string, "Expected refresh token not found");
+}
+
 // ---------------- REFRESH TOKEN GRANT TYPE ----------------
 
 // Test the refresh token grant type with an invalid refresh token
