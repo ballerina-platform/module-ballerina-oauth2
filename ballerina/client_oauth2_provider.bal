@@ -32,9 +32,27 @@ public type ClientCredentialsGrantConfig record {|
     string tokenUrl;
     string clientId;
     string clientSecret;
-    string[] scopes?;
+    string|string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
+    map<string> optionalParams?;
+    CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
+    ClientConfiguration clientConfig = {};
+|};
+
+# Constant used to infer the values of refreshConfig from values provided for PasswordGrantConfig.
+public const INFER_REFRESH_CONFIG = "INFER_REFRESH_CONFIG";
+
+# Represents the data structure, which is used for refresh configuration of the OAuth2 password grant type.
+#
+# + refreshUrl - Refresh token URL of the token endpoint
+# + scopes - Scope(s) of the referesh token request
+# + optionalParams - Map of the optional parameters used for the token endpoint
+# + credentialBearer - Bearer of the authentication credential, which is sent to the token endpoint
+# + clientConfig - HTTP client configuration, which is used to call the refresh token endpoint
+public type RefreshConfig record {|
+    string refreshUrl;
+    string|string[] scopes?;
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
@@ -60,14 +78,8 @@ public type PasswordGrantConfig record {|
     string password;
     string clientId?;
     string clientSecret?;
-    string[] scopes?;
-    record {|
-        string refreshUrl;
-        string[] scopes?;
-        map<string> optionalParams?;
-        CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
-        ClientConfiguration clientConfig = {};
-    |} refreshConfig?;
+    string|string[] scopes?;
+    RefreshConfig|INFER_REFRESH_CONFIG refreshConfig?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -92,7 +104,7 @@ public type RefreshTokenGrantConfig record {|
     string refreshToken;
     string clientId;
     string clientSecret;
-    string[] scopes?;
+    string|string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -117,7 +129,7 @@ public type JwtBearerGrantConfig record {|
     string assertion;
     string clientId?;
     string clientSecret?;
-    string[] scopes?;
+    string|string[] scopes?;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -131,7 +143,7 @@ type RequestConfig record {|
     string payload;
     string clientId?;
     string clientSecret?;
-    string[]? scopes;
+    string|string[]? scopes;
     map<string>? optionalParams;
     CredentialBearer credentialBearer;
 |};
@@ -413,42 +425,51 @@ isolated function getAccessTokenFromTokenRequestForJwtBearerGrant(JwtBearerGrant
 // For information, see [Refreshing an Access Token](https://tools.ietf.org/html/rfc6749#section-6).
 isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrantConfig config, TokenCache tokenCache)
                                                                    returns string|Error {
-    var refreshConfig = config?.refreshConfig;
-    if refreshConfig is () {
-        return prepareError("Failed to refresh access token since refresh configurations are not provided.");
-    } else {
-        string? clientId = config?.clientId;
-        string? clientSecret = config?.clientSecret;
-        if clientId is string && clientSecret is string {
-            // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
-            // request, initially.
-            string refreshUrl = refreshConfig.refreshUrl;
-            string refreshToken = tokenCache.getRefreshToken();
-            if refreshToken == "" {
-                // The subsequent requests should have a cached `refreshToken` to refresh the access token.
-                return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
-            }
-            RequestConfig requestConfig = {
-                payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
-                clientId: clientId,
-                clientSecret: clientSecret,
-                scopes: refreshConfig?.scopes,
-                optionalParams: refreshConfig?.optionalParams,
-                credentialBearer: refreshConfig.credentialBearer
-            };
-            ClientConfiguration clientConfig = refreshConfig.clientConfig;
-            decimal defaultTokenExpTime = config.defaultTokenExpTime;
-            decimal clockSkew = config.clockSkew;
-
-            json response = check sendRequest(requestConfig, refreshUrl, clientConfig);
-            string accessToken = check extractAccessToken(response);
-            string? updatedRefreshToken = extractRefreshToken(response);
-            int? expiresIn = extractExpiresIn(response);
-            tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
-            return accessToken;
-        }
+    RefreshConfig refreshConfig = check getRefreshConfig(config);
+    string? clientId = config?.clientId;
+    string? clientSecret = config?.clientSecret;
+    if clientId is () || clientSecret is () {
         return prepareError("Client-id or client-secret cannot be empty.");
     }
+
+    // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
+    // request, initially.
+    string refreshToken = tokenCache.getRefreshToken();
+    if refreshToken == "" {
+        // The subsequent requests should have a cached `refreshToken` to refresh the access token.
+        return prepareError("Failed to refresh access token since refresh-token has not been cached from the initial authorization response.");
+    }
+    RequestConfig requestConfig = {
+        payload: "grant_type=refresh_token&refresh_token=" + refreshToken,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        scopes: refreshConfig?.scopes,
+        optionalParams: refreshConfig?.optionalParams,
+        credentialBearer: refreshConfig.credentialBearer
+    };
+
+    json response = check sendRequest(requestConfig, refreshConfig.refreshUrl,refreshConfig.clientConfig);
+    string accessToken = check extractAccessToken(response);
+    string? updatedRefreshToken = extractRefreshToken(response);
+    int? expiresIn = extractExpiresIn(response);
+    tokenCache.update(accessToken, updatedRefreshToken, expiresIn, config.defaultTokenExpTime, config.clockSkew);
+    return accessToken;
+}
+
+isolated function getRefreshConfig(PasswordGrantConfig config) returns RefreshConfig|Error {
+    RefreshConfig|INFER_REFRESH_CONFIG? refreshConfig = config?.refreshConfig;
+    if refreshConfig is () {
+        return prepareError("Failed to refresh access token since refresh configurations are not provided.");
+    }
+    if refreshConfig is INFER_REFRESH_CONFIG {
+        return {
+            refreshUrl: config.tokenUrl,
+            optionalParams: config.optionalParams,
+            credentialBearer: config.credentialBearer,
+            clientConfig: config.clientConfig
+        };
+    }
+    return refreshConfig;
 }
 
 // Refreshes an access token from the token endpoint using the provided REFRESH TOKEN GRANT configurations.
@@ -557,8 +578,10 @@ isolated function prepareHeaders(RequestConfig config) returns map<string>|Error
 isolated function preparePayload(RequestConfig config) returns string|Error {
     string textPayload = config.payload;
     string scopeString = "";
-    string[]? scopes = config.scopes;
-    if scopes is string[] {
+    string|string[]? scopes = config.scopes;
+    if scopes is string {
+        scopeString += scopes.trim();
+    } else if scopes is string[] {
         foreach string requestScope in scopes {
             string trimmedRequestScope = requestScope.trim();
             if trimmedRequestScope != "" {

@@ -30,7 +30,7 @@ isolated function testClientCredentialsGrantType1() returns Error? {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -60,7 +60,7 @@ isolated function testClientCredentialsGrantType2() {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "invalid_client_id",
         clientSecret: "invalid_client_secret",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -96,7 +96,7 @@ isolated function testClientCredentialsGrantType3() {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "invalid_client_secret",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -130,7 +130,7 @@ isolated function testClientCredentialsGrantType4() {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "",
         clientSecret: "",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -166,7 +166,7 @@ isolated function testClientCredentialsGrantType5() returns Error? {
         tokenUrl: "https://localhost:9445/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -210,7 +210,7 @@ isolated function testPasswordGrantType1() returns Error? {
         password: "admin",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: ["view-order", "place-order"],
         optionalParams: {
             "client": "ballerina"
         },
@@ -242,13 +242,13 @@ isolated function testPasswordGrantType2() returns Error? {
         password: "admin",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
         refreshConfig: {
             refreshUrl: "https://localhost:9445/oauth2/token",
-            scopes: ["view-order"],
+            scopes: "view-order",
             optionalParams: {
                 "client": "ballerina"
             },
@@ -299,13 +299,13 @@ isolated function testPasswordGrantType3() {
         password: "invalid_password",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
         refreshConfig: {
             refreshUrl: "https://localhost:9443/oauth2/token",
-            scopes: ["view-order"],
+            scopes: "view-order",
             optionalParams: {
                 "client": "ballerina"
             },
@@ -347,7 +347,7 @@ isolated function testPasswordGrantType4() {
         password: "admin",
         clientId: "",
         clientSecret: "",
-        scopes: ["view-order"],
+        scopes: ["view-order", "place-order"],
         optionalParams: {
             "client": "ballerina"
         },
@@ -383,7 +383,7 @@ isolated function testPasswordGrantType5() {
         tokenUrl: "https://localhost:9443/oauth2/token",
         username: "admin",
         password: "admin",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -419,13 +419,13 @@ isolated function testPasswordGrantType6() {
         tokenUrl: "https://localhost:9445/oauth2/token",
         username: "admin",
         password: "admin",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
         refreshConfig: {
             refreshUrl: "https://localhost:9445/oauth2/token",
-            scopes: ["view-order"],
+            scopes: "view-order",
             optionalParams: {
                 "client": "ballerina"
             },
@@ -466,7 +466,7 @@ isolated function testPasswordGrantType7() returns Error? {
         password: "admin",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -495,6 +495,43 @@ isolated function testPasswordGrantType7() returns Error? {
     }
 }
 
+// Test the password grant type with valid credentials and refresh config
+@test:Config {
+    groups: ["skipOnWindows"]
+}
+isolated function testPasswordGrantType8() returns Error? {
+    PasswordGrantConfig config = {
+        tokenUrl: "https://localhost:9445/oauth2/token",
+        username: "admin",
+        password: "admin",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: "view-order",
+        refreshConfig: INFER_REFRESH_CONFIG,
+        optionalParams: {
+            "client": "ballerina"
+        },
+        clientConfig: {
+            secureSocket: {
+               cert: {
+                   path: TRUSTSTORE_PATH,
+                   password: "ballerina"
+               }
+            }
+        }
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response1 = check provider.generateToken();
+    assertToken(response1);
+
+    // The access token is valid only for 2 seconds. Wait 5 seconds and try again so that the access token will get
+    // refreshed.
+    runtime:sleep(5.0);
+
+    string|Error response2 = check provider.generateToken();
+    test:assertTrue(response2 is string, "Expected refresh token not found");
+}
+
 // ---------------- REFRESH TOKEN GRANT TYPE ----------------
 
 // Test the refresh token grant type with an invalid refresh token
@@ -507,7 +544,7 @@ isolated function testRefreshTokenGrantType1() {
         refreshToken: "invalid_refresh_token",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -535,7 +572,7 @@ isolated function testRefreshTokenGrantType2() returns Error? {
         refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -574,7 +611,7 @@ isolated function testRefreshTokenGrantType3() {
         refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
         clientId: "",
         clientSecret: "",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -602,7 +639,7 @@ isolated function testRefreshTokenGrantType4() {
         refreshToken: "24f19603-8565-4b5f-a036-88a945e1f272",
         clientId: "invalid_client_id",
         clientSecret: "invalid_client_secret",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -639,7 +676,7 @@ isolated function testJwtBearerGrantType1() returns Error? {
         assertion: jwt,
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -679,7 +716,7 @@ isolated function testJwtBearerGrantType2() {
         assertion: jwt,
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -707,7 +744,7 @@ isolated function testJwtBearerGrantType3() {
         assertion: "invalid-assertion",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -740,7 +777,7 @@ isolated function testJwtBearerGrantType4() {
         assertion: jwt,
         clientId: "",
         clientSecret: "",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -782,7 +819,7 @@ isolated function testJwtBearerGrantType5() {
     JwtBearerGrantConfig config = {
         tokenUrl: "https://localhost:9443/oauth2/token",
         assertion: jwt,
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -817,7 +854,7 @@ isolated function testJwtBearerGrantType6() {
         assertion: jwt,
         clientId: "invalid_client_id",
         clientSecret: "invalid_client_secret",
-        scopes: ["view-order"],
+        scopes: "view-order",
         optionalParams: {
             "client": "ballerina"
         },
@@ -852,7 +889,7 @@ isolated function testAccessTokenRequestWithoutUrlScheme() returns Error? {
         tokenUrl: "localhost:9444/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"]
+        scopes: "view-order"
     };
     ClientOAuth2Provider provider = new(config);
     string response = check provider.generateToken();
@@ -867,7 +904,7 @@ isolated function testAccessTokenRequestWithHttpUrlScheme() returns Error? {
         tokenUrl: "http://localhost:9444/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"]
+        scopes: "view-order"
     };
     ClientOAuth2Provider provider = new(config);
     string response = check provider.generateToken();
@@ -882,7 +919,7 @@ isolated function testAccessTokenRequestWithSecureSocketAndWithoutUrlScheme() re
         tokenUrl: "localhost:9445/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         clientConfig: {
             secureSocket: {
                 cert: {
@@ -905,7 +942,7 @@ isolated function testAccessTokenRequestWithSecureSocketAndWithHttpUrlScheme() r
         tokenUrl: "http://localhost:9444/oauth2/token",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         clientConfig: {
             secureSocket: {
                 cert: {
@@ -926,7 +963,7 @@ isolated function testInvalidTokenUrl() returns Error? {
         tokenUrl: "",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         clientConfig: {
             secureSocket: {
                 cert: {
@@ -953,7 +990,7 @@ isolated function testInvalidTokenUrl2() returns Error? {
         tokenUrl: "https://abc d.com",
         clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
         clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
-        scopes: ["view-order"],
+        scopes: "view-order",
         clientConfig: {
             secureSocket: {
                 cert: {

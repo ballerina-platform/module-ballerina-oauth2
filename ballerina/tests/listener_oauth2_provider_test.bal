@@ -24,7 +24,7 @@ isolated function getAccessToken() returns string|Error {
         tokenUrl: "https://localhost:9443/oauth2/token",
         clientId: "uDMwA4hKR9H3deeXxvNf4sSU0i4a",
         clientSecret: "8FOUOKUQfOp47pUfJCsPA5X4clga",
-        scopes: ["view-order"],
+        scopes: "view-order",
         clientConfig: {
             secureSocket: {
                cert: WSO2_PUBLIC_CERT_PATH
@@ -217,7 +217,7 @@ isolated function testTokenIntrospection7() {
                 password: "invalid_password",
                 clientId: "invalid_client_id",
                 clientSecret: "invalid_client_secret",
-                scopes: ["view-order"],
+                scopes: "view-order",
                 clientConfig: {
                     secureSocket: {
                        cert: WSO2_PUBLIC_CERT_PATH
