@@ -214,10 +214,12 @@ test.dependsOn startBallerinaSTS
 test.dependsOn ":${packageName}-native:build"
 
 build.dependsOn "generatePomFileForMavenPublication"
-build.finalizedBy stopWso2IS
-build.finalizedBy stopBallerinaSTS
-build.dependsOn startWso2IS
-build.dependsOn startBallerinaSTS
+if (!project.gradle.startParameter.excludedTaskNames.contains('test')) {
+    build.finalizedBy stopWso2IS
+    build.finalizedBy stopBallerinaSTS
+    build.dependsOn startWso2IS
+    build.dependsOn startBallerinaSTS
+}
 build.dependsOn ":${packageName}-native:build"
 
 publishToMavenLocal.dependsOn build
