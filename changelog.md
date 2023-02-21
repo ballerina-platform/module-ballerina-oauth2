@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+
+## [2.6.0] - 2023-02-20
+
 ### Changed
 - [Allow password grant type to refresh token using the inferred values](https://github.com/ballerina-platform/ballerina-standard-library/issues/3879)
 - [Allow string value for scope field in client configurations](https://github.com/ballerina-platform/ballerina-standard-library/issues/3877)
