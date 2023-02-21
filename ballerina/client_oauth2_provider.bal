@@ -16,6 +16,7 @@
 
 import ballerina/log;
 import ballerina/time;
+import ballerina/url;
 
 # Represents the data structure, which is used to configure the OAuth2 client credentials grant type.
 #
@@ -348,22 +349,24 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     string tokenUrl = config.tokenUrl;
     string? clientId = config?.clientId;
     string? clientSecret = config?.clientSecret;
+    [string, string] [username, password] = check getEncodedUsernamePassword(config.username, config.password);
+    string payload = string `grant_type=password&username=${username}&password=${password}`;
     RequestConfig requestConfig;
     if clientId is string && clientSecret is string {
         if clientId == "" || clientSecret == "" {
             return prepareError("Client-id or client-secret cannot be empty.");
         }
         requestConfig = {
-            payload: "grant_type=password&username=" + config.username + "&password=" + config.password,
-            clientId: clientId,
-            clientSecret: clientSecret,
+            payload,
+            clientId,
+            clientSecret,
             scopes: config?.scopes,
             optionalParams: config?.optionalParams,
             credentialBearer: config.credentialBearer
         };
     } else {
         requestConfig = {
-            payload: "grant_type=password&username=" + config.username + "&password=" + config.password,
+            payload,
             scopes: config?.scopes,
             optionalParams: config?.optionalParams,
             credentialBearer: config.credentialBearer
@@ -379,6 +382,16 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
     int? expiresIn = extractExpiresIn(response);
     tokenCache.update(accessToken, refreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
+}
+
+isolated function getEncodedUsernamePassword(string username, string password) returns [string,string]|Error {
+    do {
+        string encodedUserName = check url:encode(username, "UTF-8");
+        string encodedPassword = check url:encode(password, "UTF-8");
+        return [encodedUserName, encodedPassword];
+    } on fail error err {
+        return prepareError("Error while encoding the username or password.", err);
+    }
 }
 
 // Requests an access token from the token endpoint using the provided JWT BEARER GRANT configurations.
