@@ -18,6 +18,8 @@ import ballerina/log;
 import ballerina/time;
 import ballerina/url;
 
+const UTF8 = "UTF-8";
+
 # Represents the data structure, which is used to configure the OAuth2 client credentials grant type.
 #
 # + tokenUrl - Token URL of the token endpoint
@@ -386,8 +388,8 @@ isolated function getAccessTokenFromTokenRequestForPasswordGrant(PasswordGrantCo
 
 isolated function getEncodedUsernamePassword(string username, string password) returns [string,string]|Error {
     do {
-        string encodedUserName = check url:encode(username, "UTF-8");
-        string encodedPassword = check url:encode(password, "UTF-8");
+        string encodedUserName = check url:encode(username, UTF8);
+        string encodedPassword = check url:encode(password, UTF8);
         return [encodedUserName, encodedPassword];
     } on fail error err {
         return prepareError("Error while encoding the username or password.", err);
