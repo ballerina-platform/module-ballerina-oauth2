@@ -532,6 +532,25 @@ isolated function testPasswordGrantType8() returns Error? {
     test:assertTrue(response2 is string, "Expected refresh token not found");
 }
 
+// Test the password grant type having special characters in the username or password
+@test:Config {
+    groups: ["skipOnWindows"]
+}
+isolated function testPasswordGrantType9() returns Error? {
+    PasswordGrantConfig config = {
+        tokenUrl: "http://localhost:9444/oauth2/token",
+        username: "sabthar",
+        password: "E2%I1^@N8>Wn+3=QL?M!{gh=l4<u", // password has special characters
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: "view-order",
+        refreshConfig: INFER_REFRESH_CONFIG
+    };
+    ClientOAuth2Provider provider = new(config);
+    string response = check provider.generateToken();
+    assertToken(response);
+}
+
 // ---------------- REFRESH TOKEN GRANT TYPE ----------------
 
 // Test the refresh token grant type with an invalid refresh token

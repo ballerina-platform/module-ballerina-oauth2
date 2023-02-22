@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [OAuth2 client fails when a password with special characters provided](https://github.com/ballerina-platform/ballerina-standard-library/issues/4110)
 
 ## [2.6.0] - 2023-02-20
 
