@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/regex;
 import ballerina/test;
 
 const string KEYSTORE_PATH = "tests/resources/keystore/ballerinaKeystore.p12";
@@ -25,7 +24,7 @@ const string PUBLIC_CERT_PATH = "tests/resources/cert/public.crt";
 const string WSO2_PUBLIC_CERT_PATH = "tests/resources/cert/wso2Public.crt";
 
 isolated function assertToken(string token) {
-    string[] parts = regex:split(token, "-");
+    string[] parts = re`-`.split(token);
     test:assertEquals(parts.length(), 5);
     test:assertEquals(parts[0].length(), 8);
     test:assertEquals(parts[1].length(), 4);
