@@ -2,9 +2,9 @@
 
 [![Star on Github](https://img.shields.io/badge/-Star%20on%20Github-blue?style=social&logo=github)](https://github.com/ballerina-platform/module-ballerina-oauth2)
 
-_Authors_: @ldclakmal  
-_Reviewers_: @shafreenAnfar  
-_Created_: 2022/09/03 
+_Authors_: @ldclakmal \
+_Reviewers_: @shafreenAnfar \
+_Created_: 2022/09/03 \
 _Updated_: 2023/04/24
 
 ## Overview
