@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: wso2is-container
-          image: ldclakmal/wso2is-sts:latest
+          image: wso2/wso2is:7.0.0
           ports:
             - containerPort: 9443
 
