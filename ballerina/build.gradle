@@ -114,7 +114,7 @@ task startWso2IS() {
             if (!stdOut.toString().contains("wso2-is")) {
                 println "Starting WSO2 IS."
                 exec {
-                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
+                    commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is wso2/wso2is:7.0.0"
                     standardOutput = stdOut
                 }
                 println stdOut.toString()
