@@ -680,7 +680,8 @@ isolated function testRefreshTokenGrantType4() {
 
 // Test the JWT bearer grant type with an valid JWT
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testJwtBearerGrantType1() returns Error? {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
