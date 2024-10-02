@@ -99,13 +99,13 @@ public isolated class ListenerOAuth2Provider {
         self.introspectionConfig = introspectionConfig.cloneReadOnly();
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
         if oauth2CacheConfig is cache:CacheConfig {
-            self.oauth2Cache = new(oauth2CacheConfig);
+            self.oauth2Cache = new (oauth2CacheConfig);
         } else {
             self.oauth2Cache = ();
         }
         ClientAuth? auth = introspectionConfig.clientConfig?.auth;
         if auth is ClientAuth {
-            self.clientOAuth2Provider = new(auth);
+            self.clientOAuth2Provider = new (auth);
         } else {
             self.clientOAuth2Provider = ();
         }
@@ -132,7 +132,7 @@ public isolated class ListenerOAuth2Provider {
             }
         }
         IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig,
-                                                                self.clientOAuth2Provider, optionalParams);
+                self.clientOAuth2Provider, optionalParams);
         if validationResult is IntrospectionResponse {
             if oauth2Cache is cache:Cache {
                 addToCache(oauth2Cache, credential, validationResult, self.introspectionConfig.defaultTokenExpTime);
@@ -146,7 +146,7 @@ public isolated class ListenerOAuth2Provider {
 
 // Validates the provided OAuth2 access token by calling the introspection endpoint.
 isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
-                           map<string>? optionalParams) returns IntrospectionResponse|Error {
+        map<string>? optionalParams) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, see the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
     string textPayload = "token=" + token;
@@ -210,7 +210,22 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
                 introspectionResponse.tokenType = <string>payloadMap[key];
             }
             EXP => {
-                introspectionResponse.exp = <int>payloadMap[key];
+                anydata value = payloadMap[key];
+
+                if value is int {
+                    introspectionResponse.exp = value;
+                } else if value is string {
+                    int|error parsedInt = int:fromString(value);
+                    if parsedInt is int {
+                        introspectionResponse.exp = parsedInt;
+                    } else {
+                        introspectionResponse.exp = ();
+                        log:printError("Failed to parse string to integer for exp field", parsedInt);
+                    }
+                } else {
+                    introspectionResponse.exp = ();
+                    log:printError("Invalid type for exp field, expected int or string");
+                }
             }
             IAT => {
                 introspectionResponse.iat = <int>payloadMap[key];
@@ -239,7 +254,7 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
 }
 
 isolated function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
-                             decimal defaultTokenExpTime) {
+        decimal defaultTokenExpTime) {
     cache:Error? result;
     if response?.exp is int {
         result = oauth2Cache.put(token, response);
@@ -260,7 +275,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         return;
     }
     if cachedEntry is any {
-        IntrospectionResponse response = <IntrospectionResponse> cachedEntry;
+        IntrospectionResponse response = <IntrospectionResponse>cachedEntry;
         int? expTime = response?.exp;
         // The `expTime` can be `()`. This means that the `defaultTokenExpTime` is not exceeded yet.
         // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
