@@ -99,13 +99,13 @@ public isolated class ListenerOAuth2Provider {
         self.introspectionConfig = introspectionConfig.cloneReadOnly();
         cache:CacheConfig? oauth2CacheConfig = introspectionConfig?.cacheConfig;
         if oauth2CacheConfig is cache:CacheConfig {
-            self.oauth2Cache = new (oauth2CacheConfig);
+            self.oauth2Cache = new(oauth2CacheConfig);
         } else {
             self.oauth2Cache = ();
         }
         ClientAuth? auth = introspectionConfig.clientConfig?.auth;
         if auth is ClientAuth {
-            self.clientOAuth2Provider = new (auth);
+            self.clientOAuth2Provider = new(auth);
         } else {
             self.clientOAuth2Provider = ();
         }
@@ -132,7 +132,7 @@ public isolated class ListenerOAuth2Provider {
             }
         }
         IntrospectionResponse|Error validationResult = validate(credential, self.introspectionConfig,
-                self.clientOAuth2Provider, optionalParams);
+                                                                self.clientOAuth2Provider, optionalParams);
         if validationResult is IntrospectionResponse {
             if oauth2Cache is cache:Cache {
                 addToCache(oauth2Cache, credential, validationResult, self.introspectionConfig.defaultTokenExpTime);
@@ -146,7 +146,7 @@ public isolated class ListenerOAuth2Provider {
 
 // Validates the provided OAuth2 access token by calling the introspection endpoint.
 isolated function validate(string token, IntrospectionConfig config, ClientOAuth2Provider? clientOAuth2Provider,
-        map<string>? optionalParams) returns IntrospectionResponse|Error {
+                           map<string>? optionalParams) returns IntrospectionResponse|Error {
     // Builds the request to be sent to the introspection endpoint. For more information, see the
     // [OAuth 2.0 Token Introspection RFC](https://tools.ietf.org/html/rfc7662#section-2.1)
     string textPayload = "token=" + token;
@@ -210,22 +210,7 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
                 introspectionResponse.tokenType = <string>payloadMap[key];
             }
             EXP => {
-                anydata value = payloadMap[key];
-
-                if value is int {
-                    introspectionResponse.exp = value;
-                } else if value is string {
-                    int|error parsedInt = int:fromString(value);
-                    if parsedInt is int {
-                        introspectionResponse.exp = parsedInt;
-                    } else {
-                        introspectionResponse.exp = ();
-                        log:printError("Failed to parse string to integer for exp field", parsedInt);
-                    }
-                } else {
-                    introspectionResponse.exp = ();
-                    log:printError("Invalid type for exp field, expected int or string");
-                }
+                introspectionResponse.exp = parseExpClaim(<json>payloadMap[key]);
             }
             IAT => {
                 introspectionResponse.iat = <int>payloadMap[key];
@@ -292,4 +277,21 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         log:printDebug("Failed to validate the token from the cache.", 'error = cachedEntry);
     }
     return;
+}
+
+isolated function parseExpClaim(json expClaim) returns int|() {
+    if expClaim is int {
+        return expClaim;
+    } else if expClaim is string {
+        int|error parsedInt = int:fromString(expClaim);
+        if parsedInt is int {
+            return parsedInt;
+        } else {
+            log:printError("Failed to parse string to integer for exp field", parsedInt);
+            return ();
+        }
+    } else {
+        log:printError("Invalid type for exp field, expected int or string");
+        return ();
+    }
 }
