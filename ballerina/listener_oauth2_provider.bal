@@ -210,7 +210,7 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
                 introspectionResponse.tokenType = <string>payloadMap[key];
             }
             EXP => {
-                introspectionResponse.exp = parseExpClaim(<json>payloadMap[key]);
+                introspectionResponse.exp = parseExpClaim(payloadMap[key]);
             }
             IAT => {
                 introspectionResponse.iat = <int>payloadMap[key];
@@ -280,18 +280,8 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
 }
 
 isolated function parseExpClaim(json expClaim) returns int|() {
-    if expClaim is int {
-        return expClaim;
-    } else if expClaim is string {
-        int|error parsedInt = int:fromString(expClaim);
-        if parsedInt is int {
-            return parsedInt;
-        } else {
-            log:printError("Failed to parse string to integer for exp field", parsedInt);
-            return ();
-        }
-    } else {
-        log:printError("Invalid type for exp field, expected int or string");
-        return ();
-    }
+    if expClaim is string {
+        return checkpanic int:fromString(expClaim);
+    } 
+    return <int>expClaim;
 }
