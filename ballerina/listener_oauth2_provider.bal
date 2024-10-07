@@ -210,7 +210,7 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
                 introspectionResponse.tokenType = <string>payloadMap[key];
             }
             EXP => {
-                introspectionResponse.exp = <int>payloadMap[key];
+                introspectionResponse.exp = parseExpClaim(payloadMap[key]);
             }
             IAT => {
                 introspectionResponse.iat = <int>payloadMap[key];
@@ -239,7 +239,7 @@ isolated function prepareIntrospectionResponse(json payload) returns Introspecti
 }
 
 isolated function addToCache(cache:Cache oauth2Cache, string token, IntrospectionResponse response,
-                             decimal defaultTokenExpTime) {
+        decimal defaultTokenExpTime) {
     cache:Error? result;
     if response?.exp is int {
         result = oauth2Cache.put(token, response);
@@ -260,7 +260,7 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         return;
     }
     if cachedEntry is any {
-        IntrospectionResponse response = <IntrospectionResponse> cachedEntry;
+        IntrospectionResponse response = <IntrospectionResponse>cachedEntry;
         int? expTime = response?.exp;
         // The `expTime` can be `()`. This means that the `defaultTokenExpTime` is not exceeded yet.
         // Hence, the token is still valid. If the `expTime` is provided in int, convert this to the current time and
@@ -277,4 +277,11 @@ isolated function validateFromCache(cache:Cache oauth2Cache, string token) retur
         log:printDebug("Failed to validate the token from the cache.", 'error = cachedEntry);
     }
     return;
+}
+
+isolated function parseExpClaim(json expClaim) returns int|() {
+    if expClaim is string {
+        return checkpanic int:fromString(expClaim);
+    } 
+    return <int>expClaim;
 }

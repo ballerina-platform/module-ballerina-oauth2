@@ -545,3 +545,17 @@ isolated function testTokenIntrospectionRequestWithSecureSocketAndWithHttpUrlSch
     test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
     test:assertEquals(response?.jti, "JlbmMiOiJBMTI4Q0JDLUhTMjU2In");
 }
+
+// Test that the `exp` field is correctly parsed as an integer when given an example string value for `exp` field
+@test:Config {}
+isolated function testPrepareIntrospectionResponseWithStringExpClaim() {
+    json simulatedResponse = {
+        active: true,
+        exp: "1672531199",
+        scope: "read write",
+        client_id: "test_client_id",
+        username: "test_user"
+    };
+    IntrospectionResponse response = prepareIntrospectionResponse(simulatedResponse);
+    test:assertEquals(response.exp, 1672531199);
+}
