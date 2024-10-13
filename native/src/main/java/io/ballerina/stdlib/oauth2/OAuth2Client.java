@@ -72,12 +72,12 @@ public class OAuth2Client {
         }
 
         Optional<BMap<BString, ?>> customHeaders = getBMapValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_HEADERS);
-        if (customHeaders != null) {
+        customHeaders.ifPresent( customHeaders -> {
             for (Map.Entry<BString, ?> entry : customHeaders.entrySet()) {
                 headersList.add(entry.getKey().getValue());
                 headersList.add(((BString) entry.getValue()).getValue());
             }
-        }
+        });
 
         String httpVersion = getBStringValueIfPresent(clientConfig, OAuth2Constants.HTTP_VERSION).getValue();
         Optional<BMap<BString, ?>> secureSocket = getBMapValueIfPresent(clientConfig, OAuth2Constants.SECURE_SOCKET);
@@ -96,26 +96,25 @@ public class OAuth2Client {
             String[] flatHeaders = headersList.toArray(String[]::new);
             request = buildHttpRequest(uri, flatHeaders, textPayload);
         }
-
-        if (secureSocket != null) {
+        if (secureSocket.isPresent()) {
             try {
-                SSLContext sslContext = getSslContext(secureSocket);
+                SSLContext sslContext = getSslContext(secureSocket.get());
                 HttpClient client = buildHttpClient(httpVersion, sslContext);
                 return callEndpoint(client, request);
             } catch (Exception e) {
                 return createError("Failed to init SSL context. " + e.getMessage());
             }
-        }
+        }        
         HttpClient client = buildHttpClient(httpVersion);
         return callEndpoint(client, request);
     }
 
-    private static URI buildUri(String url, BMap<BString, ?> secureSocket) throws IllegalArgumentException {
+    private static URI buildUri(String url, Optional<BMap<BString, ?>> secureSocket) throws IllegalArgumentException {
         String[] urlParts = url.split(OAuth2Constants.SCHEME_SEPARATOR, 2);
         if (urlParts.length == 1) {
-            urlParts = secureSocket != null ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
+            urlParts = secureSocket.isPresent() ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
                     new String[]{OAuth2Constants.HTTP_SCHEME, urlParts[0]};
-        } else if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null){
+        } else if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket.isPresent()){
             err.println(OAuth2Constants.RUNTIME_WARNING_PREFIX + OAuth2Constants.HTTPS_RECOMMENDATION_ERROR);
         }
         urlParts[1] = urlParts[1].replaceAll(OAuth2Constants.DOUBLE_SLASH, OAuth2Constants.SINGLE_SLASH);
@@ -133,45 +132,44 @@ public class OAuth2Client {
         if (cert == null) {
             throw new Exception("Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
         }
-        KeyManagerFactory kmf;
-        TrustManagerFactory tmf;
+        KeyManagerFactory kmf = null;
+        TrustManagerFactory tmf = null;
         if (cert instanceof BString) {
-            if (key != null) {
+            if (key.isPresent()) {
                 tmf = getTrustManagerFactory((BString) cert);
-                if (key.containsKey(OAuth2Constants.CERT_FILE)) {
-                    BString certFile = key.get(OAuth2Constants.CERT_FILE);
-                    BString keyFile = key.get(OAuth2Constants.KEY_FILE);
-                    BString keyPassword = getBStringValueIfPresent(key, OAuth2Constants.KEY_PASSWORD);
+                if (key.get().containsKey(OAuth2Constants.CERT_FILE)) {
+                    BString certFile = key.get().get(OAuth2Constants.CERT_FILE);
+                    BString keyFile = key.get().get(OAuth2Constants.KEY_FILE);
+                    BString keyPassword = getBStringValueIfPresent(key.get(), OAuth2Constants.KEY_PASSWORD);
                     kmf = getKeyManagerFactory(certFile, keyFile, keyPassword);
                     return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
                 }
-                kmf = getKeyManagerFactory(key);
+                kmf = getKeyManagerFactory(key.get());
                 return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
-            }
+            }            
             tmf = getTrustManagerFactory((BString) cert);
             return buildSslContext(null, tmf.getTrustManagers());
         }
         if (cert instanceof BMap) {
-            Optional<BMap<BString, BString>> trustStore = (BMap<BString, BString>) cert;
-            if (key != null) {
+            BMap<BString, BString> trustStore = (BMap<BString, BString>) cert;
+            if(key.isPresent()){
                 tmf = getTrustManagerFactory(trustStore);
-                if (key.containsKey(OAuth2Constants.CERT_FILE)) {
+                if (key.get().containsKey(OAuth2Constants.CERT_FILE)) {
                     BString certFile = key.get(OAuth2Constants.CERT_FILE);
                     BString keyFile = key.get(OAuth2Constants.KEY_FILE);
                     BString keyPassword = getBStringValueIfPresent(key, OAuth2Constants.KEY_PASSWORD);
                     kmf = getKeyManagerFactory(certFile, keyFile, keyPassword);
                     return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
                 }
-                kmf = getKeyManagerFactory(key);
+                kmf = getKeyManagerFactory(key.get());
                 return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
             }
             return buildSslContext(null, tmf.getTrustManagers());
         }
-        return null;
+        throw new Exception("Failed to initialize SSLContext.");
     }
 
     private static HttpClient.Version getHttpVersion(String httpVersion) {
-        // return (OAuth2Constants.HTTP_2.equals(httpVersion))?HttpClient.Version.HTTP_2 : HttpClient.Version.HTTP_1_1
         if (OAuth2Constants.HTTP_2.equals(httpVersion)) {
             return HttpClient.Version.HTTP_2;
         }
@@ -301,6 +299,9 @@ public class OAuth2Client {
             return createError("Failed to get a success response from the endpoint. Response code: '" +
                                        response.statusCode() + "'. Response body: '" + response.body() + "'");
         } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt(); // Restore interrupted status
+            }
             return createError("Failed to send the request to the endpoint. " + e.getMessage());
         }
     }
