@@ -95,7 +95,6 @@ public class OAuth2Client {
             String[] flatHeaders = headersList.toArray(String[]::new);
             request = buildHttpRequest(uri, flatHeaders, textPayload);
         }
-
         if (secureSocket != null) {
             try {
                 SSLContext sslContext = getSslContext(secureSocket);
@@ -104,7 +103,7 @@ public class OAuth2Client {
             } catch (Exception e) {
                 return createError("Failed to init SSL context. " + e.getMessage());
             }
-        }
+        }        
         HttpClient client = buildHttpClient(httpVersion);
         return callEndpoint(client, request);
     }
@@ -112,12 +111,10 @@ public class OAuth2Client {
     private static URI buildUri(String url, BMap<BString, ?> secureSocket) throws IllegalArgumentException {
         String[] urlParts = url.split(OAuth2Constants.SCHEME_SEPARATOR, 2);
         if (urlParts.length == 1) {
-            urlParts = secureSocket != null ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
+            urlParts = (secureSocket != null) ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
                     new String[]{OAuth2Constants.HTTP_SCHEME, urlParts[0]};
-        } else {
-            if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null) {
-                err.println(OAuth2Constants.RUNTIME_WARNING_PREFIX + OAuth2Constants.HTTPS_RECOMMENDATION_ERROR);
-            }
+        } else if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null) {
+            err.println(OAuth2Constants.RUNTIME_WARNING_PREFIX + OAuth2Constants.HTTPS_RECOMMENDATION_ERROR);
         }
         urlParts[1] = urlParts[1].replaceAll(OAuth2Constants.DOUBLE_SLASH, OAuth2Constants.SINGLE_SLASH);
         url = urlParts[0] + OAuth2Constants.SCHEME_SEPARATOR + urlParts[1];
@@ -134,44 +131,41 @@ public class OAuth2Client {
         if (cert == null) {
             throw new Exception("Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
         }
-        KeyManagerFactory kmf;
-        TrustManagerFactory tmf;
+        KeyManagerFactory kmf = null;
+        TrustManagerFactory tmf = null;
         if (cert instanceof BString) {
             if (key != null) {
+                tmf = getTrustManagerFactory((BString) cert);
                 if (key.containsKey(OAuth2Constants.CERT_FILE)) {
                     BString certFile = key.get(OAuth2Constants.CERT_FILE);
                     BString keyFile = key.get(OAuth2Constants.KEY_FILE);
                     BString keyPassword = getBStringValueIfPresent(key, OAuth2Constants.KEY_PASSWORD);
                     kmf = getKeyManagerFactory(certFile, keyFile, keyPassword);
-                } else {
-                    kmf = getKeyManagerFactory(key);
+                    return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
                 }
-                tmf = getTrustManagerFactory((BString) cert);
+                kmf = getKeyManagerFactory(key);
                 return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
-            } else {
-                tmf = getTrustManagerFactory((BString) cert);
-                return buildSslContext(null, tmf.getTrustManagers());
-            }
+            }            
+            tmf = getTrustManagerFactory((BString) cert);
+            return buildSslContext(null, tmf.getTrustManagers());
         }
         if (cert instanceof BMap) {
             BMap<BString, BString> trustStore = (BMap<BString, BString>) cert;
             if (key != null) {
+                tmf = getTrustManagerFactory(trustStore);
                 if (key.containsKey(OAuth2Constants.CERT_FILE)) {
                     BString certFile = key.get(OAuth2Constants.CERT_FILE);
                     BString keyFile = key.get(OAuth2Constants.KEY_FILE);
                     BString keyPassword = getBStringValueIfPresent(key, OAuth2Constants.KEY_PASSWORD);
                     kmf = getKeyManagerFactory(certFile, keyFile, keyPassword);
-                } else {
-                    kmf = getKeyManagerFactory(key);
+                    return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
                 }
-                tmf = getTrustManagerFactory(trustStore);
+                kmf = getKeyManagerFactory(key);
                 return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
-            } else {
-                tmf = getTrustManagerFactory(trustStore);
-                return buildSslContext(null, tmf.getTrustManagers());
             }
+            return buildSslContext(null, tmf.getTrustManagers());
         }
-        return null;
+        throw new Exception("Failed to initialize SSLContext.");
     }
 
     private static HttpClient.Version getHttpVersion(String httpVersion) {
@@ -209,10 +203,9 @@ public class OAuth2Client {
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(ts);
             return tmf;
-        } else {
-            throw new Exception("Failed to get the public key from Crypto API. " +
-                                        ((BError) publicKeyMap).getErrorMessage().getValue());
         }
+        throw new Exception("Failed to get the public key from Crypto API. " +
+                            ((BError) publicKeyMap).getErrorMessage().getValue());
     }
 
     private static TrustManagerFactory getTrustManagerFactory(BMap<BString, BString> trustStore) throws Exception {
@@ -250,14 +243,10 @@ public class OAuth2Client {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(ks, "".toCharArray());
                 return kmf;
-            } else {
-                throw new Exception("Failed to get the private key from Crypto API. " +
-                                            ((BError) privateKeyMap).getErrorMessage().getValue());
             }
-        } else {
-            throw new Exception("Failed to get the public key from Crypto API. " +
-                                        ((BError) publicKey).getErrorMessage().getValue());
         }
+        throw new Exception("Failed to get the public key from Crypto API. " +
+                                    ((BError) publicKey).getErrorMessage().getValue());
     }
 
     private static KeyStore getKeyStore(BString path, BString password) throws Exception {
