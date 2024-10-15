@@ -71,7 +71,7 @@ public class OAuth2Client {
         }
 
         BMap<BString, ?> customHeaders = getBMapValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_HEADERS);
-        if(customHeaders != null){
+        if (customHeaders != null) {
             for (Map.Entry<BString, ?> entry : customHeaders.entrySet()) {
                 headersList.add(entry.getKey().getValue());
                 headersList.add(((BString) entry.getValue()).getValue());
@@ -111,9 +111,9 @@ public class OAuth2Client {
     private static URI buildUri(String url, BMap<BString, ?> secureSocket) throws IllegalArgumentException {
         String[] urlParts = url.split(OAuth2Constants.SCHEME_SEPARATOR, 2);
         if (urlParts.length == 1) {
-            urlParts = (secureSocket!=null) ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
+            urlParts = (secureSocket != null) ? new String[]{OAuth2Constants.HTTPS_SCHEME, urlParts[0]} :
                     new String[]{OAuth2Constants.HTTP_SCHEME, urlParts[0]};
-        } else if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null){
+        } else if (urlParts[0].equals(OAuth2Constants.HTTP_SCHEME) && secureSocket != null) {
             err.println(OAuth2Constants.RUNTIME_WARNING_PREFIX + OAuth2Constants.HTTPS_RECOMMENDATION_ERROR);
         }
         urlParts[1] = urlParts[1].replaceAll(OAuth2Constants.DOUBLE_SLASH, OAuth2Constants.SINGLE_SLASH);
@@ -151,7 +151,7 @@ public class OAuth2Client {
         }
         if (cert instanceof BMap) {
             BMap<BString, BString> trustStore = (BMap<BString, BString>) cert;
-            if(key != null){
+            if (key != null) {
                 tmf = getTrustManagerFactory(trustStore);
                 if (key.containsKey(OAuth2Constants.CERT_FILE)) {
                     BString certFile = key.get(OAuth2Constants.CERT_FILE);
