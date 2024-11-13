@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.oauth2;
 
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -56,8 +57,8 @@ public class OAuth2Client {
 
     private OAuth2Client() {}
 
-    public static Object doHttpRequest(BString url, BMap<BString, Object> clientConfig, BMap<BString, BString> headers,
-                                       BString payload) {
+    public static Object doHttpRequest(Environment env, BString url, BMap<BString, Object> clientConfig,
+                                       BMap<BString, BString> headers, BString payload) {
         BString customPayload = getBStringValueIfPresent(clientConfig, OAuth2Constants.CUSTOM_PAYLOAD);
         String textPayload = payload.getValue();
         if (customPayload != null) {
@@ -100,13 +101,13 @@ public class OAuth2Client {
             try {
                 SSLContext sslContext = getSslContext(secureSocket);
                 HttpClient client = buildHttpClient(httpVersion, sslContext);
-                return callEndpoint(client, request);
+                return callEndpoint(env, client, request);
             } catch (Exception e) {
                 return createError("Failed to init SSL context. " + e.getMessage());
             }
         }
         HttpClient client = buildHttpClient(httpVersion);
-        return callEndpoint(client, request);
+        return callEndpoint(env, client, request);
     }
 
     private static URI buildUri(String url, BMap<BString, ?> secureSocket) throws IllegalArgumentException {
@@ -300,17 +301,19 @@ public class OAuth2Client {
                 .build();
     }
 
-    private static Object callEndpoint(HttpClient client, HttpRequest request) {
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                return StringUtils.fromString(response.body());
+    private static Object callEndpoint(Environment env, HttpClient client, HttpRequest request) {
+        return env.yieldAndRun(() -> {
+            try {
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                    return StringUtils.fromString(response.body());
+                }
+                return createError("Failed to get a success response from the endpoint. Response code: '" +
+                        response.statusCode() + "'. Response body: '" + response.body() + "'");
+            } catch (IOException | InterruptedException e) {
+                return createError("Failed to send the request to the endpoint. " + e.getMessage());
             }
-            return createError("Failed to get a success response from the endpoint. Response code: '" +
-                                       response.statusCode() + "'. Response body: '" + response.body() + "'");
-        } catch (IOException | InterruptedException e) {
-            return createError("Failed to send the request to the endpoint. " + e.getMessage());
-        }
+        });
     }
 
     private static BMap<BString, ?> getBMapValueIfPresent(BMap<BString, ?> config, BString key) {
