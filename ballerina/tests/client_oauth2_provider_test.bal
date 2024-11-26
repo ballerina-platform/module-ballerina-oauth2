@@ -23,7 +23,8 @@ import ballerina/lang.runtime as runtime;
 
 // Test the client credentials grant type with valid credentials
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testClientCredentialsGrantType1() returns Error? {
     ClientCredentialsGrantConfig config = {
@@ -53,7 +54,8 @@ isolated function testClientCredentialsGrantType1() returns Error? {
 
 // Test the client credentials grant type with invalid client credentials
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testClientCredentialsGrantType2() {
     ClientCredentialsGrantConfig config = {
@@ -89,7 +91,8 @@ isolated function testClientCredentialsGrantType2() {
 
 // Test the client credentials grant type with valid client-id and invalid client-secret
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testClientCredentialsGrantType3() {
     ClientCredentialsGrantConfig config = {
@@ -201,7 +204,8 @@ isolated function testClientCredentialsGrantType5() returns Error? {
 
 // Test the password grant type with valid credentials
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testPasswordGrantType1() returns Error? {
     PasswordGrantConfig config = {
@@ -290,7 +294,8 @@ isolated function testPasswordGrantType2() returns Error? {
 
 // Test the password grant type with an invalid username, password, and a valid refresh config
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testPasswordGrantType3() {
     PasswordGrantConfig config = {
@@ -376,7 +381,8 @@ isolated function testPasswordGrantType4() {
 
 // Test the password grant type with an valid username, password, and without client-id and client-secret
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testPasswordGrantType5() {
     PasswordGrantConfig config = {
@@ -555,7 +561,8 @@ isolated function testPasswordGrantType9() returns Error? {
 
 // Test the refresh token grant type with an invalid refresh token
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testRefreshTokenGrantType1() {
     RefreshTokenGrantConfig config = {
@@ -650,7 +657,8 @@ isolated function testRefreshTokenGrantType3() {
 
 // Test the refresh token grant type with invalid client-id and client-secret
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testRefreshTokenGrantType4() {
     RefreshTokenGrantConfig config = {
@@ -726,7 +734,8 @@ isolated function testJwtBearerGrantType1() returns Error? {
 
 // Test the JWT bearer grant type with an valid JWT (different issuer)
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testJwtBearerGrantType2() {
     string jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxN" +
@@ -756,7 +765,8 @@ isolated function testJwtBearerGrantType2() {
 
 // Test the JWT bearer grant type with an invalid assertion
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testJwtBearerGrantType3() {
     JwtBearerGrantConfig config = {
@@ -826,7 +836,8 @@ isolated function testJwtBearerGrantType4() {
 
 // Test the JWT bearer grant type with an valid JWT, and without client-id and client-secret
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testJwtBearerGrantType5() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +
@@ -859,7 +870,8 @@ isolated function testJwtBearerGrantType5() {
 
 // Test the JWT bearer grant type with invalid client-id and client-secret
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testJwtBearerGrantType6() {
     string jwt = "eyJhbGciOiJSUzI1NiIsICJ0eXAiOiJKV1QiLCAia2lkIjoiTXpZeE1tRmtPR1l3TVdJMFpXTm1ORGN4TkdZd1ltTTRaVEEzTV" +

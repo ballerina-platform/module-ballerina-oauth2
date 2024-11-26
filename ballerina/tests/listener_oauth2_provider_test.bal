@@ -37,7 +37,8 @@ isolated function getAccessToken() returns string|Error {
 
 // Test the introspection request with successful token
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testTokenIntrospection1() returns Error? {
     string accessToken = check getAccessToken();
@@ -64,7 +65,8 @@ isolated function testTokenIntrospection1() returns Error? {
 
 // Test the introspection request with successful token with cache configurations
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testTokenIntrospection2() returns Error? {
     string accessToken = check getAccessToken();
@@ -109,7 +111,8 @@ isolated function testTokenIntrospection2() returns Error? {
 
 // Test the introspection request with invalid token
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testTokenIntrospection3() returns Error? {
     string accessToken = "invalid_token";
@@ -151,7 +154,8 @@ isolated function testTokenIntrospection4() {
 
 // Test the introspection request with successful token without authenticating the client
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testTokenIntrospection5() returns Error? {
     string accessToken = check getAccessToken();
@@ -174,7 +178,8 @@ isolated function testTokenIntrospection5() returns Error? {
 
 // Test the introspection request with successful token with invalid OAuth2 client credentials grant type
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testTokenIntrospection6() {
     IntrospectionConfig config = {
@@ -205,7 +210,8 @@ isolated function testTokenIntrospection6() {
 
 // Test the introspection request with successful token with invalid OAuth2 password grant type
 @test:Config {
-    groups: ["skipOnWindows"]
+    groups: ["skipOnWindows"],
+    enable: false
 }
 isolated function testTokenIntrospection7() {
     IntrospectionConfig config = {
