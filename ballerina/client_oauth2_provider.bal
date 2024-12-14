@@ -70,6 +70,7 @@ public type RefreshConfig record {|
 # + clientSecret - Client secret of the client authentication
 # + scopes - Scope(s) of the access request
 # + refreshConfig - Configurations for refreshing the access token
+# + usePasswordGrantOnRefreshFailure - Flag to use the password grant type if the refresh token grant type fails
 # + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
 # + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
 # + optionalParams - Map of the optional parameters used for the token endpoint
@@ -83,6 +84,7 @@ public type PasswordGrantConfig record {|
     string clientSecret?;
     string|string[] scopes?;
     RefreshConfig|INFER_REFRESH_CONFIG refreshConfig?;
+    boolean usePasswordGrantOnRefreshFailure = false;
     decimal defaultTokenExpTime = 3600;
     decimal clockSkew = 0;
     map<string> optionalParams?;
@@ -462,13 +464,20 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
         optionalParams: refreshConfig?.optionalParams,
         credentialBearer: refreshConfig.credentialBearer
     };
-
-    json response = check sendRequest(requestConfig, refreshConfig.refreshUrl,refreshConfig.clientConfig);
-    string accessToken = check extractAccessToken(response);
-    string? updatedRefreshToken = extractRefreshToken(response);
-    int? expiresIn = extractExpiresIn(response);
-    tokenCache.update(accessToken, updatedRefreshToken, expiresIn, config.defaultTokenExpTime, config.clockSkew);
-    return accessToken;
+    json|error response = sendRequest(requestConfig, refreshConfig.refreshUrl, refreshConfig.clientConfig);
+    if response is error {
+        if !config.usePasswordGrantOnRefreshFailure {
+            return prepareError("Failed to refresh the access token.", response);
+        }
+        return getAccessTokenFromTokenRequestForPasswordGrant(config, tokenCache);
+    }
+    if response is json {
+        string accessToken = check extractAccessToken(response);
+        string? updatedRefreshToken = extractRefreshToken(response);
+        int? expiresIn = extractExpiresIn(response);
+        tokenCache.update(accessToken, updatedRefreshToken, expiresIn, config.defaultTokenExpTime, config.clockSkew);
+        return accessToken;
+    }
 }
 
 isolated function getRefreshConfig(PasswordGrantConfig config) returns RefreshConfig|Error {
