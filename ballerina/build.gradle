@@ -158,8 +158,8 @@ task startBallerinaSTS() {
                     standardOutput = stdOut
                 }
                 println stdOut.toString()
-                println "Waiting 10s until the Ballerina STS get initiated."
-                sleep(15 * 1000)
+                println "Waiting 30s until the Ballerina STS get initiated."
+                sleep(30 * 1000)
             } else {
                 println "Ballerina STS is already started."
             }
