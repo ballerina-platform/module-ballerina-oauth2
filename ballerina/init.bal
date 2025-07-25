@@ -16,10 +16,34 @@
 
 import ballerina/jballerina.java;
 
-isolated function init() {
+# Represents the default connection timeout values for the oauth2 client.
+public const decimal DEFAULT_CONNECT_TIMEOUT = 15;
+
+# Represents the default request timeout value for the oauth2 client.
+public const decimal DEFAULT_REQ_TIMEOUT = 30;
+
+# Represents the maximum time(in seconds) to wait for a connection to be established with the oauth2 endpoint.
+# Defaults to 15 seconds. This is a global configuration which will be applied to all the internal oauth2 client calls.
+public configurable decimal globalConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
+
+# Represents the maximum time(in seconds) to wait for a response before the oauth2 endpoint request times out.
+# Defaults to 30 seconds. This is a global configuration which will be applied to all the internal oauth2 client calls.
+public configurable decimal globalReqTimeout = DEFAULT_REQ_TIMEOUT;
+
+isolated function init() returns error? {
     setModule();
+    check setOauth2ConnectionTimeout(globalConnectTimeout);
+    check setOauth2RequestTimeout(globalReqTimeout);
 }
 
 isolated function setModule() = @java:Method {
+    'class: "io.ballerina.stdlib.oauth2.ModuleUtils"
+} external;
+
+isolated function setOauth2ConnectionTimeout(decimal timeout) returns error? = @java:Method {
+    'class: "io.ballerina.stdlib.oauth2.ModuleUtils"
+} external;
+
+isolated function setOauth2RequestTimeout(decimal timeout) returns error? = @java:Method {
     'class: "io.ballerina.stdlib.oauth2.ModuleUtils"
 } external;

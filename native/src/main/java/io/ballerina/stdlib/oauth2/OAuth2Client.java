@@ -36,6 +36,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -82,6 +83,9 @@ public class OAuth2Client {
         String httpVersion = getBStringValueIfPresent(clientConfig, OAuth2Constants.HTTP_VERSION).getValue();
         BMap<BString, ?> secureSocket = getBMapValueIfPresent(clientConfig, OAuth2Constants.SECURE_SOCKET);
 
+        int connectionTimeout = getConnectionTimeoutInMillis();
+        int requestTimeout = getRequestTimeoutInMillis();
+
         HttpRequest request;
         URI uri;
         try {
@@ -91,22 +95,22 @@ public class OAuth2Client {
         }
 
         if (headersList.isEmpty()) {
-            request = buildHttpRequest(uri, textPayload);
+            request = buildHttpRequest(uri, textPayload, requestTimeout);
         } else {
             String[] flatHeaders = headersList.toArray(String[]::new);
-            request = buildHttpRequest(uri, flatHeaders, textPayload);
+            request = buildHttpRequest(uri, flatHeaders, textPayload, requestTimeout);
         }
 
         if (secureSocket != null) {
             try {
                 SSLContext sslContext = getSslContext(secureSocket);
-                HttpClient client = buildHttpClient(httpVersion, sslContext);
+                HttpClient client = buildHttpClient(httpVersion, sslContext, connectionTimeout);
                 return callEndpoint(env, client, request);
             } catch (Exception e) {
                 return createError("Failed to init SSL context. " + e.getMessage());
             }
         }
-        HttpClient client = buildHttpClient(httpVersion);
+        HttpClient client = buildHttpClient(httpVersion, connectionTimeout);
         return callEndpoint(env, client, request);
     }
 
@@ -276,28 +280,37 @@ public class OAuth2Client {
         return sslContext;
     }
 
-    private static HttpClient buildHttpClient(String httpVersion) {
-        return HttpClient.newBuilder().version(getHttpVersion(httpVersion)).build();
+    private static HttpClient buildHttpClient(String httpVersion, int connectionTimeout) {
+        return HttpClient.newBuilder()
+                .version(getHttpVersion(httpVersion))
+                .connectTimeout(Duration.ofMillis(connectionTimeout))
+                .build();
     }
 
-    private static HttpClient buildHttpClient(String httpVersion, SSLContext sslContext) {
-        return HttpClient.newBuilder().version(getHttpVersion(httpVersion)).sslContext(sslContext).build();
+    private static HttpClient buildHttpClient(String httpVersion, SSLContext sslContext, int connectionTimeout) {
+        return HttpClient.newBuilder()
+                .version(getHttpVersion(httpVersion))
+                .sslContext(sslContext)
+                .connectTimeout(Duration.ofMillis(connectionTimeout))
+                .build();
     }
 
-    private static HttpRequest buildHttpRequest(URI uri, String payload) {
+    private static HttpRequest buildHttpRequest(URI uri, String payload, int requestTimeout) {
         return HttpRequest.newBuilder()
                 .uri(uri)
                 .setHeader(OAuth2Constants.CONTENT_TYPE, OAuth2Constants.APPLICATION_FORM_URLENCODED)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .timeout(Duration.ofMillis(requestTimeout))
                 .build();
     }
 
-    private static HttpRequest buildHttpRequest(URI uri, String[] headers, String payload) {
+    private static HttpRequest buildHttpRequest(URI uri, String[] headers, String payload, int requestTimeout) {
         return HttpRequest.newBuilder()
                 .uri(uri)
                 .headers(headers)
                 .setHeader(OAuth2Constants.CONTENT_TYPE, OAuth2Constants.APPLICATION_FORM_URLENCODED)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .timeout(Duration.ofMillis(requestTimeout))
                 .build();
     }
 
@@ -327,5 +340,15 @@ public class OAuth2Client {
     private static BError createError(String errMsg) {
         return ErrorCreator.createError(ModuleUtils.getModule(), OAuth2Constants.OAUTH2_ERROR_TYPE,
                                         StringUtils.fromString(errMsg), null, null);
+    }
+
+    private static int getConnectionTimeoutInMillis() throws BError {
+        double connectTimeoutInSeconds = ModuleUtils.getOauth2ConnectionTimeout();
+        return (int) (connectTimeoutInSeconds * 1000);
+    }
+
+    private static int getRequestTimeoutInMillis() {
+        double requestTimeoutInSeconds = ModuleUtils.getOauth2RequestTimeout();
+        return (int) (requestTimeoutInSeconds * 1000);
     }
 }
