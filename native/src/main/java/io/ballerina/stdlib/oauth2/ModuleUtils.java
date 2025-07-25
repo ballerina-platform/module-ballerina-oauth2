@@ -20,6 +20,9 @@ package io.ballerina.stdlib.oauth2;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BDecimal;
 
 /**
  * Utility functions relevant to module operations.
@@ -29,6 +32,8 @@ import io.ballerina.runtime.api.Module;
 public class ModuleUtils {
 
     private static Module oauth2Module;
+    private static double oauth2ConnectionTimeout = 15.0;
+    private static double oauth2RequestTimeout = 30.0;
 
     private ModuleUtils() {}
 
@@ -38,5 +43,35 @@ public class ModuleUtils {
 
     public static Module getModule() {
         return oauth2Module;
+    }
+
+    public static Object setOauth2ConnectionTimeout(BDecimal timeout) {
+        double doubleValue = timeout.floatValue();
+        if (doubleValue <= 0) {
+            String errMsg = "OAuth2 connection timeout must be greater than zero";
+            return ErrorCreator.createError(ModuleUtils.getModule(), OAuth2Constants.OAUTH2_ERROR_TYPE,
+                    StringUtils.fromString(errMsg), null, null);
+        }
+        oauth2ConnectionTimeout = doubleValue;
+        return null;
+    }
+
+    public static double getOauth2ConnectionTimeout() {
+        return oauth2ConnectionTimeout;
+    }
+
+    public static Object setOauth2RequestTimeout(BDecimal timeout) {
+        double doubleValue = timeout.floatValue();
+        if (doubleValue <= 0) {
+            String errMsg = "OAuth2 request timeout must be greater than zero";
+            return ErrorCreator.createError(ModuleUtils.getModule(), OAuth2Constants.OAUTH2_ERROR_TYPE,
+                    StringUtils.fromString(errMsg), null, null);
+        }
+        oauth2RequestTimeout = doubleValue;
+        return null;
+    }
+
+    public static double getOauth2RequestTimeout() {
+        return oauth2RequestTimeout;
     }
 }
