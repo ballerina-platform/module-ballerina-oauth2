@@ -48,6 +48,8 @@ public class OAuth2Constants {
     public static final BString PASSWORD = StringUtils.fromString("password");
     public static final BString CUSTOM_HEADERS = StringUtils.fromString("customHeaders");
     public static final BString CUSTOM_PAYLOAD = StringUtils.fromString("customPayload");
+    public static final BString CONNECTION_TIMEOUT = StringUtils.fromString("connectTimeout");
+    public static final BString REQUEST_TIMEOUT = StringUtils.fromString("reqTimeout");
 
     public static final String TLS = "TLS";
     public static final String PKCS12 = "PKCS12";
