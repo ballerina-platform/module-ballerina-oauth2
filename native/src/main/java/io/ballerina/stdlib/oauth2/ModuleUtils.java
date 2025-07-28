@@ -46,13 +46,13 @@ public class ModuleUtils {
     }
 
     public static Object setOauth2ConnectionTimeout(BDecimal timeout) {
-        double doubleValue = timeout.floatValue();
-        if (doubleValue <= 0) {
+        // Called in module init, failure will cause the program to fail
+        oauth2ConnectionTimeout = timeout.floatValue();
+        if (oauth2ConnectionTimeout <= 0) {
             String errMsg = "OAuth2 connection timeout must be greater than zero";
             return ErrorCreator.createError(ModuleUtils.getModule(), OAuth2Constants.OAUTH2_ERROR_TYPE,
                     StringUtils.fromString(errMsg), null, null);
         }
-        oauth2ConnectionTimeout = doubleValue;
         return null;
     }
 
@@ -61,13 +61,13 @@ public class ModuleUtils {
     }
 
     public static Object setOauth2RequestTimeout(BDecimal timeout) {
-        double doubleValue = timeout.floatValue();
-        if (doubleValue <= 0) {
+        // Called in module init, failure will cause the program to fail
+        oauth2RequestTimeout = timeout.floatValue();
+        if (oauth2RequestTimeout <= 0) {
             String errMsg = "OAuth2 request timeout must be greater than zero";
             return ErrorCreator.createError(ModuleUtils.getModule(), OAuth2Constants.OAUTH2_ERROR_TYPE,
                     StringUtils.fromString(errMsg), null, null);
         }
-        oauth2RequestTimeout = doubleValue;
         return null;
     }
 
