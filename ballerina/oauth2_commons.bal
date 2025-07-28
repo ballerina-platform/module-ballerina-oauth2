@@ -24,12 +24,18 @@ import ballerina/jballerina.java;
 # + customPayload - The list of custom HTTP payload parameters
 # + auth - The client auth configurations
 # + secureSocket - SSL/TLS-related configurations
+# + connectTimeout - Maximum time(in seconds) to wait for a connection to be established. By default, uses the global
+#   configuration `globalConnectTimeout` which defaults to 15 seconds
+# + reqTimeout - Maximum time(in seconds) to wait for a response before the request times out. By default, uses the global
+#   configuration `globalReqTimeout` which defaults to 30 seconds
 public type ClientConfiguration record {|
     HttpVersion httpVersion = HTTP_1_1;
     map<string> customHeaders?;
     string customPayload?;
     ClientAuth auth?;
     SecureSocket secureSocket?;
+    decimal connectTimeout?;
+    decimal reqTimeout?;
 |};
 
 # Represents the the authentication configuration types for the HTTP client used for token introspection.

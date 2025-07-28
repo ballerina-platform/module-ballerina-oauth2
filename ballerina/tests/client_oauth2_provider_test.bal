@@ -919,6 +919,43 @@ isolated function testAccessTokenRequestWithoutUrlScheme() returns Error? {
 @test:Config {
     groups: ["skipOnWindows"]
 }
+isolated function testAccessTokenRequestWithDelay() returns Error? {
+    ClientCredentialsGrantConfig config = {
+        tokenUrl: "http://localhost:9444/oauth2/token",
+        clientId: "FlfJYKBD2c925h4lkycqNZlC2l4a",
+        clientSecret: "PJz0UhTJMrHOo68QQNpvnqAY_3Aa",
+        scopes: "view-order",
+        clientConfig: {
+            customHeaders: {
+                "X-Delay": "40"
+            }
+        }
+    };
+
+    ClientOAuth2Provider|error provider = trap new(config);
+    if provider is error {
+        assertContains(provider, "Failed to call the token endpoint 'http://localhost:9444/oauth2/token'. Failed to send the request to the endpoint. request timed out");
+    } else {
+        test:assertFail("Expected error not found.");
+    }
+
+    config.clientConfig.customHeaders["X-Delay"] = "10";
+    ClientOAuth2Provider provider1 = new(config);
+    string response = check provider1.generateToken();
+    assertToken(response);
+
+    config.clientConfig.reqTimeout = 5;
+    provider = trap new(config);
+    if provider is error {
+        assertContains(provider, "Failed to call the token endpoint 'http://localhost:9444/oauth2/token'. Failed to send the request to the endpoint. request timed out");
+    } else {
+        test:assertFail("Expected error not found.");
+    }
+}
+
+@test:Config {
+    groups: ["skipOnWindows"]
+}
 isolated function testAccessTokenRequestWithHttpUrlScheme() returns Error? {
     ClientCredentialsGrantConfig config = {
         tokenUrl: "http://localhost:9444/oauth2/token",
