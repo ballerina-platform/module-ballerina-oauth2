@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.12.0"
+distribution-version = "2201.13.0-20250825-150500-2c7270f2"
 
 [[package]]
 org = "ballerina"
@@ -62,7 +62,6 @@ modules = [
 org = "ballerina"
 name = "lang.__internal"
 version = "0.0.0"
-scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.object"}
@@ -89,9 +88,18 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "lang.int"
+version = "0.0.0"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.__internal"},
+	{org = "ballerina", name = "lang.object"}
+]
+
+[[package]]
+org = "ballerina"
 name = "lang.object"
 version = "0.0.0"
-scope = "testOnly"
 
 [[package]]
 org = "ballerina"
@@ -116,7 +124,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.12.0"
+version = "2.13.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -156,10 +164,11 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.7.0"
+version = "2.11.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "time"}
+	{org = "ballerina", name = "time"},
+	{org = "ballerina", name = "uuid"}
 ]
 
 [[package]]
@@ -196,5 +205,16 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "url", moduleName = "url"}
+]
+
+[[package]]
+org = "ballerina"
+name = "uuid"
+version = "1.10.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.int"},
+	{org = "ballerina", name = "time"}
 ]
 
