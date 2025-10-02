@@ -20,8 +20,8 @@ import ballerina/jballerina.java;
 # Represents the configurations of the client used to call the introspection endpoint.
 #
 # + httpVersion - The HTTP version of the client
-# + customHeaders - The list of custom HTTP headers
-# + customPayload - The list of custom HTTP payload parameters
+# + customHeaders - A map of custom HTTP headers to be included in the request
+# + customPayload - A custom HTTP payload to be sent with the request
 # + auth - The client auth configurations
 # + secureSocket - SSL/TLS-related configurations
 # + connectTimeout - Maximum time(in seconds) to wait for a connection to be established. By default, uses the global
