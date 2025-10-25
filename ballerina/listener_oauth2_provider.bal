@@ -138,9 +138,8 @@ public isolated class ListenerOAuth2Provider {
                 addToCache(oauth2Cache, credential, validationResult, self.introspectionConfig.defaultTokenExpTime);
             }
             return validationResult;
-        } else {
-            return prepareError("OAuth2 validation failed.", validationResult);
         }
+        return prepareError("OAuth2 validation failed.", validationResult);
     }
 }
 
@@ -178,12 +177,10 @@ isolated function validate(string token, IntrospectionConfig config, ClientOAuth
         json|error jsonResponse = stringResponse.fromJsonString();
         if jsonResponse is json {
             return prepareIntrospectionResponse(jsonResponse);
-        } else {
-            return prepareError("Failed to convert '" + stringResponse + "' to JSON.", jsonResponse);
         }
-    } else {
-        return prepareError("Failed to call the introspection endpoint '" + config.url + "'.", stringResponse);
+        return prepareError("Failed to convert '" + stringResponse + "' to JSON.", jsonResponse);
     }
+    return prepareError("Failed to call the introspection endpoint '" + config.url + "'.", stringResponse);
 }
 
 isolated function prepareIntrospectionResponse(json payload) returns IntrospectionResponse {
