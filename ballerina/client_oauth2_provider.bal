@@ -218,9 +218,8 @@ public isolated class ClientOAuth2Provider {
         string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
         if authToken is string {
             return authToken;
-        } else {
-            return prepareError("Failed to generate OAuth2 token.", authToken);
         }
+        return prepareError("Failed to generate OAuth2 token.", authToken);
     }
 }
 
@@ -243,17 +242,15 @@ isolated function getOAuth2TokenForClientCredentialsGrant(ClientCredentialsGrant
     string cachedAccessToken = tokenCache.getAccessToken();
     if cachedAccessToken == "" {
         return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
-    } else {
+    } 
+    if !tokenCache.isAccessTokenExpired() {
+        return cachedAccessToken;
+    }
+    lock {
         if !tokenCache.isAccessTokenExpired() {
-            return cachedAccessToken;
-        } else {
-            lock {
-                if !tokenCache.isAccessTokenExpired() {
-                    return tokenCache.getAccessToken();
-                }
-                return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
-            }
+            return tokenCache.getAccessToken();
         }
+        return getAccessTokenFromTokenRequestForClientCredentialsGrant(grantConfig, tokenCache);
     }
 }
 
@@ -263,17 +260,15 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
     string cachedAccessToken = tokenCache.getAccessToken();
     if cachedAccessToken == "" {
         return getAccessTokenFromTokenRequestForPasswordGrant(grantConfig, tokenCache);
-    } else {
+    }
+    if !tokenCache.isAccessTokenExpired() {
+        return cachedAccessToken;
+    }
+    lock {
         if !tokenCache.isAccessTokenExpired() {
-            return cachedAccessToken;
-        } else {
-            lock {
-                if !tokenCache.isAccessTokenExpired() {
-                    return tokenCache.getAccessToken();
-                }
-                return getAccessTokenFromRefreshRequestForPasswordGrant(grantConfig, tokenCache);
-            }
+            return tokenCache.getAccessToken();
         }
+        return getAccessTokenFromRefreshRequestForPasswordGrant(grantConfig, tokenCache);
     }
 }
 
@@ -283,17 +278,15 @@ isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig
     string cachedAccessToken = tokenCache.getAccessToken();
     if cachedAccessToken == "" {
         return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
-    } else {
+    }
+    if !tokenCache.isAccessTokenExpired() {
+        return cachedAccessToken;
+    }
+    lock {
         if !tokenCache.isAccessTokenExpired() {
-            return cachedAccessToken;
-        } else {
-            lock {
-                if !tokenCache.isAccessTokenExpired() {
-                    return tokenCache.getAccessToken();
-                }
-                return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
-            }
+            return tokenCache.getAccessToken();
         }
+        return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
     }
 }
 
@@ -303,17 +296,15 @@ isolated function getOAuth2TokenForJwtBearerGrantType(JwtBearerGrantConfig grant
     string cachedAccessToken = tokenCache.getAccessToken();
     if cachedAccessToken == "" {
         return getAccessTokenFromTokenRequestForJwtBearerGrant(grantConfig, tokenCache);
-    } else {
+    }
+    if !tokenCache.isAccessTokenExpired() {
+        return cachedAccessToken;
+    }
+    lock {
         if !tokenCache.isAccessTokenExpired() {
-            return cachedAccessToken;
-        } else {
-            lock {
-                if !tokenCache.isAccessTokenExpired() {
-                    return tokenCache.getAccessToken();
-                }
-                return getAccessTokenFromRefreshRequestForJwtBearerGrant(grantConfig, tokenCache);
-            }
+            return tokenCache.getAccessToken();
         }
+        return getAccessTokenFromRefreshRequestForJwtBearerGrant(grantConfig, tokenCache);
     }
 }
 
@@ -569,12 +560,10 @@ isolated function sendRequest(RequestConfig requestConfig, string url, ClientCon
         json|error jsonResponse = stringResponse.fromJsonString();
         if jsonResponse is json {
             return jsonResponse;
-        } else {
-            return prepareError("Failed to get JSON from the response payload.", jsonResponse);
         }
-    } else {
-        return prepareError("Failed to call the token endpoint '" + url + "'.", stringResponse);
+        return prepareError("Failed to get JSON from the response payload.", jsonResponse);
     }
+    return prepareError("Failed to call the token endpoint '" + url + "'.", stringResponse);
 }
 
 isolated function prepareHeaders(RequestConfig config) returns map<string>|Error {
