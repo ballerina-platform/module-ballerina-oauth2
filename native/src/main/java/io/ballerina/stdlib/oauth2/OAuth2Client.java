@@ -178,10 +178,9 @@ public class OAuth2Client {
                 }
                 tmf = getTrustManagerFactory(trustStore);
                 return buildSslContext(kmf.getKeyManagers(), tmf.getTrustManagers());
-            } else {
-                tmf = getTrustManagerFactory(trustStore);
-                return buildSslContext(null, tmf.getTrustManagers());
             }
+            tmf = getTrustManagerFactory(trustStore);
+            return buildSslContext(null, tmf.getTrustManagers());
         }
         return null;
     }
@@ -221,10 +220,9 @@ public class OAuth2Client {
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(ts);
             return tmf;
-        } else {
-            throw new Exception("Failed to get the public key from Crypto API. " +
-                                        ((BError) publicKeyMap).getErrorMessage().getValue());
         }
+        throw new Exception("Failed to get the public key from Crypto API. " +
+                                        ((BError) publicKeyMap).getErrorMessage().getValue());
     }
 
     private static TrustManagerFactory getTrustManagerFactory(BMap<BString, BString> trustStore) throws Exception {
@@ -262,14 +260,12 @@ public class OAuth2Client {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(ks, "".toCharArray());
                 return kmf;
-            } else {
-                throw new Exception("Failed to get the private key from Crypto API. " +
-                                            ((BError) privateKeyMap).getErrorMessage().getValue());
             }
-        } else {
-            throw new Exception("Failed to get the public key from Crypto API. " +
-                                        ((BError) publicKey).getErrorMessage().getValue());
+            throw new Exception("Failed to get the private key from Crypto API. " +
+                                            ((BError) privateKeyMap).getErrorMessage().getValue());
         }
+        throw new Exception("Failed to get the public key from Crypto API. " +
+                                        ((BError) publicKey).getErrorMessage().getValue());
     }
 
     private static KeyStore getKeyStore(BString path, BString password) throws Exception {
