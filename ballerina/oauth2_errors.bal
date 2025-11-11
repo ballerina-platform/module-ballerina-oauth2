@@ -16,7 +16,7 @@
 
 import ballerina/log;
 
-# Represents the error type of the module. This will be returned if an error occurred while the listener OAuth2 provider
+# The error type of the module. This will be returned if an error occurred while the listener OAuth2 provider
 # tries to validate the received credentials and the client OAuth2 provider tries to generate the token.
 public type Error distinct error;
 

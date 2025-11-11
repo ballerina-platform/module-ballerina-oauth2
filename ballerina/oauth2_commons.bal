@@ -17,7 +17,7 @@
 import ballerina/crypto;
 import ballerina/jballerina.java;
 
-# Represents the configurations of the client used to call the introspection endpoint.
+# The configurations of the client used to call the introspection endpoint.
 #
 # + httpVersion - The HTTP version of the client
 # + customHeaders - A map of custom HTTP headers to be included in the request
@@ -38,16 +38,16 @@ public type ClientConfiguration record {|
     decimal reqTimeout?;
 |};
 
-# Represents the the authentication configuration types for the HTTP client used for token introspection.
+# The authentication configuration types for the HTTP client used for token introspection.
 public type ClientAuth ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig;
 
-# Represents the HTTP versions.
+# The HTTP versions.
 public enum HttpVersion {
     HTTP_1_1,
     HTTP_2
 }
 
-# Represents the SSL/TLS configurations.
+# The SSL/TLS configurations.
 #
 # + disable - Disable SSL validation
 # + cert - Configurations associated with the `crypto:TrustStore` or single certificate file that the client trusts
@@ -58,7 +58,7 @@ public type SecureSocket record {|
     crypto:KeyStore|CertKey key?;
 |};
 
-# Represents the combination of the certificate file path, private key file path, and private key password if encrypted.
+# The combination of the certificate file path, private key file path, and private key password if encrypted.
 #
 # + certFile - A file containing the certificate
 # + keyFile - A file containing the private key
@@ -69,7 +69,7 @@ public type CertKey record {|
    string keyPassword?;
 |};
 
-# Represents the credential-bearing methods.
+# The credential-bearing methods.
 public enum CredentialBearer {
     AUTH_HEADER_BEARER,
     POST_BODY_BEARER

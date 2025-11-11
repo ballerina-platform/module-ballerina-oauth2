@@ -20,7 +20,7 @@ import ballerina/url;
 
 const UTF8 = "UTF-8";
 
-# Represents the OAuth2 client credentials grant type configurations.
+# The configurations for the OAuth2 client credentials grant type.
 #
 # + tokenUrl - The URL of the token endpoint
 # + clientId - The client ID of the client authentication
@@ -46,7 +46,7 @@ public type ClientCredentialsGrantConfig record {|
 # Constant used to infer the values of refreshConfig from values provided for PasswordGrantConfig.
 public const INFER_REFRESH_CONFIG = "INFER_REFRESH_CONFIG";
 
-# Represents the refresh configuration of the OAuth2 password grant type.
+# The refresh configurations for the OAuth2 password grant type.
 #
 # + refreshUrl - The URL of the refresh token endpoint
 # + scopes - The scope(s) of the refresh token request. This can be a single string or an array of strings
@@ -61,7 +61,7 @@ public type RefreshConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the OAuth2 password grant type configuration.
+# The configurations for the OAuth2 password grant type.
 #
 # + tokenUrl - The URL of the token endpoint
 # + username - The username for the password grant type
@@ -90,7 +90,7 @@ public type PasswordGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the OAuth2 refresh token grant type configuration.
+# The configurations for the OAuth2 refresh token grant type.
 #
 # + refreshUrl - The URL of the refresh token endpoint
 # + refreshToken - The refresh token used to obtain a new access token
@@ -115,7 +115,7 @@ public type RefreshTokenGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the OAuth2 JWT bearer grant type configuration.
+# The configurations for the OAuth2 JWT bearer grant type.
 #
 # + tokenUrl - The URL of the token endpoint
 # + assertion - A single JWT used for the JWT bearer grant type
@@ -151,10 +151,10 @@ type RequestConfig record {|
     CredentialBearer credentialBearer;
 |};
 
-# Represents the grant type configurations supported for OAuth2.
+# The grant type configurations supported for OAuth2.
 public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig|JwtBearerGrantConfig;
 
-# Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
+# The client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
 # token endpoint configurations. This supports the client credentials grant type, password grant type,
 # refresh token grant type, and the JWT bearer grant type.
 #

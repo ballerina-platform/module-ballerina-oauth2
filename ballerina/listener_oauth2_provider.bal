@@ -18,7 +18,7 @@ import ballerina/cache;
 import ballerina/log;
 import ballerina/time;
 
-# Represents the introspection endpoint configurations.
+# The configurations for the introspection endpoint.
 #
 # + url - The URL of the introspection endpoint
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
@@ -35,7 +35,7 @@ public type IntrospectionConfig record {
     ClientConfiguration clientConfig = {};
 };
 
-# Represents the introspection endpoint response.
+# The introspection endpoint response type.
 #
 # + active - A boolean indicating whether the presented token is currently active
 # + scope - A JSON string containing a space-separated list of scopes associated with this token
@@ -78,7 +78,7 @@ const string AUD = "aud";
 const string ISS = "iss";
 const string JTI = "jti";
 
-# Represents the listener OAuth2 provider, which is used to validate the received credential (access token) by
+# The listener for the OAuth2 provider, which is used to validate the received credential (access token) by
 # calling the configured introspection endpoint.
 # ```ballerina
 # oauth2:IntrospectionConfig config = {
