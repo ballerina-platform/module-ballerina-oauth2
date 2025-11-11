@@ -18,14 +18,14 @@ import ballerina/cache;
 import ballerina/log;
 import ballerina/time;
 
-# Represents the introspection endpoint configurations.
+# The configurations for the introspection endpoint.
 #
-# + url - URL of the introspection endpoint
+# + url - The URL of the introspection endpoint
 # + tokenTypeHint - A hint about the type of the token submitted for introspection
-# + optionalParams - Map of the optional parameters used for the introspection endpoint
-# + cacheConfig - Configurations for the cache used to store the OAuth2 access token and other related information
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the introspection response does not contain an `exp` field
-# + clientConfig - HTTP client configurations, which call the introspection endpoint
+# + optionalParams - A map of the optional parameters used for the introspection endpoint
+# + cacheConfig - The configurations for the cache used to store the OAuth2 access token and other related information
+# + defaultTokenExpTime - The default expiration time (in seconds) for tokens if the introspection response does not include an `exp` field
+# + clientConfig - The HTTP client configurations used to call the introspection endpoint
 public type IntrospectionConfig record {
     string url;
     string tokenTypeHint?;
@@ -35,20 +35,20 @@ public type IntrospectionConfig record {
     ClientConfiguration clientConfig = {};
 };
 
-# Represents the introspection endpoint response.
+# The introspection endpoint response type.
 #
-# + active - Boolean indicator of whether or not the presented token is currently active
+# + active - A boolean indicating whether the presented token is currently active
 # + scope - A JSON string containing a space-separated list of scopes associated with this token
-# + clientId - Client identifier for the OAuth 2.0 client, which requested this token
-# + username - Resource owner who authorized this token
-# + tokenType - Type of the token
-# + exp - Expiry time (seconds since the Epoch)
-# + iat - Time when the token was issued originally (seconds since the Epoch)
-# + nbf - Token is not to be used before this time (seconds since the Epoch)
-# + sub - Subject of the token
-# + aud - Intended audience of the token
-# + iss - Issuer of the token
-# + jti - String identifier for the token
+# + clientId - The client identifier for the OAuth 2.0 client that requested this token
+# + username - The resource owner who authorized this token
+# + tokenType - The type of the token
+# + exp - The expiration time of the token (in seconds since the Epoch)
+# + iat - The time when the token was issued (in seconds since the Epoch)
+# + nbf - The time before which the token must not be used (in seconds since the Epoch)
+# + sub - The subject of the token
+# + aud - The intended audience of the token
+# + iss - The issuer of the token
+# + jti - A unique identifier for the token
 public type IntrospectionResponse record {
     boolean active;
     string scope?;
@@ -78,7 +78,7 @@ const string AUD = "aud";
 const string ISS = "iss";
 const string JTI = "jti";
 
-# Represents the listener OAuth2 provider, which is used to validate the received credential (access token) by
+# The listener for the OAuth2 provider, which is used to validate the received credential (access token) by
 # calling the configured introspection endpoint.
 # ```ballerina
 # oauth2:IntrospectionConfig config = {
@@ -111,13 +111,13 @@ public isolated class ListenerOAuth2Provider {
         }
     }
 
-    # Validates the provided OAuth2 acess token against the introspection endpoint.
+    # Validates the provided OAuth2 access token against the introspection endpoint.
     # ```ballerina
     # boolean result = check provider.authorize("<credential>");
     # ```
     #
-    # + credential - OAuth2 access token to be validated
-    # + optionalParams - Map of the optional parameters used for the introspection endpoint
+    # + credential - The OAuth2 access token to be validated
+    # + optionalParams - A map of optional parameters to be sent to the introspection endpoint
     # + return - An `oauth2:IntrospectionResponse` if the validation is successful or else an `oauth2:Error` if an error occurred
     public isolated function authorize(string credential, map<string>? optionalParams = ()) returns IntrospectionResponse|Error {
         if credential == "" {
