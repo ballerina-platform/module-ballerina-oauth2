@@ -20,17 +20,17 @@ import ballerina/url;
 
 const UTF8 = "UTF-8";
 
-# Represents the data structure, which is used to configure the OAuth2 client credentials grant type.
+# The configurations for the OAuth2 client credentials grant type.
 #
-# + tokenUrl - Token URL of the token endpoint
-# + clientId - Client ID of the client authentication
-# + clientSecret - Client secret of the client authentication
-# + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
-# + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of the optional parameters used for the token endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
-# + clientConfig - HTTP client configurations, which are used to call the token endpoint
+# + tokenUrl - The URL of the token endpoint
+# + clientId - The client ID of the client authentication
+# + clientSecret - The client secret of the client authentication
+# + scopes - The scope(s) of the access request. This can be a single string or an array of strings
+# + defaultTokenExpTime -  The default expiration time (in seconds) for tokens if the token endpoint response does not include an `expires_in` field
+# + clockSkew - The clock skew (in seconds) to account for clock synchronization issues
+# + optionalParams - A map of optional parameters to be sent to the token endpoint
+# + credentialBearer - The bearer type for authentication credentials sent to the token endpoint
+# + clientConfig - HTTP client configurations used to make requests to the token endpoint
 public type ClientCredentialsGrantConfig record {|
     string tokenUrl;
     string clientId;
@@ -46,13 +46,13 @@ public type ClientCredentialsGrantConfig record {|
 # Constant used to infer the values of refreshConfig from values provided for PasswordGrantConfig.
 public const INFER_REFRESH_CONFIG = "INFER_REFRESH_CONFIG";
 
-# Represents the data structure, which is used for refresh configuration of the OAuth2 password grant type.
+# The refresh configurations for the OAuth2 password grant type.
 #
-# + refreshUrl - Refresh token URL of the token endpoint
-# + scopes - Scope(s) of the referesh token request
-# + optionalParams - Map of the optional parameters used for the token endpoint
-# + credentialBearer - Bearer of the authentication credential, which is sent to the token endpoint
-# + clientConfig - HTTP client configuration, which is used to call the refresh token endpoint
+# + refreshUrl - The URL of the refresh token endpoint
+# + scopes - The scope(s) of the refresh token request. This can be a single string or an array of strings
+# + optionalParams - A map of optional parameters to be sent to the refresh token endpoint
+# + credentialBearer - The bearer type for authentication credentials sent to the refresh token endpoint
+# + clientConfig - HTTP client configurations used to make requests to the refresh token endpoint
 public type RefreshConfig record {|
     string refreshUrl;
     string|string[] scopes?;
@@ -61,20 +61,20 @@ public type RefreshConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the data structure, which is used to configure the OAuth2 password grant type.
+# The configurations for the OAuth2 password grant type.
 #
-# + tokenUrl - Token URL of the token endpoint
-# + username - Username for the password grant type
-# + password - Password for the password grant type
-# + clientId - Client ID of the client authentication
-# + clientSecret - Client secret of the client authentication
-# + scopes - Scope(s) of the access request
-# + refreshConfig - Configurations for refreshing the access token
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
-# + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of the optional parameters used for the token endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
-# + clientConfig - HTTP client configurations, which are used to call the token endpoint
+# + tokenUrl - The URL of the token endpoint
+# + username - The username for the password grant type
+# + password - The password for the password grant type
+# + clientId - The client ID for client authentication
+# + clientSecret - The client secret for client authentication
+# + scopes - The scope(s) of the access request. This can be a single string or an array of strings
+# + refreshConfig - The configurations for refreshing the access token. Can be a `RefreshConfig` or `oauth2:INFER_REFRESH_CONFIG`
+# + defaultTokenExpTime - The default expiration time (in seconds) for tokens if the token endpoint response does not include an `expires_in` field
+# + clockSkew - The clock skew (in seconds) to account for clock synchronization issues
+# + optionalParams - A map of optional parameters to be sent to the token endpoint
+# + credentialBearer - The bearer type for authentication credentials sent to the token endpoint
+# + clientConfig - HTTP client configurations used to make requests to the token endpoint
 public type PasswordGrantConfig record {|
     string tokenUrl;
     string username;
@@ -90,18 +90,18 @@ public type PasswordGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the data structure, which is used to configure the OAuth2 refresh token grant type.
+# The configurations for the OAuth2 refresh token grant type.
 #
-# + refreshUrl - Refresh token URL of the token endpoint
-# + refreshToken - Refresh token for the token endpoint
-# + clientId - Client ID of the client authentication
-# + clientSecret - Client secret of the client authentication
-# + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
-# + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of the optional parameters used for the token endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
-# + clientConfig - HTTP client configurations, which are used to call the token endpoint
+# + refreshUrl - The URL of the refresh token endpoint
+# + refreshToken - The refresh token used to obtain a new access token
+# + clientId - The client ID for client authentication
+# + clientSecret - The client secret for client authentication
+# + scopes - The scope(s) of the access request. This can be a single string or an array of strings
+# + defaultTokenExpTime - The default expiration time (in seconds) for tokens if the token endpoint response does not include an `expires_in` field
+# + clockSkew - The clock skew (in seconds) to account for clock synchronization issues
+# + optionalParams - A map of optional parameters to be sent to the token endpoint
+# + credentialBearer - The bearer type for authentication credentials sent to the token endpoint
+# + clientConfig - HTTP client configurations used to make requests to the token endpoint
 public type RefreshTokenGrantConfig record {|
     string refreshUrl;
     string refreshToken;
@@ -115,18 +115,18 @@ public type RefreshTokenGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-# Represents the data structure, which is used to configure the OAuth2 JWT bearer grant type.
+# The configurations for the OAuth2 JWT bearer grant type.
 #
-# + tokenUrl - Token URL of the token endpoint
-# + assertion - A single JWT for the JWT bearer grant type
-# + clientId - Client ID of the client authentication
-# + clientSecret - Client secret of the client authentication
-# + scopes - Scope(s) of the access request
-# + defaultTokenExpTime - Expiration time (in seconds) of the tokens if the token endpoint response does not contain an `expires_in` field
-# + clockSkew - Clock skew (in seconds) that can be used to avoid token validation failures due to clock synchronization problems
-# + optionalParams - Map of the optional parameters used for the token endpoint
-# + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
-# + clientConfig - HTTP client configurations, which are used to call the token endpoint
+# + tokenUrl - The URL of the token endpoint
+# + assertion - A single JWT used for the JWT bearer grant type
+# + clientId - The client ID for client authentication
+# + clientSecret - The client secret for client authentication
+# + scopes - The scope(s) of the access request. This can be a single string or an array of strings
+# + defaultTokenExpTime - The default expiration time (in seconds) for tokens if the token endpoint response does not include an `expires_in` field
+# + clockSkew - The clock skew (in seconds) to account for clock synchronization issues
+# + optionalParams - A map of optional parameters to be sent to the token endpoint
+# + credentialBearer - The bearer type for authentication credentials sent to the token endpoint
+# + clientConfig - HTTP client configurations used to make requests to the token endpoint
 public type JwtBearerGrantConfig record {|
     string tokenUrl;
     string assertion;
@@ -140,7 +140,7 @@ public type JwtBearerGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
-// The data structure, which stores the values needed to prepare the HTTP request, which are to be sent to the
+// Represents the values needed to prepare the HTTP request, which are to be sent to the
 // token endpoint.
 type RequestConfig record {|
     string payload;
@@ -151,10 +151,10 @@ type RequestConfig record {|
     CredentialBearer credentialBearer;
 |};
 
-# Represents the grant type configurations supported for OAuth2.
+# The grant type configurations supported for OAuth2.
 public type GrantConfig ClientCredentialsGrantConfig|PasswordGrantConfig|RefreshTokenGrantConfig|JwtBearerGrantConfig;
 
-# Represents the client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
+# The client OAuth2 provider, which is used to generate OAuth2 access tokens using the configured OAuth2
 # token endpoint configurations. This supports the client credentials grant type, password grant type,
 # refresh token grant type, and the JWT bearer grant type.
 #
@@ -197,7 +197,11 @@ public isolated class ClientOAuth2Provider {
 
     # Provides authorization based on the provided OAuth2 configurations.
     #
-    # + grantConfig - OAuth2 grant type configurations
+    # + grantConfig - The OAuth2 grant type configurations. This can be one of the following:
+    #   - `ClientCredentialsGrantConfig`: Configuration for the client credentials grant type.
+    #   - `PasswordGrantConfig`: Configuration for the password grant type.
+    #   - `RefreshTokenGrantConfig`: Configuration for the refresh token grant type.
+    #   - `JwtBearerGrantConfig`: Configuration for the JWT bearer grant type.
     public isolated function init(GrantConfig grantConfig) {
         self.grantConfig = grantConfig.cloneReadOnly();
         self.tokenCache = new;
@@ -208,12 +212,12 @@ public isolated class ClientOAuth2Provider {
         }
     }
 
-    # Get an OAuth2 access token from the token endpoint.
+    # Gets an OAuth2 access token from the token endpoint.
     # ```ballerina
     # string token = check provider.generateToken();
     # ```
     #
-    # + return - Received OAuth2 access token or else an `oauth2:Error` if an error occurred
+    # + return - The received OAuth2 access token as a `string` or an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
         string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
         if authToken is string {
