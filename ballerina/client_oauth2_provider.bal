@@ -90,10 +90,36 @@ public type PasswordGrantConfig record {|
     ClientConfiguration clientConfig = {};
 |};
 
+# Pluggable storage hooks for Refresh Token Rotation (RFC 6749 section 6).
+#
+# A `RefreshTokenStore` is a pair of isolated function references — one to read
+# the currently-stored refresh token, one to persist a newly-rotated one. They
+# are deliberately modelled as functions (not an `object`) so the surrounding
+# `RefreshTokenGrantConfig` remains `Cloneable` / deep-freezable.
+#
+# Implementations persist the rotated `refresh_token` so it survives process
+# restarts and can be shared across replicas in containerised deployments.
+# Implementations own any concurrency control (distributed locking, etc.)
+# their backend requires.
+#
+# When supplied via `RefreshTokenGrantConfig.tokenStore`, the store becomes the
+# source of truth: the provider reads the current refresh token from `get`
+# before each refresh, and writes the rotated token back via `set` after every
+# successful refresh that returns a new `refresh_token`.
+#
+# + getRefreshToken - Returns the currently stored refresh token, or `""` if none is stored
+#                     (in which case the provider falls back to `RefreshTokenGrantConfig.refreshToken`)
+# + setRefreshToken - Persists a newly rotated refresh token. Called only when the token
+#                     endpoint returned a non-empty `refresh_token` in its response.
+public type RefreshTokenStore record {|
+    isolated function () returns string|Error getRefreshToken;
+    isolated function (string refreshToken) returns Error? setRefreshToken;
+|};
+
 # Represents the data structure, which is used to configure the OAuth2 refresh token grant type.
 #
 # + refreshUrl - Refresh token URL of the token endpoint
-# + refreshToken - Refresh token for the token endpoint
+# + refreshToken - Refresh token for the token endpoint (used as the seed when `tokenStore` is empty)
 # + clientId - Client ID of the client authentication
 # + clientSecret - Client secret of the client authentication
 # + scopes - Scope(s) of the access request
@@ -102,6 +128,13 @@ public type PasswordGrantConfig record {|
 # + optionalParams - Map of the optional parameters used for the token endpoint
 # + credentialBearer - Bearer of the authentication credentials, which is sent to the token endpoint
 # + clientConfig - HTTP client configurations, which are used to call the token endpoint
+# + tokenStore - Optional pluggable store for the rotated refresh token. Persists the latest rotated
+#                `refresh_token` across process restarts and shares it across replicas, enabling
+#                restart-resilient and multi-replica Refresh Token Rotation (RFC 6749 section 6).
+#                `isolated function` values are `readonly` and therefore `Cloneable`, so this field
+#                does not break `cloneReadOnly()`. It is NOT `anydata`, so callers that invoke
+#                `cloneWithType()` on this config (e.g. the Salesforce connector listener) must
+#                handle `RefreshTokenGrantConfig` separately before calling `cloneWithType()`.
 public type RefreshTokenGrantConfig record {|
     string refreshUrl;
     string refreshToken;
@@ -113,6 +146,7 @@ public type RefreshTokenGrantConfig record {|
     map<string> optionalParams?;
     CredentialBearer credentialBearer = AUTH_HEADER_BEARER;
     ClientConfiguration clientConfig = {};
+    RefreshTokenStore tokenStore?;
 |};
 
 # Represents the data structure, which is used to configure the OAuth2 JWT bearer grant type.
@@ -194,15 +228,32 @@ public isolated class ClientOAuth2Provider {
 
     private final GrantConfig & readonly grantConfig;
     private final TokenCache tokenCache;
+    // Pluggable RTR store — stored as separate isolated function references so
+    // Ballerina's isolated-class type system accepts them as final fields.
+    private final (isolated function () returns string|Error)? storeGet;
+    private final (isolated function (string) returns Error?)? storeSet;
 
     # Provides authorization based on the provided OAuth2 configurations.
     #
-    # + grantConfig - OAuth2 grant type configurations
+    # + grantConfig - OAuth2 grant type configurations. For `RefreshTokenGrantConfig`, the optional
+    #                 `tokenStore` field enables restart-resilient and multi-replica Refresh Token
+    #                 Rotation (RFC 6749 section 6): the provider reads the current refresh token
+    #                 from the store before each refresh and writes the rotated token back after
+    #                 every successful response that includes a new `refresh_token`.
+    #                 When `tokenStore` is absent the in-process `TokenCache` is used (correct for
+    #                 single-replica deployments).
     public isolated function init(GrantConfig grantConfig) {
         self.grantConfig = grantConfig.cloneReadOnly();
         self.tokenCache = new;
+        // Extract the RefreshTokenStore from RefreshTokenGrantConfig if provided.
+        // isolated function values are readonly → Cloneable, so cloneReadOnly() above succeeds.
+        // They are NOT anydata, so we store the references separately rather than keeping them
+        // in self.grantConfig where downstream anydata checks (e.g. in connectors) might object.
+        RefreshTokenStore? store = grantConfig is RefreshTokenGrantConfig ? grantConfig?.tokenStore : ();
+        self.storeGet = store is RefreshTokenStore ? store.getRefreshToken : ();
+        self.storeSet = store is RefreshTokenStore ? store.setRefreshToken : ();
         // This generates the token and keep it in the `TokenCache` to be used by the initial request.
-        string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache);
+        string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache, self.storeGet, self.storeSet);
         if result is Error {
             panic result;
         }
@@ -215,7 +266,7 @@ public isolated class ClientOAuth2Provider {
     #
     # + return - Received OAuth2 access token or else an `oauth2:Error` if an error occurred
     public isolated function generateToken() returns string|Error {
-        string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache);
+        string|Error authToken = generateOAuth2Token(self.grantConfig, self.tokenCache, self.storeGet, self.storeSet);
         if authToken is string {
             return authToken;
         }
@@ -224,13 +275,15 @@ public isolated class ClientOAuth2Provider {
 }
 
 // Generates the OAuth2 access token.
-isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache) returns string|Error {
+isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache,
+        (isolated function () returns string|Error)? storeGet = (),
+        (isolated function (string) returns Error?)? storeSet = ()) returns string|Error {
     if grantConfig is ClientCredentialsGrantConfig {
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else if grantConfig is PasswordGrantConfig {
         return getOAuth2TokenForPasswordGrant(grantConfig, tokenCache);
     } else if grantConfig is RefreshTokenGrantConfig {
-        return getOAuth2TokenForRefreshTokenGrantType(grantConfig, tokenCache);
+        return getOAuth2TokenForRefreshTokenGrantType(grantConfig, tokenCache, storeGet, storeSet);
     } else {
         return getOAuth2TokenForJwtBearerGrantType(grantConfig, tokenCache);
     }
@@ -274,10 +327,12 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
 
 // Processes the OAuth2 access token for the REFRESH TOKEN GRANT type.
 isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
-                                                         TokenCache tokenCache) returns string|Error {
+        TokenCache tokenCache,
+        (isolated function () returns string|Error)? storeGet = (),
+        (isolated function (string) returns Error?)? storeSet = ()) returns string|Error {
     string cachedAccessToken = tokenCache.getAccessToken();
     if cachedAccessToken == "" {
-        return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
+        return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache, storeGet, storeSet);
     }
     if !tokenCache.isAccessTokenExpired() {
         return cachedAccessToken;
@@ -286,7 +341,7 @@ isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig
         if !tokenCache.isAccessTokenExpired() {
             return tokenCache.getAccessToken();
         }
-        return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache);
+        return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache, storeGet, storeSet);
     }
 }
 
@@ -440,6 +495,10 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
 
     // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
     // request, initially.
+    // The refresh token must have been cached from the initial authorization response.
+    // If the token endpoint returns a new `refresh_token` (Refresh Token Rotation per RFC 6749 section 6),
+    // it is stored in the cache and used for all subsequent refresh requests, replacing the previous token.
+    // If the token endpoint does not return a new `refresh_token`, the existing cached token is preserved.
     string refreshToken = tokenCache.getRefreshToken();
     if refreshToken == "" {
         // The subsequent requests should have a cached `refreshToken` to refresh the access token.
@@ -454,7 +513,7 @@ isolated function getAccessTokenFromRefreshRequestForPasswordGrant(PasswordGrant
         credentialBearer: refreshConfig.credentialBearer
     };
 
-    json response = check sendRequest(requestConfig, refreshConfig.refreshUrl,refreshConfig.clientConfig);
+    json response = check sendRequest(requestConfig, refreshConfig.refreshUrl, refreshConfig.clientConfig);
     string accessToken = check extractAccessToken(response);
     string? updatedRefreshToken = extractRefreshToken(response);
     int? expiresIn = extractExpiresIn(response);
@@ -481,16 +540,33 @@ isolated function getRefreshConfig(PasswordGrantConfig config) returns RefreshCo
 // Refreshes an access token from the token endpoint using the provided REFRESH TOKEN GRANT configurations.
 // Refer: https://tools.ietf.org/html/rfc6749#section-6
 isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTokenGrantConfig config,
-                                                                       TokenCache tokenCache) returns string|Error {
+        TokenCache tokenCache,
+        (isolated function () returns string|Error)? storeGet = (),
+        (isolated function (string) returns Error?)? storeSet = ()) returns string|Error {
     if config.clientId == "" || config.clientSecret == "" {
         return prepareError("Client-id or client-secret cannot be empty.");
     }
     string refreshUrl = config.refreshUrl;
-    // The initial request does not have a cached `refreshToken`. Also, the subsequent requests also may not have
-    // a cached `refreshToken` since the token endpoint does not update the `refreshToken`.
-    // Hence, the `config.refreshToken` is used.
-    // Refer: https://tools.ietf.org/html/rfc6749#page-48
-    string refreshToken = tokenCache.getRefreshToken();
+    // Refresh Token Rotation (RFC 6749 section 6).
+    //
+    // Source of truth for the current refresh token:
+    //   1. storeGet (if configured via ClientOAuth2Provider constructor) — survives
+    //      process restarts and is shared across replicas. Required for containerised /
+    //      multi-replica deployments.
+    //   2. The in-process TokenCache — populated after the first successful refresh.
+    //   3. config.refreshToken — the bootstrap seed used until the store / cache
+    //      has a rotated value.
+    //
+    // When the token endpoint returns a new refresh_token, it is persisted via
+    // storeSet (if any) and the cache. When the endpoint omits refresh_token (or
+    // returns an empty one), the existing stored/cached value is preserved.
+    string refreshToken = "";
+    if storeGet is isolated function () returns string|Error {
+        refreshToken = check storeGet();
+    }
+    if refreshToken == "" {
+        refreshToken = tokenCache.getRefreshToken();
+    }
     if refreshToken == "" {
         refreshToken = config.refreshToken;
     }
@@ -510,6 +586,12 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     string accessToken = check extractAccessToken(response);
     string? updatedRefreshToken = extractRefreshToken(response);
     int? expiresIn = extractExpiresIn(response);
+    // Persist the rotated refresh token to the external store first, so that a
+    // store-write failure surfaces immediately rather than letting the cache
+    // and the store diverge silently.
+    if storeSet is isolated function (string) returns Error? && updatedRefreshToken is string {
+        check storeSet(updatedRefreshToken);
+    }
     tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
 }
@@ -523,6 +605,10 @@ isolated function getAccessTokenFromRefreshRequestForJwtBearerGrant(JwtBearerGra
     if clientId is string && clientSecret is string {
         // Checking `(clientId == "" || clientSecret == "")` is validated while requesting access token by token
         // request, initially.
+        // The refresh token must have been cached from the initial authorization response.
+        // If the token endpoint returns a new `refresh_token` (Refresh Token Rotation per RFC 6749 section 6),
+        // it is stored in the cache and used for all subsequent refresh requests, replacing the previous token.
+        // If the token endpoint does not return a new `refresh_token`, the existing cached token is preserved.
         string refreshUrl = config.tokenUrl;
         string refreshToken = tokenCache.getRefreshToken();
         if refreshToken == "" {
@@ -626,7 +712,7 @@ isolated function extractAccessToken(json response) returns string|Error {
 
 isolated function extractRefreshToken(json response) returns string? {
     json|error refreshToken = response.refresh_token;
-    if refreshToken is string {
+    if refreshToken is string && refreshToken != "" {
         return refreshToken;
     }
     log:printDebug("Failed to access 'refresh_token' property from the JSON.");
@@ -680,6 +766,8 @@ isolated class TokenCache {
     }
 
     // Updates the cache with the values received from JSON payload of the response.
+    // If `refreshToken` is a non-empty string (Refresh Token Rotation), the cached value is replaced.
+    // If `refreshToken` is `()` or an empty string (no rotation), the existing cached token is preserved.
     isolated function update(string accessToken, string? refreshToken, int? expiresIn, decimal defaultTokenExpTime, decimal clockSkew) {
         lock {
             self.accessToken = accessToken;
@@ -690,7 +778,7 @@ isolated class TokenCache {
             } else {
                 self.expTime = issueTime + <int> (defaultTokenExpTime - clockSkew);
             }
-            if refreshToken is string {
+            if refreshToken is string && refreshToken != "" {
                 self.refreshToken = refreshToken;
             }
         }
