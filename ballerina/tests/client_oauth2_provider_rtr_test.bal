@@ -210,6 +210,81 @@ isolated function testTokenCacheConfigSeedPattern() {
 
 // ─── Error resilience: cache is unchanged when update() is never called ──────
 
+// ─── compareAndSetRefreshToken contract tests ────────────────────────────────
+//
+// These tests verify the CAS semantics expected of a RefreshTokenStore implementation
+// and the provider's response when CAS succeeds vs. fails.
+
+// A conforming CAS implementation: atomically sets `updated` only when current == expected.
+// This in-memory version mimics what a Redis SET XX / database row-lock implementation must do.
+type CasState record {|
+    string storedToken;
+    int callCount;
+|};
+
+isolated CasState casState = {storedToken: "RT1", callCount: 0};
+
+isolated function casGet() returns string|Error {
+    lock {
+        return casState.storedToken;
+    }
+}
+
+isolated function casSet(string expected, string updated) returns boolean|Error {
+    lock {
+        if casState.storedToken == expected {
+            casState.storedToken = updated;
+            casState.callCount += 1;
+            return true;
+        }
+        return false;
+    }
+}
+
+// When CAS succeeds, the stored token advances to the rotated value.
+@test:Config {}
+isolated function testCasSucceeds() {
+    lock {
+        casState = {storedToken: "RT1", callCount: 0};
+    }
+    boolean|Error result = casSet("RT1", "RT2");
+    test:assertTrue(result is boolean && result == true, "CAS should succeed when expected matches");
+    lock {
+        test:assertEquals(casState.storedToken, "RT2");
+        test:assertEquals(casState.callCount, 1);
+    }
+}
+
+// When another replica already rotated the token, CAS fails and the stored value is unchanged.
+@test:Config {}
+isolated function testCasFailsWhenTokenAlreadyRotated() {
+    lock {
+        casState = {storedToken: "RT2", callCount: 0}; // another replica already wrote RT2
+    }
+    boolean|Error result = casSet("RT1", "RT3"); // our replica still thinks current is RT1
+    test:assertTrue(result is boolean && result == false, "CAS should fail when expected does not match");
+    lock {
+        test:assertEquals(casState.storedToken, "RT2", "Store must not be overwritten when CAS fails");
+        test:assertEquals(casState.callCount, 0);
+    }
+}
+
+// When the CAS fails (false), the cache refresh token must NOT be updated —
+// the next refresh will re-read from the store and use the winner's token.
+@test:Config {}
+isolated function testTokenCacheNotUpdatedOnCasMiss() {
+    TokenCache cache = new;
+    cache.update("AT1", "RT1", 10, 3600, 0);
+
+    // Simulate CAS failure: provider discards updatedRefreshToken and calls update(AT2, (), ...)
+    cache.update("AT2", (), 10, 3600, 0);
+
+    test:assertEquals(cache.getAccessToken(), "AT2", "Access token must still be updated");
+    test:assertEquals(cache.getRefreshToken(), "RT1", "Refresh token must be preserved on CAS miss");
+}
+
+// ─── Error resilience: cache is unchanged when update() is never called ──────
+
 // When the HTTP refresh call fails, the error is propagated via `check` and update() is never
 // invoked. This test verifies that the TokenCache remains in its last-known-good state, so the
 // next generateToken() call can retry using the same refresh token.

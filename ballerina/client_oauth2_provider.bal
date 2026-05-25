@@ -93,27 +93,40 @@ public type PasswordGrantConfig record {|
 # Pluggable storage hooks for Refresh Token Rotation (RFC 6749 section 6).
 #
 # A `RefreshTokenStore` is a pair of isolated function references — one to read
-# the currently-stored refresh token, one to persist a newly-rotated one. They
-# are deliberately modelled as functions (not an `object`) so the surrounding
-# `RefreshTokenGrantConfig` remains `Cloneable` / deep-freezable.
+# the currently-stored refresh token, one to atomically replace it — so the
+# surrounding `RefreshTokenGrantConfig` remains `Cloneable` / deep-freezable.
 #
 # Implementations persist the rotated `refresh_token` so it survives process
 # restarts and can be shared across replicas in containerised deployments.
-# Implementations own any concurrency control (distributed locking, etc.)
-# their backend requires.
 #
-# When supplied via `RefreshTokenGrantConfig.tokenStore`, the store becomes the
-# source of truth: the provider reads the current refresh token from `get`
-# before each refresh, and writes the rotated token back via `set` after every
-# successful refresh that returns a new `refresh_token`.
+# **Concurrency contract (multi-replica safety)**
 #
-# + getRefreshToken - Returns the currently stored refresh token, or `""` if none is stored
-#                     (in which case the provider falls back to `RefreshTokenGrantConfig.refreshToken`)
-# + setRefreshToken - Persists a newly rotated refresh token. Called only when the token
-#                     endpoint returned a non-empty `refresh_token` in its response.
+# The race window in RTR is: read token → call token endpoint → write rotated token.
+# Two replicas reading the same `refresh_token` concurrently and both refreshing it
+# can cause one replica to invalidate the other's token. A plain set() cannot close
+# this window; only an atomic compare-and-set can. `compareAndSetRefreshToken` MUST
+# use a backend-level atomic primitive (e.g. Redis `SET NX/XX`, a database row lock,
+# or a distributed lease) so that only the first writer wins.
+#
+# When supplied via `RefreshTokenGrantConfig.tokenStore`, the store is the source of
+# truth: the provider reads the token via `getRefreshToken` before each call to the
+# token endpoint, then attempts to atomically replace it via `compareAndSetRefreshToken`.
+# If the CAS fails (another replica already rotated the token), the provider discards
+# its own rotated value and lets the store's winner be picked up on the next refresh.
+#
+# + getRefreshToken - Returns the currently stored refresh token, or `""` if none is
+#                     stored (in which case the provider falls back to
+#                     `RefreshTokenGrantConfig.refreshToken`).
+# + compareAndSetRefreshToken - Atomically replaces the stored refresh token with
+#                               `updated` only if the current stored value equals
+#                               `expected`. Returns `true` if the swap succeeded,
+#                               `false` if another replica already rotated the token
+#                               (the provider will discard `updated` and re-read the
+#                               store on the next refresh). Implementations MUST use
+#                               a backend atomic primitive to ensure correctness.
 public type RefreshTokenStore record {|
     isolated function () returns string|Error getRefreshToken;
-    isolated function (string refreshToken) returns Error? setRefreshToken;
+    isolated function (string expected, string updated) returns boolean|Error compareAndSetRefreshToken;
 |};
 
 # Represents the data structure, which is used to configure the OAuth2 refresh token grant type.
@@ -231,7 +244,7 @@ public isolated class ClientOAuth2Provider {
     // Pluggable RTR store — stored as separate isolated function references so
     // Ballerina's isolated-class type system accepts them as final fields.
     private final (isolated function () returns string|Error)? storeGet;
-    private final (isolated function (string) returns Error?)? storeSet;
+    private final (isolated function (string, string) returns boolean|Error)? storeSet;
 
     # Provides authorization based on the provided OAuth2 configurations.
     #
@@ -251,7 +264,7 @@ public isolated class ClientOAuth2Provider {
         // in self.grantConfig where downstream anydata checks (e.g. in connectors) might object.
         RefreshTokenStore? store = grantConfig is RefreshTokenGrantConfig ? grantConfig?.tokenStore : ();
         self.storeGet = store is RefreshTokenStore ? store.getRefreshToken : ();
-        self.storeSet = store is RefreshTokenStore ? store.setRefreshToken : ();
+        self.storeSet = store is RefreshTokenStore ? store.compareAndSetRefreshToken : ();
         // This generates the token and keep it in the `TokenCache` to be used by the initial request.
         string|Error result = generateOAuth2Token(self.grantConfig, self.tokenCache, self.storeGet, self.storeSet);
         if result is Error {
@@ -277,7 +290,7 @@ public isolated class ClientOAuth2Provider {
 // Generates the OAuth2 access token.
 isolated function generateOAuth2Token(GrantConfig grantConfig, TokenCache tokenCache,
         (isolated function () returns string|Error)? storeGet = (),
-        (isolated function (string) returns Error?)? storeSet = ()) returns string|Error {
+        (isolated function (string, string) returns boolean|Error)? storeSet = ()) returns string|Error {
     if grantConfig is ClientCredentialsGrantConfig {
         return getOAuth2TokenForClientCredentialsGrant(grantConfig, tokenCache);
     } else if grantConfig is PasswordGrantConfig {
@@ -329,7 +342,7 @@ isolated function getOAuth2TokenForPasswordGrant(PasswordGrantConfig grantConfig
 isolated function getOAuth2TokenForRefreshTokenGrantType(RefreshTokenGrantConfig grantConfig,
         TokenCache tokenCache,
         (isolated function () returns string|Error)? storeGet = (),
-        (isolated function (string) returns Error?)? storeSet = ()) returns string|Error {
+        (isolated function (string, string) returns boolean|Error)? storeSet = ()) returns string|Error {
     string cachedAccessToken = tokenCache.getAccessToken();
     if cachedAccessToken == "" {
         return getAccessTokenFromRefreshRequestForRefreshTokenGrant(grantConfig, tokenCache, storeGet, storeSet);
@@ -542,7 +555,7 @@ isolated function getRefreshConfig(PasswordGrantConfig config) returns RefreshCo
 isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTokenGrantConfig config,
         TokenCache tokenCache,
         (isolated function () returns string|Error)? storeGet = (),
-        (isolated function (string) returns Error?)? storeSet = ()) returns string|Error {
+        (isolated function (string, string) returns boolean|Error)? storeSet = ()) returns string|Error {
     if config.clientId == "" || config.clientSecret == "" {
         return prepareError("Client-id or client-secret cannot be empty.");
     }
@@ -586,11 +599,18 @@ isolated function getAccessTokenFromRefreshRequestForRefreshTokenGrant(RefreshTo
     string accessToken = check extractAccessToken(response);
     string? updatedRefreshToken = extractRefreshToken(response);
     int? expiresIn = extractExpiresIn(response);
-    // Persist the rotated refresh token to the external store first, so that a
-    // store-write failure surfaces immediately rather than letting the cache
-    // and the store diverge silently.
-    if storeSet is isolated function (string) returns Error? && updatedRefreshToken is string {
-        check storeSet(updatedRefreshToken);
+    // Atomically persist the rotated refresh token to the external store.
+    // Using CAS (compare-and-set) closes the multi-replica race: only the first
+    // replica to finish the token-endpoint call wins the write. If another replica
+    // already wrote a newer token (CAS returns false), discard our rotated value —
+    // the store's winner will be picked up via storeGet on the next refresh.
+    if storeSet is isolated function (string, string) returns boolean|Error && updatedRefreshToken is string {
+        boolean swapped = check storeSet(refreshToken, updatedRefreshToken);
+        if !swapped {
+            log:printWarn("RTR compare-and-set skipped: another replica already rotated the refresh token.");
+            tokenCache.update(accessToken, (), expiresIn, defaultTokenExpTime, clockSkew);
+            return accessToken;
+        }
     }
     tokenCache.update(accessToken, updatedRefreshToken, expiresIn, defaultTokenExpTime, clockSkew);
     return accessToken;
