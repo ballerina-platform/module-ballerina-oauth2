@@ -1,19 +1,19 @@
 [package]
 org = "ballerina"
 name = "oauth2"
-version = "2.15.1"
+version = "2.15.0"
 authors = ["Ballerina"]
 keywords = ["security", "authorization", "introspection"]
 repository = "https://github.com/ballerina-platform/module-ballerina-oauth2"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.14.0"
+distribution = "2201.13.0"
 
-[platform.java25]
+[platform.java21]
 graalvmCompatible = true
 
-[[platform.java25.dependency]]
+[[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "oauth2-native"
-version = "2.15.1"
-path = "../native/build/libs/oauth2-native-2.15.1-SNAPSHOT.jar"
+version = "2.15.0"
+path = "../native/build/libs/oauth2-native-2.15.0.jar"
