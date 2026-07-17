@@ -1,0 +1,17 @@
+<FindBugsFilter>
+    <Match>
+        <Bug category="THROWS"/>
+    </Match>
+    <Match>
+        <Bug category="AT"/>
+    </Match>
+    <Match>
+        <Bug pattern="USELESS_STRING"/>
+    </Match>
+    <Match>
+        <Bug pattern="DM_DEFAULT_ENCODING"/>
+    </Match>
+    <Match>
+        <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
+    </Match>
+</FindBugsFilter>
