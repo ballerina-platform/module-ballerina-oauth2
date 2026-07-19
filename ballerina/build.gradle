@@ -16,6 +16,28 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
+
+abstract class PatchBallerinaScriptsTask extends DefaultTask {
+    @Input abstract Property<String> getJballerinaToolsBinPath()
+    @Input abstract Property<String> getBallerinaRuntimeBinPath()
+
+    @TaskAction
+    void patch() {
+        [new File(jballerinaToolsBinPath.get()), new File(ballerinaRuntimeBinPath.get())].each { binDir ->
+            if (binDir.exists()) {
+                binDir.eachFile { file ->
+                    file.setExecutable(true)
+                }
+            }
+        }
+    }
+}
 
 plugins {
     id 'io.ballerina.plugin'
@@ -57,9 +79,11 @@ task updateTomlFiles {
     }
 }
 
+def execHelper = objects.newInstance(BallerinaExecHelper)
+
 task commitTomlFiles {
     doLast {
-        project.exec {
+        execHelper.execOperations.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
@@ -88,19 +112,26 @@ publishing {
     }
 }
 
+task patchBallerinaScripts(type: PatchBallerinaScriptsTask) {
+    dependsOn 'unpackJballerinaTools'
+    outputs.upToDateWhen { !tasks.named('unpackJballerinaTools').get().didWork }
+    jballerinaToolsBinPath = layout.buildDirectory.dir("jballerina-tools-${project.ballerinaLangVersion}/bin").get().asFile.absolutePath
+    ballerinaRuntimeBinPath = "${rootProject.projectDir.absolutePath}/target/ballerina-runtime/bin"
+}
+
 task startWso2IS() {
     doLast {
         // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
         // for Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
                 standardOutput = stdOut
             }
             if (!stdOut.toString().contains("wso2-is")) {
                 println "Starting WSO2 IS."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
                     standardOutput = stdOut
                 }
@@ -120,13 +151,13 @@ task stopWso2IS() {
         // in Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
                 standardOutput = stdOut
             }
             if (stdOut.toString().contains("wso2-is")) {
                 println "Stopping WSO2 IS."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker stop wso2-is"
                     standardOutput = stdOut
                 }
@@ -146,13 +177,13 @@ task startBallerinaSTS() {
         // for Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=ballerina-sts"
                 standardOutput = stdOut
             }
             if (!stdOut.toString().contains("ballerina-sts")) {
                 println "Starting Ballerina STS."
-                exec {
+                execHelper.execOperations.exec {
                     // Mock STS: https://hub.docker.com/r/sabthar/ballerina-sts
                     commandLine 'sh', '-c', "docker run --rm -d -p 9445:9445 -p 9444:9444 --name ballerina-sts sabthar/ballerina-sts:latest"
                     standardOutput = stdOut
@@ -173,13 +204,13 @@ task stopBallerinaSTS() {
         // in Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=ballerina-sts"
                 standardOutput = stdOut
             }
             if (stdOut.toString().contains("ballerina-sts")) {
                 println "Stopping Ballerina STS."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker stop ballerina-sts"
                     standardOutput = stdOut
                 }
@@ -194,6 +225,7 @@ task stopBallerinaSTS() {
 }
 
 updateTomlFiles.dependsOn copyStdlibs
+copyStdlibs.dependsOn patchBallerinaScripts
 
 test.finalizedBy stopWso2IS
 test.finalizedBy stopBallerinaSTS
