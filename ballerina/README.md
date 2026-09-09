@@ -2,7 +2,7 @@
 
 This module provides a framework for interacting with OAuth2 authorization servers as specified in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662), enabling third-party applications to obtain limited access to HTTP services, and defines auth providers for clients and listeners of different protocol connectors.
 
-## Key Features
+### Key Features
 
 - Listener and Client OAuth2 providers
 - Token introspection support, per RFC 7662
