@@ -16,6 +16,13 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 plugins {
     id 'io.ballerina.plugin'
@@ -58,8 +65,9 @@ task updateTomlFiles {
 }
 
 task commitTomlFiles {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
-        project.exec {
+        execHelper.execOperations.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
@@ -89,18 +97,19 @@ publishing {
 }
 
 task startWso2IS() {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
         // for Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
                 standardOutput = stdOut
             }
             if (!stdOut.toString().contains("wso2-is")) {
                 println "Starting WSO2 IS."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker run --rm -d -p 9443:9443 --name wso2-is ldclakmal/wso2is-sts:latest"
                     standardOutput = stdOut
                 }
@@ -115,18 +124,19 @@ task startWso2IS() {
 }
 
 task stopWso2IS() {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // This check is added to prevent trying to stop the server in Windows OS, since the Docker image not started
         // in Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=wso2-is"
                 standardOutput = stdOut
             }
             if (stdOut.toString().contains("wso2-is")) {
                 println "Stopping WSO2 IS."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker stop wso2-is"
                     standardOutput = stdOut
                 }
@@ -141,18 +151,19 @@ task stopWso2IS() {
 }
 
 task startBallerinaSTS() {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // This check is added to prevent starting the server in Windows OS, since the Docker image does not support
         // for Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=ballerina-sts"
                 standardOutput = stdOut
             }
             if (!stdOut.toString().contains("ballerina-sts")) {
                 println "Starting Ballerina STS."
-                exec {
+                execHelper.execOperations.exec {
                     // Mock STS: https://hub.docker.com/r/sabthar/ballerina-sts
                     commandLine 'sh', '-c', "docker run --rm -d -p 9445:9445 -p 9444:9444 --name ballerina-sts sabthar/ballerina-sts:latest"
                     standardOutput = stdOut
@@ -168,18 +179,19 @@ task startBallerinaSTS() {
 }
 
 task stopBallerinaSTS() {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // This check is added to prevent trying to stop the server in Windows OS, since the Docker image not started
         // in Windows OS.
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             def stdOut = new ByteArrayOutputStream()
-            exec {
+            execHelper.execOperations.exec {
                 commandLine 'sh', '-c', "docker ps --filter name=ballerina-sts"
                 standardOutput = stdOut
             }
             if (stdOut.toString().contains("ballerina-sts")) {
                 println "Stopping Ballerina STS."
-                exec {
+                execHelper.execOperations.exec {
                     commandLine 'sh', '-c', "docker stop ballerina-sts"
                     standardOutput = stdOut
                 }
