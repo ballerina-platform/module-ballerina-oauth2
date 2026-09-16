@@ -33,9 +33,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -136,7 +138,8 @@ public class OAuth2Client {
         return URI.create(url);
     }
 
-    private static SSLContext getSslContext(BMap<BString, ?> secureSocket) throws Exception {
+    private static SSLContext getSslContext(BMap<BString, ?> secureSocket)
+            throws GeneralSecurityException, IOException {
         boolean disable = secureSocket.getBooleanValue(OAuth2Constants.DISABLE);
         if (disable) {
             return initSslContext();
@@ -144,7 +147,8 @@ public class OAuth2Client {
         BMap<BString, BString> key = (BMap<BString, BString>) getBMapValueIfPresent(secureSocket, OAuth2Constants.KEY);
         Object cert = secureSocket.get(OAuth2Constants.CERT);
         if (cert == null) {
-            throw new Exception("Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
+            throw new CertificateException(
+                    "Need to configure 'crypto:TrustStore' or 'cert' with client SSL certificates file.");
         }
         KeyManagerFactory kmf;
         TrustManagerFactory tmf;
@@ -192,7 +196,7 @@ public class OAuth2Client {
         return HttpClient.Version.HTTP_1_1;
     }
 
-    private static SSLContext initSslContext() throws Exception {
+    private static SSLContext initSslContext() throws GeneralSecurityException {
         TrustManager[] trustManagers = new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {
@@ -209,7 +213,8 @@ public class OAuth2Client {
         return buildSslContext(null, trustManagers);
     }
 
-    private static TrustManagerFactory getTrustManagerFactory(BString cert) throws Exception {
+    private static TrustManagerFactory getTrustManagerFactory(BString cert)
+            throws GeneralSecurityException, IOException {
         Object publicKeyMap = Decode.decodeRsaPublicKeyFromCertFile(cert);
         if (publicKeyMap instanceof BMap) {
             X509Certificate x509Certificate = (X509Certificate) ((BMap<BString, Object>) publicKeyMap).getNativeData(
@@ -221,11 +226,12 @@ public class OAuth2Client {
             tmf.init(ts);
             return tmf;
         }
-        throw new Exception("Failed to get the public key from Crypto API. " +
+        throw new CertificateException("Failed to get the public key from Crypto API. " +
                                         ((BError) publicKeyMap).getErrorMessage().getValue());
     }
 
-    private static TrustManagerFactory getTrustManagerFactory(BMap<BString, BString> trustStore) throws Exception {
+    private static TrustManagerFactory getTrustManagerFactory(BMap<BString, BString> trustStore)
+            throws GeneralSecurityException, IOException {
         BString trustStorePath = trustStore.getStringValue(OAuth2Constants.PATH);
         BString trustStorePassword = trustStore.getStringValue(OAuth2Constants.PASSWORD);
         KeyStore ts = getKeyStore(trustStorePath, trustStorePassword);
@@ -234,7 +240,8 @@ public class OAuth2Client {
         return tmf;
     }
 
-    private static KeyManagerFactory getKeyManagerFactory(BMap<BString, BString> keyStore) throws Exception {
+    private static KeyManagerFactory getKeyManagerFactory(BMap<BString, BString> keyStore)
+            throws GeneralSecurityException, IOException {
         BString keyStorePath = keyStore.getStringValue(OAuth2Constants.PATH);
         BString keyStorePassword = keyStore.getStringValue(OAuth2Constants.PASSWORD);
         KeyStore ks = getKeyStore(keyStorePath, keyStorePassword);
@@ -244,7 +251,7 @@ public class OAuth2Client {
     }
 
     private static KeyManagerFactory getKeyManagerFactory(BString certFile, BString keyFile, BString keyPassword)
-            throws Exception {
+            throws GeneralSecurityException, IOException {
         Object publicKey = Decode.decodeRsaPublicKeyFromCertFile(certFile);
         if (publicKey instanceof BMap) {
             X509Certificate publicCert = (X509Certificate) ((BMap<BString, Object>) publicKey).getNativeData(
@@ -261,14 +268,15 @@ public class OAuth2Client {
                 kmf.init(ks, "".toCharArray());
                 return kmf;
             }
-            throw new Exception("Failed to get the private key from Crypto API. " +
+            throw new CertificateException("Failed to get the private key from Crypto API. " +
                                             ((BError) privateKeyMap).getErrorMessage().getValue());
         }
-        throw new Exception("Failed to get the public key from Crypto API. " +
+        throw new CertificateException("Failed to get the public key from Crypto API. " +
                                         ((BError) publicKey).getErrorMessage().getValue());
     }
 
-    private static KeyStore getKeyStore(BString path, BString password) throws Exception {
+    private static KeyStore getKeyStore(BString path, BString password)
+            throws GeneralSecurityException, IOException {
         try (FileInputStream is = new FileInputStream(path.getValue())) {
             char[] passphrase = password.getValue().toCharArray();
             KeyStore ks = KeyStore.getInstance(OAuth2Constants.PKCS12);
@@ -277,7 +285,8 @@ public class OAuth2Client {
         }
     }
 
-    private static SSLContext buildSslContext(KeyManager[] keyManagers, TrustManager[] trustManagers) throws Exception {
+    private static SSLContext buildSslContext(KeyManager[] keyManagers, TrustManager[] trustManagers)
+            throws GeneralSecurityException {
         SSLContext sslContext = SSLContext.getInstance(OAuth2Constants.TLS);
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
         return sslContext;
