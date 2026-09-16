@@ -1,5 +1,4 @@
-Ballerina OAuth2 Library
-===================
+# Ballerina OAuth2 Library
 
 [![Build](https://github.com/ballerina-platform/module-ballerina-oauth2/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-oauth2/actions/workflows/build-timestamped-master.yml)
 [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-oauth2/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-oauth2)
@@ -9,11 +8,9 @@ Ballerina OAuth2 Library
 [![GitHub issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/oauth2.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Foauth2)
 
 
-This library provides a framework for interacting with OAuth2 authorization servers as specified in the [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662).
+## Overview
 
-The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service or by allowing the third-party application to obtain access on its own behalf.
-
-The Ballerina `oauth2` library facilitates auth providers that are to be used by the clients and listeners of different protocol connectors.
+This module provides a framework for interacting with OAuth2 authorization servers as specified in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) and [RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662), enabling third-party applications to obtain limited access to HTTP services, and defines auth providers for clients and listeners of different protocol connectors.
 
 ### Listener OAuth2 provider
 
@@ -95,7 +92,7 @@ Execute the commands below to build from the source.
 
 ## Contribute to Ballerina
 
-As an open source project, Ballerina welcomes contributions from the community.
+As an open-source project, Ballerina welcomes contributions from the community.
 
 For more information, go to the [contribution guidelines](https://github.com/ballerina-platform/ballerina-lang/blob/master/CONTRIBUTING.md).
 
