@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.15.1] - 2026-10-08
+
 ### Changed
 - [[#9132] Updated Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9132)
+- Narrow the exceptions thrown by the SSL context, key store and trust store handling to `GeneralSecurityException` and `IOException`
+- Upgrade Gradle to 9.5.1 and the Ballerina Gradle plugin to 4.0.0
+
+## [2.15.0] - 2025-11-06
 
 ### Added
 
