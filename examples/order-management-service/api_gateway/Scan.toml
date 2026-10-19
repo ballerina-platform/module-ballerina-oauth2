@@ -1,4 +1,4 @@
-# ballerina:14 now only matches `customHeaders: {"Authorization": stsAuthorization}`, where stsAuthorization is
-# `configurable string stsAuthorization = ?` (the hardcoded Basic credential was moved to Config.toml). Identifier-name match only.
+# ballerina:14 matches the `auth: [{oauth2IntrospectionConfig: ...}]` service annotation fields by name. No secret literal
+# remains in the code: the STS Authorization header comes from `configurable string stsAuthorization = ?` (Config.toml).
 [rule]
 exclude = ["ballerina:14"]
