@@ -1,0 +1,2 @@
+# Authorization header value used to call the STS, e.g. "Basic <base64(user:password)>"
+stsAuthorization="Basic YWRtaW46YWRtaW4="
