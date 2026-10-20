@@ -1,2 +1,3 @@
-# Authorization header value used to call the STS, e.g. "Basic <base64(user:password)>"
-stsAuthorization="Basic YWRtaW46YWRtaW4="
+# Replace the placeholder with the value for your own WSO2 Security Token Service (STS) setup.
+# Authorization header value used to call the STS, e.g. "Basic <base64(user:password)>".
+stsAuthorization="<your-sts-authorization-header-value>"
