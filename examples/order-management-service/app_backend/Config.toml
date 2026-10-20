@@ -1,3 +1,7 @@
+# Replace the placeholders with the values of your own WSO2 Security Token Service (STS) setup.
 [app_backend]
-clientId="uDMwA4hKR9H3deeXxvNf4sSU0i4a"
-clientSecret="8FOUOKUQfOp47pUfJCsPA5X4clga"
+# Client ID and secret of the OAuth2 application registered in the STS.
+clientId="<your-sts-client-id>"
+clientSecret="<your-sts-client-secret>"
+# Authorization header value used to call the STS, e.g. "Basic <base64(user:password)>".
+stsAuthorization="<your-sts-authorization-header-value>"

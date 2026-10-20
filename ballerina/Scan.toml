@@ -1,0 +1,6 @@
+# ballerina:13 / ballerina:14 match identifier names containing "token"/"secret"/"auth"/"password" (e.g. the
+# constant TOKEN_TYPE = "token_type", `decimal defaultTokenExpTime = 3600`, variables such as accessToken,
+# clientSecret, refreshToken that hold values read from user-supplied configs or from token endpoint responses).
+# No credential literal is embedded in the library; renaming would change the public API/protocol field names.
+[rule]
+exclude = ["ballerina:13", "ballerina:14"]

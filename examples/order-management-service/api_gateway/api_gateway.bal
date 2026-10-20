@@ -17,6 +17,9 @@
 import ballerina/cache;
 import ballerina/http;
 
+// The 'Authorization' header value (e.g. "Basic <base64(user:password)>") used to authenticate with the STS.
+configurable string stsAuthorization = ?;
+
 listener http:Listener apiGateway = new (9090,
     secureSocket = {
         key: {
@@ -33,7 +36,7 @@ listener http:Listener apiGateway = new (9090,
             oauth2IntrospectionConfig: {
                 url: "https://localhost:9443/oauth2/introspect",
                 clientConfig: {
-                    customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+                    customHeaders: {"Authorization": stsAuthorization},
                     secureSocket: {
                         cert: "./resources/sts-public.crt"
                     }

@@ -16,6 +16,9 @@
 
 import ballerina/http;
 
+// The 'Authorization' header value (e.g. "Basic <base64(user:password)>") used to authenticate with the STS.
+configurable string stsAuthorization = ?;
+
 configurable string clientId = ?;
 configurable string clientSecret = ?;
 
@@ -38,7 +41,7 @@ final http:Client webClient = check new ("https://localhost:9090",
         clientSecret: clientSecret,
         scopes: ["customer"],
         clientConfig: {
-            customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+            customHeaders: {"Authorization": stsAuthorization},
             secureSocket: {
                 cert: "./resources/sts-public.crt"
             }
@@ -65,7 +68,7 @@ service /'order on appBackend {
             clientSecret: clientSecret,
             scopes: ["customer"],
             clientConfig: {
-                customHeaders: {"Authorization": "Basic YWRtaW46YWRtaW4="},
+                customHeaders: {"Authorization": stsAuthorization},
                 secureSocket: {
                     cert: "./resources/sts-public.crt"
                 }

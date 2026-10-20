@@ -1,0 +1,5 @@
+# ballerina:13 / ballerina:14 match `auth = {...}`, `clientId: clientId, clientSecret: clientSecret` and the
+# `Authorization` header entry by identifier name. clientId, clientSecret and stsAuthorization are all
+# `configurable string ... = ?` with no default in code (values come from Config.toml).
+[rule]
+exclude = ["ballerina:13", "ballerina:14"]
