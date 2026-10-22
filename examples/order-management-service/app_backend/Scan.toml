@@ -1,5 +1,8 @@
 # ballerina:13 / ballerina:14 match `auth = {...}`, `clientId: clientId, clientSecret: clientSecret` and the
 # `Authorization` header entry by identifier name. clientId, clientSecret and stsAuthorization are all
 # `configurable string ... = ?` with no default in code (values come from Config.toml).
+# TODO: replace this rule exclusion with a targeted scan suppression (with a reason) once `bal scan` supports it
+# (planned for v0.13.0), and fix the false positives on the scan tool side: a secret-named identifier should only be
+# reported when it is assigned a fixed value.
 [rule]
 exclude = ["ballerina:13", "ballerina:14"]
