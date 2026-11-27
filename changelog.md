@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [2.14.2] - 2026-11-27
+
 ### Changed
 - [Update the `crypto` dependency to 2.9.4 to pick up the Bouncy Castle 1.85 fixes](https://github.com/ballerina-platform/ballerina-library/issues/9645)
+
+## [2.14.1] - 2025-07-28
 
 ### Added
 
